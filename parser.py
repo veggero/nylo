@@ -7,13 +7,14 @@ def parse(code):
     execution easier. Types created by this:
      name      -> object repr                                              -> value type
      ------------------------------------------------------------------------------------------
-     string    -> {'value': 'hello world', 'type': 'number'}               -> string           
-     number    -> {'value': 3, 'type': 'number'}                           -> int/float        
-     code      -> {value: [], 'type': 'code'}                              -> list parsed      
-     list      -> {value: [], 'type: 'list''}                              -> list list parsed 
-     function  -> {value: [], 'type': 'function', 'arguments': [[], 'x']}  -> list parsed      
-     variable  -> {value: 'i', 'type': 'variable'}                         -> string           
-     symbol    -> {value: '+', 'type': 'symbol'}                           -> string 
+     string    -> {'value': 'hello world', 'type': 'number'}                -> string           
+     number    -> {'value': 3, 'type': 'number'}                            -> int/float        
+     code      -> {'value': [], 'type': 'code'}                             -> list parsed      
+     list      -> {'value': [], 'type: 'list''}                             -> list list parsed 
+     function  -> {'value': [], 'type': 'function', 'arguments': [[], 'x']} -> list parsed      
+     variable  -> {'value': 'i', 'type': 'variable'}                        -> string           
+     symbol    -> {'value': '+', 'type': 'symbol'}                          -> string
+     arguments -> {'value': [[[],'']], 'type': 'arguments'}                 -> list list[len()=2] (list string, string)  
     """
 
     # initialize the counter and put code into brackets
@@ -21,21 +22,24 @@ def parse(code):
     # of python 2. This really makes me question why I still use Python 2... 
     # https://stackoverflow.com/questions/13985671 
     i = [0]
+    # add an end of code
+    code = code + ')'
 
     def parse_code_until(end):
         """
         Main function to parse raw Nilo code.
         calls:
-        > callParse
         > parse_string
         > parse_number
         > parse_bracket
         > > parse_key
         > > parse_value
         > parse_function
-        > > parse_arguments
+        > parse_arguments
         > parse_variable
         > parse_symbol
+
+        > elab_assignation
         """
 
         # skip beginnings
@@ -87,7 +91,7 @@ def parse(code):
                     i[0] += 1
                     
                 # loop everithing (such pro!)
-                key = parse_code_until(',]')
+                key = parse_code_until(':,]')
                 
                 # if we ended on a : we are probably in a dict,
                 # so let's call the parse_value
@@ -120,59 +124,50 @@ def parse(code):
             while code[i[0]] in '{ ':
                 i[0] += 1
 
-            def parse_arguments(): #{int x, y, list float n |...}
-                """
-                Parse the arguments of a function.
-                """
-
-                # arguments is the list of arguments and will be
-                # edited and checked by parse_arg globally
-                arguments = [[[], '']] # [[['int'], 'x'], [['int'], 'y'], [['list', 'float'], 'n']]
-                
-                while code[i[0]] != '|' and code[i[0]] != ':':
-                    name = ''
-                    # getting the single name
-                    while code[i[0]] != ' ' and code[i[0]] != ',' and code[i[0]] != '|':
-                        name += code[i[0]]
-                        i[0] += 1
-                    # let's also eat the space[s]
-                    while code[i[0]] == ' ':
-                        i[0] += 1
-                    # now let's check if we ended on ',' or ' '
-                    if code[i[0]] == ',' or code[i[0]] == '|':
-                        # okay, this is a name of a variable
-                        # so we check if we specified what type it has to be
-                        # and also if this is *not* the first variable it's declared
-                        if len(arguments[-1][0]) == 0 and len(arguments) > 1:
-                            # well it is not specified the type,
-                            # then we might just as well assume that the type is the same
-                            # of the last variable, so we take it
-                            arguments[-1][0] = arguments[-2][0]
-                        # we have the name of the variable, let's set it
-                        arguments[-1][1] = name
-                        # this variable is all setted, so let's set up a new one
-                        arguments.append([[], ''])
-                        # let's eat the ',' or ' ' if needed
-                        while code[i[0]] == ' ' or code[i[0]] == ',':
-                            i[0] += 1
-                    else:
-                        # we ended on a space, wich means that what
-                        # we have is actually a type, so we add it
-                        # to the list of types
-                        arguments[-1][0].append(name)
-                i[0] += 1
-
-                # delete last element, because it was a proto-variable -> [[], '']
-                del arguments[-1]
-                return arguments
-
-
             # parse arguments
-            args = parse_code_until('|')
+            args = parse_arguments(parse_code_until('|'))
             i[0] += 1
             parsed = parse_code_until('}')
             i[0] += 1
             return {'arguments': args, 'value': parsed, 'type': 'function'}
+
+        def parse_arguments(code): #{int x, y, list float n |...}
+            """
+            Parse the arguments of a function, given their parsed code.
+            """
+            
+            code = code['value'] + [{'value': 'End Of Code', 'type':'symbol'}];
+            # arguments is the list of arguments and will be
+            # edited and checked by parse_arg globally
+            arguments, i = [[[], '']], 0 # [[['int'], 'x'], [['int'], 'y'], [['list', 'float'], 'n']]
+            
+            while len(code) != i:
+                name, i = code[i]['value'], i+1;
+                # now let's check if we ended on symbol or another variable
+                if code[i]['type'] == 'symbol':
+                    # okay then, this is a name of a variable
+                    # so we check if we specified what type it has to be
+                    # and also if this is *not* the first variable it's declared
+                    if len(arguments[-1][0]) == 0 and len(arguments) > 1:
+                        # well it is not specified the type,
+                        # then we might just as well assume that the type is the same
+                        # of the last variable, so we take it
+                        arguments[-1][0] = arguments[-2][0]
+                    # we have the name of the variable, let's set it
+                    arguments[-1][1] = name
+                    # this variable is all setted, so let's set up a new one
+                    arguments.append([[], ''])
+                    i += 1;
+                else:
+                    # we ended on a variable, wich means that what
+                    # we have is actually a type, so we add it
+                    # to the list of types
+                    arguments[-1][0].append(name)
+
+            # delete last element, because it was a proto-variable -> [[], '']
+            del arguments[-1]
+            return {'value': arguments, 'type': 'arguments'}
+
 
         def parse_variable():
             """
@@ -191,8 +186,29 @@ def parse(code):
             i[0] += 1
             return {'value': code[i[0]-1], 'type': 'symbol'}
 
+        def elab_assignation():
+            """
+            Rewrite parsed to add a arguments object.
+            """
+            # okay, this is an assignation. No shit. We need to go back and
+            # take every variable / ',', remove them from parsed and
+            # parse_arguments them, and then add then new object to
+            # parsed again
+            # also, we need to call parse_arguments with a code obj, so
+            # let's create it
+            code = {'value': [], 'type': 'code'}
+            while ([{'type': ''}]+parsed)[-1]['type'] == 'variable' or ([{'value': ''}]+parsed)[-1]['value'] == ',':
+                code['value'].append(parsed[-1])
+                del parsed[-1]
+            # we took them backward, so we need to reverse them
+            code['value'].reverse()
+            parsed.append(parse_arguments(code))
+            # also, we also should parse the ': '
+            parsed.append({'value': ': ', 'type': 'symbol'})
+            i[0] += 2
+
         # checking every char and calling the right parser until end of code or
-        # breakline or end of string (repr by ~)
+        # breakline or end of string
         while not (code+' ') [i[0]] in end and not i[0] == len(code):
             if code[i[0]] in '"\'':
                 parsed.append(parse_string())
@@ -208,12 +224,15 @@ def parse(code):
                 parsed.append(parse_variable())
             elif code[i[0]] in ' \n': #(spaces and newlines are ignored)
                 i[0] += 1
+            elif code[i[0]:i[0]+2] == ': ':
+                # this directly edits parsed
+                elab_assignation()
             else:
                 parsed.append(parse_symbol())
 
         return {'value': parsed, 'type': 'code'}
 
-    return parse_code_until('')
+    return parse_code_until(')')
 
 # quick testcase of everything
-assert parse('[a,1,"h",{int x, y | print("ok")}, 1: 2]') == {'type': 'code', 'value': [{'type': 'list', 'value': [{'type': 'code', 'value': [{'type': 'variable', 'value': 'a'}]}, {'type': 'code', 'value': [{'type': 'int', 'value': 1}]}, {'type': 'code', 'value': [{'type': 'string', 'value': 'h'}]}, {'type': 'code', 'value': [{'type': 'function', 'arguments': {'type': 'code', 'value': [{'type': 'variable', 'value': 'int'}, {'type': 'variable', 'value': 'x'}, {'type': 'symbol', 'value': ','}, {'type': 'variable', 'value': 'y'}]}, 'value': {'type': 'code', 'value': [{'type': 'variable', 'value': 'print'}, {'type': 'code', 'value': [{'type': 'string', 'value': 'ok'}]}, {'type': 'symbol', 'value': ')'}]}}]}, {'type': 'code', 'value': [{'type': 'int', 'value': 1}, {'type': 'symbol', 'value': ':'}, {'type': 'int', 'value': 2}]}]}]}
+assert parse('[a,1,"h",{int x, y | print("ok")}, 1:2]') == {'type': 'code', 'value': [{'type': 'list', 'value': [{'type': 'code', 'value': [{'type': 'variable', 'value': 'a'}]}, {'type': 'code', 'value': [{'type': 'int', 'value': 1}]}, {'type': 'code', 'value': [{'type': 'string', 'value': 'h'}]}, {'type': 'code', 'value': [{'type': 'function', 'arguments': {'type': 'arguments', 'value': [[['int'], 'x'], [['int'], 'y']]}, 'value': {'type': 'code', 'value': [{'type': 'variable', 'value': 'print'}, {'type': 'code', 'value': [{'type': 'string', 'value': 'ok'}]}, {'type': 'symbol', 'value': ')'}]}}]}, {'type': 'couple', 'value': [{'type': 'code', 'value': [{'type': 'int', 'value': 1}]}, {'type': 'code', 'value': [{'type': 'int', 'value': 2}]}]}]}]}
