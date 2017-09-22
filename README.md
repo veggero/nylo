@@ -69,8 +69,8 @@ Example 1: Pyramid of numbers
 Given a list of integers, return a pyramid, where each number in each successive layer is the sum of the two
 'under' them.
 
-    example input : [3,1,4,2,5]
-    example output: [
+    example_input : [3,1,4,2,5]
+    example_output: [
                     [3,1,4,2,5],
                     [4,5,6,7],
                     [9,11,13],
@@ -98,8 +98,8 @@ docs:
 
 Return the number of successive 0s and 1s for every sequence in a binary string
 
-example input : '00011000111100100000'
-example output: [3,2,3,4,2,1,5]
+    example_input : '00011000111100100000'
+    example_output: [3,2,3,4,2,1,5]
 
     get_binary: {list char[='0' or ='1'] binary|
         parsed: [0]  
