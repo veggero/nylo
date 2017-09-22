@@ -2,7 +2,7 @@
 
 Nylo's target is providing good and simple syntax for comfortable coding, plus giving a bunch of common built-in function to do most of the hard work.
 
->>> The Basics
+**1: The Basics**
 
 Use : instead of = for assignations.
 
@@ -42,8 +42,8 @@ To create a istance of a class, either call it or assign a variable:
     point c: 1, 2
     money ticket: 20, '$'
     kid Yara: 16, money(50, 'EUR')
-
->>> Dealing with recursions and lists
+    
+2: Dealing with recursions and lists
 
 Useful functions:
 
@@ -69,8 +69,8 @@ Example 1: Pyramid of numbers
 Given a list of integers, return a pyramid, where each number in each successive layer is the sum of the two
 'under' them.
 
-example input : [3,1,4,2,5]
-example output: [
+    example input : [3,1,4,2,5]
+    example output: [
                     [3,1,4,2,5],
                     [4,5,6,7],
                     [9,11,13],
@@ -78,39 +78,49 @@ example output: [
                     [44]
                 ]
                 
-pyramid: {list int layer|
-    len(layer)=1{return [layer]}
-    next_layer: layer(2)sum
-    return [layer] . pyramid(next_layer)
-} 
+    pyramid: {list int layer|
+        len(layer)=1{return [layer]}
+        next_layer: layer(2)sum
+        return [layer] . pyramid(next_layer)
+    } 
 
 docs:
-    line 1: define the 'pyramid' function, with the argument layer (this will check if the argument is a list of integers and assign it to a 'layers' variable).
-    line 2: check if the layer is only one element long and if so just return it in a one-element-long list (input: [2] output: [[2]])
-    line 3: calculate the next layer by summing every couple of successive numbers (layer(2) returns every couple and 'sum' sum all them)
-    line 4: calculate the pyramid of the next layer, join it with the already known layer, and return the pyramid
     
-Example 2: Parsing binary 
+   line 1: define the 'pyramid' function, with the argument layer (this will check if the argument is a list of integers and assign it to a 'layers' variable).
+    
+   line 2: check if the layer is only one element long and if so just return it in a one-element-long list (input: [2] output: [[2]])
+    
+   line 3: calculate the next layer by summing every couple of successive numbers (layer(2) returns every couple and 'sum' sum all them)
+    
+   line 4: calculate the pyramid of the next layer, join it with the already known layer, and return the pyramid
+    
+**Example 2: Parsing binary **
 
 Return the number of successive 0s and 1s for every sequence in a binary string
 
 example input : '00011000111100100000'
 example output: [3,2,3,4,2,1,5]
 
-get_binary: {list char[='0' or ='1'] binary|
-    parsed: [0]
-    binary(2){left, right|
-        left=right {parsed[-1]++} 
-        else {parsed.append(0)}
+    get_binary: {list char[='0' or ='1'] binary|
+        parsed: [0]  
+        binary(2){left, right|
+            left=right {parsed[-1]++} 
+            else {parsed.append(0)}
+        }
+        return parsed+1
     }
-    return parsed+1
-}
         
 docs:
-    line 1: define the get_binary function with a single 'binary' argument, which is a list of characters that are either '0' or '1'
-    line 2: define a 'parsed' list - we will edit it as we iterate over the binary string
-    line 3: we call a function with every two successives numbers in binary, calling them 'left' and 'right'
-    line 4: if they're equals we add one to the last element of parsed - in this way we count the number of successive equals chars
-    line 5: if they're not equals we add a 0 to parsed, in order to reset the counter
-    line 7: we return the parsed list adding one to every element of it (because we ignored the first element of every sequence of 0s and 1s)
+
+   line 1: define the get_binary function with a single 'binary' argument, which is a list of characters that are either '0' or '1'
+   
+   line 2: define a 'parsed' list - we will edit it as we iterate over the binary string
+   
+   line 3: we call a function with every two successives numbers in binary, calling them 'left' and 'right'
+   
+   line 4: if they're equals we add one to the last element of parsed - in this way we count the number of successive equals chars
+   
+   line 5: if they're not equals we add a 0 to parsed, in order to reset the counter
+   
+   line 7: we return the parsed list adding one to every element of it (because we ignored the first element of every sequence of 0s and 1s)
             
