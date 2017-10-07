@@ -22,7 +22,7 @@ You can also specify in the function the types of arguments you expect.
     gimme_two_integers_and_a_string: {int x, y, string c | print(a, b, c) }
     gimme_a_list_of_integers: {list int x | print(x)}
     
-Classes' syntaxs is { arguments / datas }. 
+Classes' syntaxs is { arguments | datas }. 
 
     point: {int x, y}
     money: {int value, string currency}
@@ -52,7 +52,7 @@ In order to repeat code multiple times, use brackets after integers
     
 To write an if statement, use brackets after a boolean
 
-    2>3{
+    (2>3) {
         print("Math is clearly broken.")
     }
 
@@ -66,11 +66,11 @@ Also, ranges syntax is start:stop[:step]
 
     5:10
     list int numbers: 2:10:2 
-    1:100 {x | print(x)}
+    (1:100) {x | print(x)}
     
 Here's an example where every number from 1 to 100 is printed 4 times if it's bigger than 12:
 
-    1:100 { int x |
+    (1:100) { int x |
         x > 12 {
             4 {
                 print (x)
@@ -110,6 +110,17 @@ This can be written in Nylo as
     [20, 40] * [sin(50), cos(50)]
     
 because Nylo will automatically do all the combinations (20*sin(50), 20*cos(50) etc) as the symbol * expected only one int argument on the left and on the right but found int lists in both.
+
+
+Implict variables: when in a function no argument is specified and the function is called with one argument, it will be set as 'implicit' variable:
+
+    double: {implicit*2}
+    double(4) -> 8
+    
+You can also use the implicit function, in most cases, leaving his space blank:
+
+    double: {*2}
+    double(4) -> 8
     
 2: Dealing with recursions and lists
 
@@ -147,9 +158,9 @@ Given a list of integers, return a pyramid, where each number in each successive
                 ]
                 
     pyramid: {list int layer|
-        len(layer)=1{return [layer]}
+        len(layer)=1{return([layer])}
         next_layer: layer(2)sum
-        return [layer] & pyramid(next_layer)
+        return([layer] & pyramid(next_layer))
     } 
 
 docs:
@@ -172,10 +183,10 @@ Return the number of successive 0s and 1s for every sequence in a binary string
     get_binary: {list char[='0' or ='1'] binary|
         parsed: [0]  
         binary(2){left, right|
-            left=right {parsed[-1]++} 
+            (left=right) {parsed[-1]+=1} 
             else {parsed.append(0)}
         }
-        return parsed+1
+        return(parsed+1)
     }
         
 docs:
