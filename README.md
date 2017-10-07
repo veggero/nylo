@@ -71,7 +71,7 @@ Also, ranges syntax is start:stop[:step]
 Here's an example where every number from 1 to 100 is printed 4 times if it's bigger than 12:
 
     (1:100) { int x |
-        x > 12 {
+        (x > 12) {
             4 {
                 print (x)
             }
