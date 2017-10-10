@@ -1,6 +1,8 @@
+# Here's a word to the wise: you should take some advice, for the nice guy always finish last.
+
 # import what I need
-import string;
-import definitions;
+import string
+import definitions
 
 def parse(code):
     """
@@ -8,7 +10,7 @@ def parse(code):
     execution easier. Types created by this:
      name      -> object repr                                              -> value type
      ------------------------------------------------------------------------------------------
-     string    -> {'value': 'hello world', 'type': 'number'}                -> string           
+     string    -> {'value': 'hello world', 'type': 'string'}                -> string           
      number    -> {'value': 3, 'type': 'number'}                            -> int/float        
      code      -> {'value': [], 'type': 'code'}                             -> list parsed      
      list      -> {'value': [], 'type: 'list''}                             -> list list parsed 
@@ -25,8 +27,8 @@ def parse(code):
     # of python 2. This really makes me question why I still use Python 2... 
     # https://stackoverflow.com/questions/13985671 
     i = [0]
-    # add EOF
-    code += ')'
+    # add start of code and end of code
+    code = '('+code+')'
 
     def parse_code_until(end='', raw=False):
         """
@@ -48,9 +50,9 @@ def parse(code):
         """
 
         # skip beginnings
-        if code[i[0]] in '([':
-            i[0] += 1;
-        parsed = [];
+        if code[i[0]] in '(':
+            i[0] += 1
+        parsed = []
 
         def parse_string():
             """
@@ -68,9 +70,17 @@ def parse(code):
             """
             Parse a Nylo number into a Nylo Number Object.
             """
-            value = ''
+            # we already gave a look to first char
+            # (we wouldn't be here oterwise)
+            value = code[i[0]]
+            i[0]+=1
             # loop the whole number and return it 
-            while code[i[0]] in string.digits + '.-':
+            while code[i[0]] in string.digits + '.':
+                if code[i[0]] == '.' and '.' in value:
+                    # there is a "." and the number already has a "."?
+                    # something's off. (this is to avoid 2.2.2.2 to be just one number)
+                    # ("2.2.2.2" is number: 2.2 number: 0.2 number: 0.2 by the way)
+                    break
                 value += code[i[0]]
                 i[0] += 1
             if '.' in value:
@@ -80,7 +90,7 @@ def parse(code):
 
         def parse_bracket():
             """
-            Parse [] brackets, wich is either a list or a dictionary.
+            Parse [] brackets, which is either a list or a dictionary.
             """
             # get over the '['
             i[0] += 1
@@ -91,7 +101,7 @@ def parse(code):
                 Parse the first element of a bracket, either an entire
                 element of the list, or the key of a dictionary.
                 """
-                # skip first , (sometimes there is)
+                # skip first , (sometimes there is one)
                 if code[i[0]] == ',':
                     i[0] += 1
                     
@@ -100,7 +110,7 @@ def parse(code):
                 
                 # if we ended on a : we are probably in a dict,
                 # so let's call the parse_value
-                if code[i[0]] == ':':
+                if code[i[0]-1] == ':':
                     value = parse_value()
                     return {'value': [key, value], 'type': 'couple'}
                 else:
@@ -114,7 +124,7 @@ def parse(code):
                 """
                 return parse_code_until(',]')
 
-            while code[i[0]] != ']':
+            while code[i[0]-1] != ']':
                 parsed.append(parse_key())
             i[0]+=1
             return {'value': parsed, 'type': 'list'}
@@ -150,7 +160,7 @@ def parse(code):
             Parse the arguments of a function, given their parsed code.
             """
             
-            code = code['value'] + [{'value': 'End Of Code', 'type':'symbol'}];
+            code = code['value'] + [{'value': 'End Of Code', 'type':'symbol'}]
             # arguments is the list of arguments and will be
             # edited and checked by parse_arg globally
             arguments, i = [[]], 0 
@@ -165,7 +175,7 @@ def parse(code):
                     while code[i]['value'] == ',':
                         i += 1
                 
-                name, i = code[i]['value'], i+1;
+                name, i = code[i]['value'], i+1
                 # now let's check if we ended on symbol or another variable
                 if code[i]['type'] == 'symbol':
                     # okay then, this is a name of a variable
@@ -180,7 +190,7 @@ def parse(code):
                     arguments[-1].append([name])
                     # this variable is all setted, so let's set up a new one
                     arguments.append([])
-                    i += 1;
+                    i += 1
                 else:
                     # we ended on a variable, wich means that what
                     # we have is actually a type, so we add it
@@ -196,8 +206,11 @@ def parse(code):
             """
             Parse a raw Nylo variable into a Nylo Variable Object.
             """
-            name = ''
-            while code[i[0]] in string.ascii_letters:
+            # already checked the first character
+            # we wouldn't be here otherwise
+            name = code[i[0]]
+            i[0]+=1
+            while code[i[0]] in string.ascii_letters + '_' + string.digits:
                 name += code[i[0]]
                 i[0] += 1
             return {'value': name, 'type': 'variable'}
@@ -230,62 +243,70 @@ def parse(code):
             parsed.append({'value': ': ', 'type': 'symbol'})
             i[0] += 2
         
-        def replace_symbols(parsed): # TODO MAKE THIS WORK TOO
+        def replace_symbols(parsed):
             """
             Replacing symbols with functions
             1+1 --> sum(1,1)
             """
+            
             # reading every character
-            reading = 0
-            while reading < len(parsed):
-                if parsed[reading]['type'] == 'symbol':
-                    
-                    symbol = parsed[reading]
-                    # if there is a value before,
-                    # take values before the symbol (the one after will be taken later)
-                    
-                    if not reading == 0:
-                        if parsed[reading-1]['type'] != 'symbol':
-                            arguments = [parsed[reading-1]]
-                            # delete the value we took (we need to replace it w/ the function)
-                            del parsed[reading-1]
-                            # move the reader back of a place because we deleted the value before
-                            reading -= 1
-                        else:
-                            arguments = [{'type':'variable', 'value': 'implicit'}]
-                    else:
-                        arguments = [{'type':'variable', 'value':'implicit'}]
-                    
-                    # loop every symbol to get all of the args (1+1+1+1 --> sum(1,1,1,1))
-                    while parsed[reading] == symbol:
-                        # delete the symbol from parsed
-                        del parsed[reading]
-                        # add the value after the symbol to the arguments
-                        if len(parsed)!=0:
-                            if parsed[reading]['type'] != 'symbol':
-                                arguments.append(parsed[reading])
-                                # delete it from parser
-                                del parsed[reading]
-
-                            else:
-                                arguments.append([{'type':'variable', 'value': 'implicit'}])                            
-                        else:
-                            arguments.append([{'type':'variable', 'value': 'implicit'}])
-                        # do this until we stop finding the same symbol
-                        # check EOF
-                        if reading == len(parsed):
-                            break;
+            for symbol_to_search in definitions.symbols_priority:
+                reading = 0
+                while reading < len(parsed):
+                    if parsed[reading]['type'] == 'symbol' and parsed[reading]['value'] == symbol_to_search:
                         
-                    # get the function name
-                    name = definitions.symbols[symbol['value']]
-                    # make arguments a list
-                    arguments = {'type': 'list', 'value': arguments}
-                    # now we add the function as a variable
-                    parsed.insert(reading, {'value': name, 'type': 'variable'})
-                    # and the arguments as code
-                    parsed.insert(reading+1, {'value': [arguments], 'type': 'code'})
-                    
-                reading += 1
+                        # get the symbol we're parsing
+                        symbol = parsed[reading]
+                        # and remove it from parsed
+                        del parsed[reading]
+                        reading -= 1
+                        arguments = [{'type': 'code', 'value': []}]
+                        
+                        if reading != -1:
+                            # now loop all thru the elements before the symbol until we find a different symbol
+                            while parsed[reading]['type'] != 'symbol' or parsed[reading] == symbol:
+                                
+                                # kill the symbols, we don't need them where we're going
+                                if parsed[reading]['type'] == 'symbol':
+                                    arguments.append({'type': 'code', 'value': []})
+                                else:
+                                    arguments[-1]['value'].insert(0, parsed[reading])
+                                del parsed[reading]
+                                reading -= 1
+                                
+                                if reading == -1:
+                                    break
+                        else:
+                            arguments[-1]['value'].append({'type': 'variable', 'value': 'implicit'})
+                        
+                        reading += 1
+                        arguments.append({'type': 'code', 'value': []})
+                        if reading != len(parsed):
+                            # then loop forward and take every value after the symbol
+                            while parsed[reading]['type'] != 'symbol' or parsed[reading] == symbol:
+                                
+                                # kill the symbols, we don't need them where we're going
+                                if parsed[reading]['type'] == 'symbol':
+                                    arguments.append({'type': 'code', 'value': []})
+                                else:
+                                    arguments[-1]['value'].append(parsed[reading])
+                                del parsed[reading]
+                                
+                                if reading == len(parsed):
+                                    break
+                        else:
+                            arguments[-1]['value'].append({'type': 'variable', 'value': 'implicit'})
+                            
+                        # get the function name
+                        name = definitions.symbols[symbol['value']]
+                        # make arguments a list
+                        arguments = {'type': 'list', 'value': arguments}
+                        # now we add the function as a variable
+                        parsed.insert(reading, {'value': name, 'type': 'variable'})
+                        # and the arguments as code
+                        parsed.insert(reading+1, {'value': [arguments], 'type': 'code'})
+                        
+                    reading += 1
             return parsed
 
         # checking every char and calling the right parser until end of code or
@@ -293,20 +314,49 @@ def parse(code):
         while not (code+' ') [i[0]] in end and not i[0] == len(code):
             if code[i[0]] in '"\'':
                 parsed.append(parse_string())
-            elif code[i[0]] in string.digits or (code[i[0]] in '-.' and code[i[0]+1] in string.digits + '.'):
-                parsed.append(parse_number())
+            elif code[i[0]] in string.digits + '-.': #42 .42 -42 -.42 4.2 -4.2  
+                # Okay, numbers are a little tough. all of them starts with 0123456789-.
+                # if first digit is - tho, we need to know there's a number after that, or
+                # it might be just a symbol
+                if code[i[0]] == '-':
+                    # if there isn't a symbol before, it's clearly a symbol (1-1 is not number:1 number:-1
+                    # but number: 1 symbol: - number: 1)
+                    if len(parsed)>0:
+                        if parsed[-1]['type']!='symbol':
+                            parsed.append(parse_symbol())
+                    # but it still could be -.3, so a . after a - is fine to...
+                    elif code[i[0]+1] == '.':
+                        # IF there is a digit after the -.
+                        if code[i[0]+2] in string.digits:
+                            parsed.append(parse_number())
+                        else:
+                            parsed.append(parse_symbol())
+                    elif code[i[0]+1] in string.digits:
+                        parsed.append(parse_number())
+                    else:
+                        parsed.append(parse_symbol())
+                elif code[i[0]] == '.':
+                    if code[i[0]+1] in string.digits:
+                        parsed.append(parse_number())
+                    else:
+                        parsed.append(parse_symbol())
+                else:
+                    parsed.append(parse_number())
             elif code[i[0]] == '(':
                 parsed.append(parse_code_until(')'))
             elif code[i[0]] == '[':
                 # this is either a (list/dict) or a condition.
                 # every condition is just after a variable, so we check that
                 if ([{'type':''}]+parsed)[-1]['type'] == 'variable':
+                    # skip initial [
+                    i[0]+=1
+                    # parse the condition until end
                     parsed.append({'value': parse_code_until(']'), 'type': 'condition'})
                 else:
                     parsed.append(parse_bracket())
             elif code[i[0]] == '{':
                 parsed.append(parse_function())
-            elif code[i[0]] in string.ascii_letters:
+            elif code[i[0]] in string.ascii_letters+'_':
                 parsed.append(parse_variable())
             elif code[i[0]] in ' \n': #(spaces and newlines are ignored)
                 i[0] += 1
@@ -335,5 +385,3 @@ def parse(code):
         return {'value': parsed, 'type': 'code'}
 
     return parse_code_until(')')
-
-print(parse('int[2=] point: {int[=3] x, y}'))
