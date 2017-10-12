@@ -1,3 +1,6 @@
 import definitions
 
-# TODO (yeah, I know.)
+# TODO everything (yeah, I know.)
+            
+            
+            

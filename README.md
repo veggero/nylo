@@ -158,7 +158,7 @@ Given a list of integers, return a pyramid, where each number in each successive
                 ]
                 
     pyramid: {list int layer|
-        len(layer)=1{return([layer])}
+        (len(layer)=1){return([layer])}
         next_layer: layer(2)sum
         return([layer] & pyramid(next_layer))
     } 

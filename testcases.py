@@ -4,6 +4,7 @@
 # and swear to the user if there is any exception
 
 import parser
+from pprint import pprint
 
 assert parser.parse('"hello" \'world\'') == {'type': 'code', 'value': 
                                                  [{'type': 'string', 'value': 'hello'}, 
@@ -66,7 +67,16 @@ assert parser.parse('[1:2, "hello": "world"]') == {'type': 'code', 'value':
                                                                     [{'type': 'string', 'value': 'hello'}]}, 
                                                                 {'type': 'code', 'value': 
                                                                     [{'type': 'string', 'value': 'world'}]}]}]}]}
-                                   
+
+# this is to check if a ) or ] also accidentally eats the
+# successive character (it happened)
+assert parser.parse('()1[]2') == {'value': 
+                                      [{'value': [], 'type': 'code'}, 
+                                       {'value': 1, 'type': 'int'}, 
+                                       {'value': [{'value': [], 'type': 'code'}], 'type': 'list'}, 
+                                       {'value': 2, 'type': 'int'}], 
+                                  'type': 'code'}           
+
 assert parser.parse('a[=2]') == {'value': 
                               [{'value': 'a', 'type': 'variable'}, 
                                {'value': 
@@ -133,7 +143,7 @@ assert parser.parse('unnamed unnamed2 unnamed_cool_42') == {'value':
                                                                  {'value': 'unnamed2', 'type': 'variable'}, 
                                                                  {'value': 'unnamed_cool_42', 'type': 'variable'}], 
                                                             'type': 'code'}
-                                                                
+                                                            
 assert parser.parse('a, int x, y, list string k, z: 0, 0, 0, 0, 0') == {
     'type': 'code', 'value': 
         [{'type': 'variable', 'value': 'assign'}, 
@@ -154,7 +164,7 @@ assert parser.parse('a, int x, y, list string k, z: 0, 0, 0, 0, 0') == {
                                      {'type': 'code', 'value': 
                                           [{'type': 'int', 'value': 0}]}, 
                                      {'type': 'code', 'value': 
-                                          [{'type': 'int', 'value': 0}]}]}]}]}]}]}]}
+                                          [{'type': 'int', 'value': 0}]}]}]}]}]}]}]} 
 
 # You don't REALLY have to look (or even worst, actually understand)
 # the block of text below
@@ -207,10 +217,79 @@ assert parser.parse('int[=1] a: {list[len()=2] string x}') == {
             'type': 'code'}], 
         'type': 'code'}
 
-
-'''print(parse("""
-pyramid: {list int layer|
-    len(layer)=1{return [layer]}
-    next_layer: layer(2)sum
-    return [layer] & pyramid(next_layer)
-} """))'''
+# small actual script from early documentation
+assert parser.parse('''pyramid: {list int layer| 
+    (len(layer)=1) {return([layer])} 
+    next_layer: layer(2)sum 
+    return([layer] & pyramid(next_layer))
+}''') == {'type': 'code',
+ 'value': [{'type': 'variable', 'value': 'assign'},
+           {'type': 'code',
+            'value': [{'type': 'list',
+                       'value': [{'type': 'code',
+                                  'value': [{'type': 'arguments',
+                                             'value': [[['pyramid']]]}]},
+                                 {'type': 'code',
+                                  'value': [{'arguments': {'type': 'arguments',
+                                                           'value': [[['list'],
+                                                                      ['int'],
+                                                                      ['layer']]]},
+                                             'type': 'function',
+                                             'value': {'type': 'code',
+                                                       'value': [{'type': 'code',
+                                                                  'value': [{'type': 'variable',
+                                                                             'value': 'equal'},
+                                                                            {'type': 'code',
+                                                                             'value': [{'type': 'list',
+                                                                                        'value': [{'type': 'code',
+                                                                                                   'value': [{'type': 'variable',
+                                                                                                              'value': 'len'},
+                                                                                                             {'type': 'code',
+                                                                                                              'value': [{'type': 'variable',
+                                                                                                                         'value': 'layer'}]}]},
+                                                                                                  {'type': 'code',
+                                                                                                   'value': [{'type': 'int',
+                                                                                                              'value': 1}]}]}]}]},
+                                                                 {'arguments': {'type': 'arguments',
+                                                                                'value': []},
+                                                                  'type': 'function',
+                                                                  'value': [{'type': 'variable',
+                                                                             'value': 'return'},
+                                                                            {'type': 'code',
+                                                                             'value': [{'type': 'list',
+                                                                                        'value': [{'type': 'code',
+                                                                                                   'value': [{'type': 'variable',
+                                                                                                              'value': 'layer'}]}]}]}]},
+                                                                 {'type': 'variable',
+                                                                  'value': 'assign'},
+                                                                 {'type': 'code',
+                                                                  'value': [{'type': 'list',
+                                                                             'value': [{'type': 'code',
+                                                                                        'value': [{'type': 'arguments',
+                                                                                                   'value': [[['next_layer']]]}]},
+                                                                                       {'type': 'code',
+                                                                                        'value': [{'type': 'variable',
+                                                                                                   'value': 'layer'},
+                                                                                                  {'type': 'code',
+                                                                                                   'value': [{'type': 'int',
+                                                                                                              'value': 2}]},
+                                                                                                  {'type': 'variable',
+                                                                                                   'value': 'sum'}]}]}]},
+                                                                 {'type': 'variable',
+                                                                  'value': 'return'},
+                                                                 {'type': 'code',
+                                                                  'value': [{'type': 'variable',
+                                                                             'value': 'join'},
+                                                                            {'type': 'code',
+                                                                             'value': [{'type': 'list',
+                                                                                        'value': [{'type': 'code',
+                                                                                                   'value': [{'type': 'list',
+                                                                                                              'value': [{'type': 'code',
+                                                                                                                         'value': [{'type': 'variable',
+                                                                                                                                    'value': 'layer'}]}]}]},
+                                                                                                  {'type': 'code',
+                                                                                                   'value': [{'type': 'variable',
+                                                                                                              'value': 'pyramid'},
+                                                                                                             {'type': 'code',
+                                                                                                              'value': [{'type': 'variable',
+                                                                                                                         'value': 'next_layer'}]}]}]}]}]}]}}]}]}]}]}

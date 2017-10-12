@@ -53,6 +53,7 @@ def parse(code):
         if code[i[0]] in '(':
             i[0] += 1
         parsed = []
+        output = []
 
         def parse_string():
             """
@@ -126,15 +127,14 @@ def parse(code):
 
             while code[i[0]-1] != ']':
                 parsed.append(parse_key())
-            i[0]+=1
             return {'value': parsed, 'type': 'list'}
 
         def parse_function():
             """
             Parse a raw Nylo function into a Nylo Function Object.
             """
-            # get over the { and ' '
-            while code[i[0]] in '{ ':
+            # get over the {
+            if code[i[0]] == '{':
                 i[0] += 1
 
             # parse arguments RAW!
@@ -358,7 +358,7 @@ def parse(code):
                 parsed.append(parse_function())
             elif code[i[0]] in string.ascii_letters+'_':
                 parsed.append(parse_variable())
-            elif code[i[0]] in ' \n': #(spaces and newlines are ignored)
+            elif code[i[0]] in ' \t': #(spaces and tabs are ignored)
                 i[0] += 1
             elif code[i[0]:i[0]+2] == ': ':
                 # this directly edits parsed
@@ -372,6 +372,13 @@ def parse(code):
                 while code[i[0]:i[0]+2] != '*/':
                     i[0] += 1
                 i[0] += 2
+            elif code[i[0]] in ';\n':
+                i[0] += 1
+                # end of line of code. Elab what there's to elab and add to output
+                if not raw:
+                    parsed = replace_symbols(parsed)
+                output.append(parsed)
+                parsed = []
             else:
                 parsed.append(parse_symbol())
 
@@ -379,9 +386,16 @@ def parse(code):
         # symbols with functions
         if not raw:
             parsed = replace_symbols(parsed)
+        output.append(parsed)
+        parsed = []
         # eat last character
         i[0]+=1
         
-        return {'value': parsed, 'type': 'code'}
+        # the output is a list of parsed, but we
+        # only want one parsed, so we join every
+        # element in output 
+        output = [j for i in output for j in i]
+        
+        return {'value': output, 'type': 'code'}
 
     return parse_code_until(')')
