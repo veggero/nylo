@@ -1,128 +1,190 @@
-# Nylo. Syntax so good you will riconsider sex.
+// Nylo. Syntax so good you will riconsider sex.
 
-Nylo's target is providing good and simple syntax for comfortable coding, plus giving a bunch of common built-in function to do most of the hard work.
+![](images/NyloBanner.png)
 
-**1: The Basics**
+Usually, what programming language you use for a project is given by what kind of project it is. If you're going to do a front-end non-static webpage, you'll probably end up using JavaScript. What you have to deal with, though, it's the syntax and how-easy-to-use that language is.
+Nylo's target is providing a very good, clear and concise syntax plus compability with many programming aspects such as front-end and back-end development, android/iOS/Windows app development, etc, in order to give you the possibility to use a confortable, known, good syntax whatever you're doing. 
 
-Use : instead of = for assignations.
+**Why is Nylo such awesome?**
+
+Good question, thanks for asking. Here's a couple features you might like from Nylo:
+
+**1) Colon as assignation symbol**
 
     answer: 42
-    int nine: 9
-    list string names: ['clye', 'yara', 'phyre']
-    
-Functions' syntax is { arguments | code }. In order to declare a function, assign it to a variable. If no arguments are needed, you can just use { code }. 'return' is facultative on single-line functions.
 
-    double: {x | x * 2}
-    sum: {a, b | a + b}
-    meow: { print('meow') }
-    
-You can also specify in the function the types of arguments you expect.
+This isn't exactly a exciting feature, but we really have to tell you about this to make you understand most Nylo examples. In order to assign a variable you shall use : instead of =. This is for three reasons: 
+First, in this way we can use = instead of == to actually confront two variables, wich makes it more clear .
+Second, using a = as assignation symbol doesn't make any sense, as expressions like a=a+1 are impossible for any school-grade kid. Assignation and equalization are simply two different things.
+Third, we wanted to make a more dictionary-like assignation. In dictionaries you use colon to separate couples of key and value, and in code you use colon to assign a value.
 
-    gimme_an_integer: {int x | print(x)}
-    gimme_two_integers_and_a_string: {int x, y, string c | print(a, b, c) }
-    gimme_a_list_of_integers: {list int x | print(x)}
+**2) Quick function syntax**
+
+    double: {x | x+1}
     
-Classes' syntaxs is { arguments | datas }. 
+In Nylo you will quite often use functions, as we encourage them more than in other languages. We therefore created a more concise and easy function definition: {[arguments |] code}.
+
+    // Arguments are facultative
+    mew: {print('meeow')}
+    mew()
+    
+**3) Kinda Dynamic Types**
+
+Is Nylo strongly, weakly or dynamic typed? Well, kinda none of them. In Nylo you can specify the types, although it's facultative:
+
+    int x: 3
+    string k: 'hello world'
+    
+    list int: [1,2,3]
+    list list string: [['a', 'b'], ['c']]
+    
+You can also include some test in this:
+
+    int[>0]: 4
+    string[len()<20] = 'short string'
+    
+    list[len()>5] int[0<<5]: [1, 3, 4, 2, 1, 5]
+    list[len()=1] list[len(list[0])=0] string: [['', 'a'], ['', 'b']]
+    
+Although, you can pretty much save whatever you want in any variable. But if you try to save a value in a variable that doesn't fit its arguments while in debug mode, an exception will be raised.
+
+Of course, you can set types in function definitions too:
+
+    {int x, y | x + y}
+    {string[len()>5] k | print(k)}
+    
+    // Multiple arguments
+    ignore_a_bunch: {int x, y, string k, z, list int n}
+    
+You should always check your function's types and value:
+
+    gimme_binary: {list char[='0' or ='1'] binary | return(binary)}
+    
+**4) Calling objects with functions**
+
+In Nylo every object or istance can manage being called both with (values) and {functions}, even at the same time. Here's a couple of common examples of it:
+
+    forever {print('hi')}
+    if (3=2) {print('math is broken')}
+    
+Forever and if are two variables referring to buil-it objects, but in Nylo you can also call istances of common types:
+
+    // repeat 2 times a piece of code
+    2{} 
+    // execute code only if true (this is a if without the if)
+    (3=2){}
+    // execute code one time for element
+    [1,2,3]{x|}
+    
+Obviusly, you can yourself create objects that can manage being called by functions.
+
+**5) Quick and dirty class definition and istances creation**
+
+Classes and istances are really really easy:
 
     point: {int x, y}
-    money: {int value, string currency}
-    kid: {int age, money purse}
+    point c: 3, -1
     
-You can include functions in classes with the functions' syntax.
+    money: {string currency, int value}
+    money ticket: '$', 20
+    
+Obviusly you can also add functions to classes:
 
     point: {int x, y |
         move: {
-            x++
-            y++
+            // no need to use self or this
+            x +: 1
+            y +: 1
         }
     }
     
+
+**6) Quick and dirty special args everywhere**
+
+    print('hello console!')
+    print('hello file!' | to: 'file.txt')
     
-To create a istance of a class, either call it or assign a variable:
+You can pass special arguments to functions, just like in many other programming languages, with (values | *args). This is althogh not limited just to round brackets. 
 
-    point c: 1, 2
-    money ticket: 20, '$'
-    kid Yara: 16, money(50, 'EUR')
+Let's say you want to get a the i-th value from a list, but returning 4 if i is outside of the list (like, 
+    [1,2,3][5] 
+or 
+    [1,2,3][-2]
+). You can add a special argument to the call:
+
+    list[i | standard: 4]
     
-In order to repeat code multiple times, use brackets after integers
+And you can even add them to functions that calls objects.
 
-    2{
-        print("This will be printed 2 times.")
-    }
+    // while i>0, subtract 1 to i
+    // without repeat: inf, this would be a normal if statement
+    (i>0){i: i-1 | repeat: inf}
     
-To write an if statement, use brackets after a boolean
-
-    (2>3) {
-        print("Math is clearly broken.")
-    }
-
-To iterate a list, use a function with a single argument after a list
-
-    [1,2,3,4,5] {int number |
-        print (number)
-    }
-
-Also, ranges syntax is start:stop[:step]
-
-    5:10
-    list int numbers: 2:10:2 
-    (1:100) {x | print(x)}
+    // obv you can also use int numbers here. This will subtract
+    // 5 to i unless it reaches 0s
+    (i>0){i: i-1 | repeat: 5}
     
-Here's an example where every number from 1 to 100 is printed 4 times if it's bigger than 12:
+**7) Small tasks made easy with the implicit variable**
 
-    (1:100) { int x |
-        (x > 12) {
-            4 {
-                print (x)
-            }
-        }
-    }
-    
-In order to join lists or strings use &
+This is the code to add 1 to a number:
 
-    'hello ' & 'world'
-    ['sugar'] & ['salt']
-    
-If a function expects just an argument but a list is given, the function will be called one time for every element in the list. Example: 
+    > add: {+1}
+    > add(3)
+    < 4
 
-    > hungry: { string x | print('Ate ' & x) }
-    
-    > hungry( ['chocolate', 'apple', 'banana'] )
-    
-    Ate chocolate
-    Ate apple
-    Ate banana
-    
-This also apply where there is more than one argument:
+And this is the code to check if a number is inside the range from 0 to 10:
 
-    > [1,2,3,4,5,6] + 1
-    [2,3,4,5,6,7]
+    > is_between: {0<<10}
+    > is_between(3)
+    < true
     
-    > [1,2,3] + [3,4,5]
-    [[4,5,6], [5,6,7], [6,7,8]]
+If there is a function without arguments called with just one argument, it will be set to 'implicit'. Also, if you put a symbol that clearly miss one argument, it will set the missing one to 'implicit'. This is because some functions, such as split, also require a small function. 
+Ad ex, this is how you split a string on spaces in nylo
+
+    split ('hello world') {=' '}
+
+The second argument is a quick function that checks if the argument it's called with is a space. If it returns true, split will split the string. This is a more complex example with split:
+
+    > split ('au3oe8eu4a9') {x | int (x | standard: 9) < 5}
+    < ['au', 'oe8eu', 'a9']
     
-Here is a bit more complicated example of that. Let's say you want to do this, per ex. to create a 50^ line:
+**8) Built-in argument iterations**
 
-    [[20*sin(50), 20*cos(50)], [40*sin(50)], [40*cos(50)]
+    > [1,2,3] + 1
+    < [2,3,4]
     
-This can be written in Nylo as
+When you call a function that expects a x-type argument with a list of x-type arguments, Nylo will call the function multiple times, one with every argument in the list and join the return values in a single list. Here's a simple example: (& is the join operator)
 
-    [20, 40] * [sin(50), cos(50)]
+    > fn: {int x | print('called with ' & x); return(x)}
+    > print( fn(1,2,3) )
+    < called with 1
+    < called with 2
+    < called with 3
+    < 1,2,3
     
-because Nylo will automatically do all the combinations (20*sin(50), 20*cos(50) etc) as the symbol * expected only one int argument on the left and on the right but found int lists in both.
+fn expected just an integer, but a list of integer was given. Therefore, the function was called multiple times. This is useful in many cases:
 
-
-Implict variables: when in a function no argument is specified and the function is called with one argument, it will be set as 'implicit' variable:
-
-    double: {implicit*2}
-    double(4) -> 8
+    > // sum expects two int, but two lists of integers were given.
+    > // therefore, sum will be called with every combination of them:
+    > [1,2,3,5] + [9,10]
+    < [[10,11,12,14], [11,12,13,15]]
     
-You can also use the implicit function, in most cases, leaving his space blank:
-
-    double: {*2}
-    double(4) -> 8
+    > [1,2,3] * [1, 10]
+    < [[1,2,3], [10,20,30]]
     
-2: Dealing with recursions and lists
+    > // getting multiple elements of a list at the same time!
+    > [1,2,3][0,2]
+    < [1,3]
+    
+    // printing multiple lines at the same times!
+    print('these are all', 'different lines!')
+    
+    // quick edit on big lists:
+    list: [1,2,3,4,5,6,7,8]
+    top: max(list)
+    list: {int x | x^2 / top^2} (list)
+    
+**Examples: dealing with recursions and lists**
 
 Useful functions:
 
@@ -140,8 +202,10 @@ Useful functions:
     example: [1,2,3,4](2)   --> [[1,2], [2,3], [3,4]]
     example: [1,2,3,4,5](3) --> [[1,2,3], [2,3,4], [3,4,5]]
     adding also a function after this, we can work on multiple element of the original list at the same time.
-    in the example we take every couple of successive numbers and we print the sum of them.
+    in the first example we take every couple of successive numbers and we print the sum of them.
     the output would be: 3 5 7 
+    you could achieve the same with a special argument:
+    [1,2,3,4] {a,b | print(a+b) | items: 2}
 
 Example 1: Pyramid of numbers 
 
@@ -183,7 +247,7 @@ Return the number of successive 0s and 1s for every sequence in a binary string
     get_binary: {list char[='0' or ='1'] binary|
         parsed: [0]  
         binary(2){left, right|
-            (left=right) {parsed[-1]+=1} 
+            (left=right) {parsed[-1]+:1} 
             else {parsed.append(0)}
         }
         return(parsed+1)
