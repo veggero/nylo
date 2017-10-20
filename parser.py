@@ -1,4 +1,4 @@
-# Here's a word to the wise: you should take some advice, for the nice guy always finish last.
+# by veggero 
 
 # import what I need
 import string
@@ -65,7 +65,7 @@ def parse(code):
                 value += code[j]
                 j += 1
             i[0] = j+1
-            return {'value': value, 'type': 'string'}
+            return definitions.create_istance('string', value)
 
         def parse_number():
             """
@@ -85,9 +85,9 @@ def parse(code):
                 value += code[i[0]]
                 i[0] += 1
             if '.' in value:
-                return {'value': float(value), 'type': 'float'}
+                return definitions.create_istance('float', float(value))
             else:
-                return {'value': int(value), 'type': 'int'}
+                return definitions.create_istance('int', int(value))
 
         def parse_bracket():
             """
@@ -113,7 +113,7 @@ def parse(code):
                 # so let's call the parse_value
                 if code[i[0]-1] == ':':
                     value = parse_value()
-                    return {'value': [key, value], 'type': 'couple'}
+                    return definitions.create_istance('couple', [key, value])
                 else:
                     # it was a list element so let's just return it
                     return key
@@ -127,7 +127,7 @@ def parse(code):
 
             while code[i[0]-1] != ']':
                 parsed.append(parse_key())
-            return {'value': parsed, 'type': 'list'}
+            return definitions.create_istance('list', parsed)
 
         def parse_function():
             """
@@ -143,17 +143,17 @@ def parse(code):
             if code[i[0]-1] == '|': 
                 args = parse_arguments(args)
                 parsed = parse_code_until('}')
-                return {'arguments': args, 'value': parsed, 'type': 'function'}
+                return definitions.create_istance('function', parsed, arguments = args)
             else:
                 # this is either a class or a function with no arguments
                 # if it's only variables and ',' and conditions it's a class
                 if all([parse['type']=='variable' or parse['value']==',' or parse['type']=='condition' for parse in args['value']]):
                     args = parse_arguments(args)
-                    return {'value': args, 'type': 'class'}
+                    return definitions.create_istance('class', args)
                 else:
                     # still RAW, so let's elab it
                     args = replace_symbols(args['value']) 
-                    return {'value': args, 'arguments': {'type': 'arguments', 'value': []}, 'type': 'function'}
+                    return definitions.create_istance('function', args, arguments = definitions.create_istance('arguments', []))
 
         def parse_arguments(code): #{int x, y, list float n |...}
             """
@@ -166,16 +166,17 @@ def parse(code):
             arguments, i = [[]], 0 
             
             while len(code) != i:
-
+                
+                # read first word and move pointer forward
+                name, i = code[i]['value'], i+1
+                
                 # this is because of things like int[=2]
                 # it's all because of them
-                if code[i]['type'] == 'condition':
-                    arguments[-1][-1].append(code[i])
+                args = []
+                while code[i]['type'] == 'condition':
+                    args.append(code[i])
                     i += 1
-                    while code[i]['value'] == ',':
-                        i += 1
                 
-                name, i = code[i]['value'], i+1
                 # now let's check if we ended on symbol or another variable
                 if code[i]['type'] == 'symbol':
                     # okay then, this is a name of a variable
@@ -187,7 +188,7 @@ def parse(code):
                         # of the last variable, so we take it
                         arguments[-1] = arguments[-2][:-1]
                     # we have the name of the variable, let's set it
-                    arguments[-1].append([name])
+                    arguments[-1].append([name]+args)
                     # this variable is all setted, so let's set up a new one
                     arguments.append([])
                     i += 1
@@ -195,11 +196,11 @@ def parse(code):
                     # we ended on a variable, wich means that what
                     # we have is actually a type, so we add it
                     # to the list of types
-                    arguments[-1].append([name])
+                    arguments[-1].append([name]+args)
 
             # delete last element, because it was a proto-variable -> [[], '']
             del arguments[-1]
-            return {'value': arguments, 'type': 'arguments'}
+            return definitions.create_istance('arguments', arguments)
 
 
         def parse_variable():
@@ -213,14 +214,14 @@ def parse(code):
             while code[i[0]] in string.ascii_letters + '_' + string.digits:
                 name += code[i[0]]
                 i[0] += 1
-            return {'value': name, 'type': 'variable'}
+            return definitions.create_istance('variable', name)
 
         def parse_symbol():
             """
             Parse a single character into a Nylo Symbol Object.
             """
             i[0] += 1
-            return {'value': code[i[0]-1], 'type': 'symbol'}
+            return definitions.create_istance('symbol', code[i[0]-1])
 
         def elab_assignation():
             """
@@ -232,15 +233,18 @@ def parse(code):
             # parsed again
             # also, we need to call parse_arguments with a code obj, so
             # let's create it
-            code = {'value': [], 'type': 'code'}
-            while ([{'type': ''}]+parsed)[-1]['type'] == 'variable' or ([{'value': ''}]+parsed)[-1]['value'] == ',' or ([{'type': ''}]+parsed)[-1]['type'] == 'condition':
+            nonlocal parsed
+            code = definitions.create_istance('code', [])
+            parsed = [{'type': '', 'value': ''}]+parsed
+            while parsed[-1]['type'] == 'variable' or parsed[-1]['value'] == ',' or parsed[-1]['type'] == 'condition':
                 code['value'].append(parsed[-1])
                 del parsed[-1]
+            del parsed[0]
             # we took them backward, so we need to reverse them
             code['value'].reverse()
             parsed.append(parse_arguments(code))
             # also, we also should parse the ': '
-            parsed.append({'value': ': ', 'type': 'symbol'})
+            parsed.append(definitions.create_istance('symbol', ": "))
             i[0] += 2
         
         def replace_symbols(parsed):
@@ -260,7 +264,7 @@ def parse(code):
                         # and remove it from parsed
                         del parsed[reading]
                         reading -= 1
-                        arguments = [{'type': 'code', 'value': []}]
+                        arguments = [definitions.create_istance('code', [])]
                         
                         if reading != -1:
                             # now loop all thru the elements before the symbol until we find a different symbol
@@ -268,7 +272,7 @@ def parse(code):
                                 
                                 # kill the symbols, we don't need them where we're going
                                 if parsed[reading]['type'] == 'symbol':
-                                    arguments.append({'type': 'code', 'value': []})
+                                    arguments.append(definitions.create_istance('code', []))
                                 else:
                                     arguments[-1]['value'].insert(0, parsed[reading])
                                 del parsed[reading]
@@ -277,17 +281,17 @@ def parse(code):
                                 if reading == -1:
                                     break
                         else:
-                            arguments[-1]['value'].append({'type': 'variable', 'value': 'implicit'})
+                            arguments[-1]['value'].append(definitions.create_istance('variable', 'implicit'))
                         
                         reading += 1
-                        arguments.append({'type': 'code', 'value': []})
+                        arguments.append(definitions.create_istance('code', []))
                         if reading != len(parsed):
                             # then loop forward and take every value after the symbol
                             while parsed[reading]['type'] != 'symbol' or parsed[reading] == symbol:
                                 
                                 # kill the symbols, we don't need them where we're going
                                 if parsed[reading]['type'] == 'symbol':
-                                    arguments.append({'type': 'code', 'value': []})
+                                    arguments.append(definitions.create_istance('code', []))
                                 else:
                                     arguments[-1]['value'].append(parsed[reading])
                                 del parsed[reading]
@@ -295,16 +299,16 @@ def parse(code):
                                 if reading == len(parsed):
                                     break
                         else:
-                            arguments[-1]['value'].append({'type': 'variable', 'value': 'implicit'})
+                            arguments[-1]['value'].append(definitions.create_istance('variable', 'implicit'))
                             
                         # get the function name
                         name = definitions.symbols[symbol['value']]
                         # make arguments a list
-                        arguments = {'type': 'list', 'value': arguments}
+                        arguments = definitions.create_istance('list', arguments)
                         # now we add the function as a variable
-                        parsed.insert(reading, {'value': name, 'type': 'variable'})
+                        parsed.insert(reading, definitions.create_istance('variable', name))
                         # and the arguments as code
-                        parsed.insert(reading+1, {'value': [arguments], 'type': 'code'})
+                        parsed.insert(reading+1, definitions.create_istance('code', [arguments]))
                         
                     reading += 1
             return parsed
@@ -351,7 +355,7 @@ def parse(code):
                     # skip initial [
                     i[0]+=1
                     # parse the condition until end
-                    parsed.append({'value': parse_code_until(']'), 'type': 'condition'})
+                    parsed.append(definitions.create_istance('condition', parse_code_until(']')))
                 else:
                     parsed.append(parse_bracket())
             elif code[i[0]] == '{':
@@ -396,6 +400,6 @@ def parse(code):
         # element in output 
         output = [j for i in output for j in i]
         
-        return {'value': output, 'type': 'code'}
+        return definitions.create_istance('code', output)
 
     return parse_code_until(')')

@@ -4,22 +4,27 @@
 # and swear to the user if there is any exception
 
 import parser
+import definitions
+import executer
+
 from pprint import pprint
+
+pprint(executer.execute('sum(1,2)'))
 
 assert parser.parse('"hello" \'world\'') == {'type': 'code', 'value': 
                                                  [{'type': 'string', 'value': 'hello'}, 
                                                   {'type': 'string', 'value': 'world'}]}
 
 assert parser.parse('-3 3 -3 -.3') == {'type': 'code', 'value': 
-                                [{'type': 'variable', 'value': 'sub'}, 
-                                {'type': 'code', 'value': 
-                                    [{'type': 'list', 'value': 
-                                        [{'type': 'code', 'value': 
-                                            [{'type': 'int', 'value': -3}, 
-                                            {'type': 'int', 'value': 3}]}, 
+                                        [{'type': 'variable', 'value': 'sub'}, 
                                         {'type': 'code', 'value': 
-                                            [{'type': 'int', 'value': 3}]}, 
-                                        {'type': 'code', 'value': [{'type': 'float', 'value': 0.3}]}]}]}]}
+                                            [{'type': 'list', 'value': 
+                                                [{'type': 'code', 'value': 
+                                                    [{'type': 'int', 'value': -3}, 
+                                                    {'type': 'int', 'value': 3}]}, 
+                                                {'type': 'code', 'value': 
+                                                    [{'type': 'int', 'value': 3}]}, 
+                                                {'type': 'code', 'value': [{'type': 'float', 'value': 0.3}]}]}]}]}
                                         
 # 1+1 is quite complicated. Surprise!
 assert parser.parse('1+1') == {'type': 'code', 'value': 
@@ -143,7 +148,7 @@ assert parser.parse('unnamed unnamed2 unnamed_cool_42') == {'value':
                                                                  {'value': 'unnamed2', 'type': 'variable'}, 
                                                                  {'value': 'unnamed_cool_42', 'type': 'variable'}], 
                                                             'type': 'code'}
-                                                            
+                                                                
 assert parser.parse('a, int x, y, list string k, z: 0, 0, 0, 0, 0') == {
     'type': 'code', 'value': 
         [{'type': 'variable', 'value': 'assign'}, 
