@@ -4,6 +4,15 @@ import parser
 def execute(raw_code):
     code = parser.parse(raw_code)
     return run(code, definitions.nylo)
+        
+    # if only one value is left, return it
+    if len(values) == 1:
+        return values[0]
+        
+    else:
+        # nothing to return actually. No 'return' function was
+        # called and we can't return all the values of every function
+        return definitions.create_istance('none', None)
 
 def run(code, variables):
     """
@@ -24,31 +33,35 @@ def run(code, variables):
         if parsed['type'] == 'code' and last['type'] == 'function':
             # delete from the values the function, and replace it with its output
             del values[-1]
-            values.append(call(last, parsed, variables))
+            values.append(call(last, run(parsed, variables), variables))
+            
+        # run round brackets
+        elif parsed['type'] == 'code':
+            values.append(run(parsed, variables))
+            
+        # also, run every element in a list, because they're all codes
+        elif parsed['type'] == 'list':
+            output = []
+            for element in parsed['value']:
+                output.append(run(element, variables))
+            values.append(definitions.create_istance('list',output))
             
         else:
             values.append(parsed)
         
         last = parsed
         
-    # if only one value is left, return it
     if len(values) == 1:
         return values[0]
-        
     else:
-        # nothing to return actually. No 'return' function was
-        # called and we can't return all the values of every function
-        return definitions.create_istance('none', None)
+        return None
 
 def call(function, arguments, variables):
     """
     Call a function with given arguments.
     """
-    # get the list of argument yet to run from code.value
-    arguments = arguments['value']
-        
     # assign variables to arguments
-    child_variables = assign(function['arguments'], arguments, variables)
+    child_variables = assign(function['arguments'], [arguments], variables)
     
     # run the code (either nylo code or python code)
     if function['value']['type'] == 'code':
@@ -75,7 +88,7 @@ def get_var_value(to_get_var, variables):
                 variables = variables['father']
             # no father? it's over. No such variable.
             else:
-                raise NameError
+                raise NameError(to_get_var)
                 
 def assign(args, args_values, variables):
     """
@@ -87,13 +100,13 @@ def assign(args, args_values, variables):
     if len(args['value']) == 1 and len(args_values)>1: 
         args_values = [definitions.create_istance('list', args_values)]
         
+    # {x|}([[[1,2,3]]]) --> {x|}([1,2,3])
+    while len(args['value']) == 1 and len(args_values)==1 and args_values[0]['type'] == 'list' and len(args_values[0]['value']) == 0:
+        args_values = args_values[0]['value']
+        
     #{a,b,c|}([1,2,3]) --> {a,b,c|}(1,2,3)
     while len(args['value']) > 1 and len(args_values)==1 and args_values[0]['type'] == 'list': 
         args_values = args_values[0]['value']
-        # if there are pieces of code in the splitted list, we need to run them
-        for i, arg in enumerate(args_values):
-            if arg['type'] == 'code':
-                args_values[i] = run(arg, variables)
         
     #{>1}(2) --> {x|x>1}(2)
     if len(args['value']) == 0 and len(args_values) == 1: 

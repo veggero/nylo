@@ -9,7 +9,7 @@ import executer
 
 from pprint import pprint
 
-pprint(executer.execute('sum(1,2)'))
+executer.execute('print(3*5-10/2)')
 
 assert parser.parse('"hello" \'world\'') == {'type': 'code', 'value': 
                                                  [{'type': 'string', 'value': 'hello'}, 
