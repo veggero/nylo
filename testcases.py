@@ -9,7 +9,7 @@ import executer
 
 from pprint import pprint
 
-executer.execute('print(3*5-10/2)')
+pprint(parser.parse('a: 3'))
 
 assert parser.parse('"hello" \'world\'') == {'type': 'code', 'value': 
                                                  [{'type': 'string', 'value': 'hello'}, 
@@ -123,20 +123,20 @@ assert parser.parse('{x|x*2}') == {'value':
 
 # {*2} is so short I can't honestly belive the output is 
 # so fucking long. Why is this so complicated...
-assert parser.parse('{*2}') == {'value': 
-                                    [{'value': 
-                                          [{'value': 'mol', 'type': 'variable'}, 
-                                           {'value': 
-                                                [{'type': 'list', 'value': 
-                                                      [{'type': 'code', 'value': 
-                                                            [{'type': 'variable', 'value': 'implicit'}]}, 
-                                                      {'type': 'code', 'value': 
-                                                           [{'value': 2, 'type': 'int'}]}]}], 
-                                            'type': 'code'}], 
-                                      'arguments': 
-                                          {'type': 'arguments', 'value': []}, 
-                                      'type': 'function'}], 
-                                'type': 'code'}
+assert parser.parse('{*2}') == {'type': 'code',
+                                'value': [{'arguments': {'type': 'arguments', 'value': []},
+                                            'type': 'function',
+                                            'value': {'type': 'code',
+                                                    'value': [{'type': 'variable', 'value': 'mol'},
+                                                                {'type': 'code',
+                                                                'value': [{'type': 'list',
+                                                                            'value': [{'type': 'code',
+                                                                                    'value': [{'type': 'variable',
+                                                                                                'value': 'implicit'}]},
+                                                                                    {'type': 'code',
+                                                                                    'value': [{'type': 'int',
+                                                                                                'value': 2}]}]}]}]}}]}
+
 
 assert parser.parse('{int x, y}') == {'type': 'code', 'value': 
                                           [{'type': 'class', 'value': 
@@ -175,59 +175,55 @@ assert parser.parse('a, int x, y, list string k, z: 0, 0, 0, 0, 0') == {
 # the block of text below
 #                                       ...unlucky, I can't be saved.
 assert parser.parse('int[=1] a: {list[len()=2] string x}') == {
-    'value': 
-        [{'value': 'assign', 'type': 'variable'}, 
-         {'value': 
-              [{'value': 
-                    [{'value': 
-                          [{'value': [[['int', 
-                                        {'value': 
-                                             {'value': 
-                                                  [{'value': 'equal', 'type': 'variable'}, 
-                                                   {'value': 
-                                                        [{'value': 
-                                                              [{'value': 
-                                                                    [{'value': 'implicit', 'type': 'variable'}], 
-                                                                'type': 'code'}, 
-                                                              {'value': 
-                                                                   [{'value': 1, 'type': 'int'}], 
-                                                                'type': 'code'}], 
-                                                          'type': 'list'}], 
-                                                    'type': 'code'}], 
-                                              'type': 'code'}, 
-                                         'type': 'condition'}], ['a']]], 'type': 'arguments'}], 
-                        'type': 'code'}, 
-                     {'value': 
-                          [{'value': 
-                                {'value': [[['list', 
-                                    {'value': 
-                                         {'value': 
-                                              [{'value': 'equal', 'type': 'variable'}, 
-                                               {'value': 
-                                                    [{'value': 
-                                                          [{'value': 
-                                                                [{'value': 'len', 'type': 'variable'}, 
-                                                                 {'value': [], 'type': 'code'}], 
-                                                            'type': 'code'}, 
-                                                            {'value': 
-                                                                 [{'value': 2, 'type': 'int'}], 
-                                                             'type': 'code'}], 
-                                                      'type': 'list'}], 
-                                                'type': 'code'}], 
-                                          'type': 'code'}, 
-                                     'type': 'condition'}], ['string'], ['x']]], 'type': 'arguments'}, 
-                            'type': 'class'}], 
-                     'type': 'code'}], 
-                 'type': 'list'}], 
-            'type': 'code'}], 
-        'type': 'code'}
+ 'type': 'code',
+ 'value': [{'type': 'variable', 'value': 'assign'},
+           {'type': 'code',
+            'value': [{'type': 'list',
+                       'value': [{'type': 'code',
+                                  'value': [{'type': 'arguments',
+                                             'value': [[['int',
+                                                         {'type': 'condition',
+                                                          'value': {'type': 'code',
+                                                                    'value': [{'type': 'variable',
+                                                                               'value': 'equal'},
+                                                                              {'type': 'code',
+                                                                               'value': [{'type': 'list',
+                                                                                          'value': [{'type': 'code',
+                                                                                                     'value': [{'type': 'variable',
+                                                                                                                'value': 'implicit'}]},
+                                                                                                    {'type': 'code',
+                                                                                                     'value': [{'type': 'int',
+                                                                                                                'value': 1}]}]}]}]}}],
+                                                        ['a']]]}]},
+                                 {'type': 'code',
+                                  'value': [{'type': 'class',
+                                             'value': {'type': 'arguments',
+                                                       'value': [[['list',
+                                                                   {'type': 'condition',
+                                                                    'value': {'type': 'code',
+                                                                              'value': [{'type': 'variable',
+                                                                                         'value': 'equal'},
+                                                                                        {'type': 'code',
+                                                                                         'value': [{'type': 'list',
+                                                                                                    'value': [{'type': 'code',
+                                                                                                               'value': [{'type': 'variable',
+                                                                                                                          'value': 'len'},
+                                                                                                                         {'type': 'code',
+                                                                                                                          'value': []}]},
+                                                                                                              {'type': 'code',
+                                                                                                               'value': [{'type': 'int',
+                                                                                                                          'value': 2}]}]}]}]}}],
+                                                                  ['string'],
+                                                                  ['x']]]}}]}]}]}]}
+
 
 # small actual script from early documentation
 assert parser.parse('''pyramid: {list int layer| 
     (len(layer)=1) {return([layer])} 
     next_layer: layer(2)sum 
     return([layer] & pyramid(next_layer))
-}''') == {'type': 'code',
+}''') == {
+ 'type': 'code',
  'value': [{'type': 'variable', 'value': 'assign'},
            {'type': 'code',
             'value': [{'type': 'list',
@@ -258,13 +254,14 @@ assert parser.parse('''pyramid: {list int layer|
                                                                  {'arguments': {'type': 'arguments',
                                                                                 'value': []},
                                                                   'type': 'function',
-                                                                  'value': [{'type': 'variable',
-                                                                             'value': 'return'},
-                                                                            {'type': 'code',
-                                                                             'value': [{'type': 'list',
-                                                                                        'value': [{'type': 'code',
-                                                                                                   'value': [{'type': 'variable',
-                                                                                                              'value': 'layer'}]}]}]}]},
+                                                                  'value': {'type': 'code',
+                                                                            'value': [{'type': 'variable',
+                                                                                       'value': 'return'},
+                                                                                      {'type': 'code',
+                                                                                       'value': [{'type': 'list',
+                                                                                                  'value': [{'type': 'code',
+                                                                                                             'value': [{'type': 'variable',
+                                                                                                                        'value': 'layer'}]}]}]}]}},
                                                                  {'type': 'variable',
                                                                   'value': 'assign'},
                                                                  {'type': 'code',
@@ -298,3 +295,4 @@ assert parser.parse('''pyramid: {list int layer|
                                                                                                              {'type': 'code',
                                                                                                               'value': [{'type': 'variable',
                                                                                                                          'value': 'next_layer'}]}]}]}]}]}]}}]}]}]}]}
+
