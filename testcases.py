@@ -9,7 +9,7 @@ import executer
 
 from pprint import pprint
 
-pprint(parser.parse('a: 3'))
+pprint(parser.parse('>0 and <255'))
 
 assert parser.parse('"hello" \'world\'') == {'type': 'code', 'value': 
                                                  [{'type': 'string', 'value': 'hello'}, 

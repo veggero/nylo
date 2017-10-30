@@ -1,4 +1,5 @@
 import executer
+import definitions
 
 print('Command Line for Nylo.\n')
 
@@ -6,10 +7,12 @@ while 1:
 
     try:
         code = input('nylo> ')
-        output = executer.execute(code)['value']
+        output = executer.execute(code)
+        output = executer.call(definitions.nylo['to_str'], output, definitions.nylo)
+        if 'value' in output:
+            if type(output['value']) == type(str()) and output['value'] != 'none':
+                print( '<- '+output['value'] )
         
-        if output != None:
-            print('<- '+str(output))
         
     except KeyboardInterrupt:
         print('\n')

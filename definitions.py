@@ -1,4 +1,5 @@
 import functools
+import executer
 
 def create_instance(type, value, **kwargs):
     """
@@ -18,13 +19,17 @@ symbols = {
     '*': 'mol',
     ',': 'make_list',
     '&': 'join',
+    'and': 'and',
+    'or': 'or',
     '=': 'equal',
     ': ': 'assign',
     '.': 'get_propriety',
+    '>': 'greater_than',
+    '<': 'less_than',
     'is_a': 'is_instance',
 }
 
-symbols_priority = ['*', '/', '+', '-', '&', '=', ',',': ', '.']
+symbols_priority = ['*', '/', '+', '-', '&', '=', '>', '<', 'and', 'or', 'is_a', ',',': ', '.']
 
 def nylo_sum(numbers):
     if numbers['type'] == 'list':
@@ -76,6 +81,56 @@ def nylo_print(items):
     else:
         print(items['value'])
 
+def nylo_repr_int(to_repr):
+    return create_instance('string', str(to_repr['value']))
+    
+def nylo_repr_str(to_repr):
+    # already a string. 
+    return to_repr
+    
+def nylo_repr_list(to_repr):
+    str_elements = []
+    for element in to_repr['value']:
+        str_elements.append(executer.call(nylo['to_str'], element, nylo))
+    output = '['+', '.join(str_elements)+']'
+    return create_instance('string', str(output))
+    
+def nylo_repr_none(to_repr):
+    return create_instance('string', 'none')
+    
+def nylo_repr_bool(to_repr):
+    return create_instance('bool', str(to_repr['value']).lower())
+    
+def nylo_repr_general(to_repr):
+    return create_instance('string', 'object with proprieties '+', '.join(list(to_repr)))
+    
+def nylo_and(booleans):
+    return create_instance('bool', all([s_bool['value'] for s_bool in booleans['value']]))
+    
+def nylo_or(booleans):
+    return create_instance('bool', all([s_bool['value'] for s_bool in booleans['value']]))
+
+def nylo_greater_than(integers):
+    integers = integers['value']
+    for i in range(len(integers)-1):
+        if integers[i]['value']<=integers[i+1]['value']:
+            return create_instance('bool', False)
+    return create_instance('bool', True)
+
+def nylo_less_than(integers):
+    integers = integers['value']
+    for i in range(len(integers)-1):
+        if integers[i]['value']>=integers[i+1]['value']:
+            return create_instance('bool', False)
+    return create_instance('bool', True)
+
+def nylo_equal(integers):
+    integers = integers['value']
+    for i in range(len(integers)-1):
+        if integers[i]['value']!=integers[i+1]['value']:
+            return create_instance('bool', False)
+    return create_instance('bool', True)
+    
 nylo = {
     # CLASSES
     
@@ -103,10 +158,49 @@ nylo = {
                                             create_instance('python_code', 'definitions.create_instance("bool", type(thing)==type(str()))')
                                         )
                                            ], ['value']]])),
+    'none': create_instance('class', 
+                            create_instance('arguments',
+                                           [[['thing', 
+                                        create_instance('condition',
+                                            create_instance('python_code', 'definitions.create_instance("bool", type(thing)==type(None))')
+                                        )
+                                           ], ['value']]])),
+    'bool': create_instance('class', 
+                            create_instance('arguments',
+                                           [[['thing', 
+                                        create_instance('condition',
+                                            create_instance('python_code', 'definitions.create_instance("bool", type(thing)==type(True))')
+                                        )
+                                           ], ['value']]])),
     
     # OVERLOADED FUNCTIONS
     
-    
+    'to_str': create_instance('overloaded_functions', [
+        create_instance('function', 
+            create_instance('python_code', 'definitions.nylo_repr_list(to_repr)'),
+            arguments = create_instance('arguments', [[['list'], ['thing'], ['to_repr']]])
+        ),
+        create_instance('function', 
+            create_instance('python_code', 'definitions.nylo_repr_int(to_repr)'),
+            arguments = create_instance('arguments', [[['int'], ['to_repr']]])
+        ),
+        create_instance('function', 
+            create_instance('python_code', 'definitions.nylo_repr_str(to_repr)'),
+            arguments = create_instance('arguments', [[['str'], ['to_repr']]])
+        ),
+        create_instance('function', 
+            create_instance('python_code', 'definitions.nylo_repr_none(to_repr)'),
+            arguments = create_instance('arguments', [[['none'], ['to_repr']]])
+        ),
+        create_instance('function', 
+            create_instance('python_code', 'definitions.nylo_repr_bool(to_repr)'),
+            arguments = create_instance('arguments', [[['bool'], ['to_repr']]])
+        ),
+        create_instance('function', 
+            create_instance('python_code', 'definitions.nylo_repr_general(to_repr)'),
+            arguments = create_instance('arguments', [[['to_repr']]])
+        ),
+    ]),
     
     # FUNCTIONS
     
@@ -125,13 +219,30 @@ nylo = {
     'make_list': create_instance('function', 
                            create_instance('python_code', 'definitions.nylo_list(items)'),
                            arguments = create_instance('arguments', [[['items']]])),
+                           
+    'greater_than': create_instance('function', 
+                          create_instance('python_code', 'definitions.nylo_greater_than(numbers)'),
+                          arguments = create_instance('arguments', [[['numbers']]])),
+    'less_than': create_instance('function', 
+                          create_instance('python_code', 'definitions.nylo_less_than(numbers)'),
+                          arguments = create_instance('arguments', [[['numbers']]])),
+    'equal': create_instance('function', 
+                          create_instance('python_code', 'definitions.nylo_equal(numbers)'),
+                          arguments = create_instance('arguments', [[['numbers']]])),
+    'and': create_instance('function', 
+                          create_instance('python_code', 'definitions.nylo_and(numbers)'),
+                          arguments = create_instance('arguments', [[['numbers']]])),
+    'or': create_instance('function', 
+                          create_instance('python_code', 'definitions.nylo_or(numbers)'),
+                          arguments = create_instance('arguments', [[['numbers']]])),
+    
     'print': create_instance('function', 
                             create_instance('python_code', 'definitions.nylo_print(items)'),
                            arguments = create_instance('arguments', [[['items']]])),
     
     'is_instance': create_instance('function', 
-                                 create_instance('python_code', 'is_instance(instance, class["value"], child_variables)'),
-                            arguments = create_instance('arguments', [[['instance']], [['class']]])),
+                                 create_instance('python_code', 'is_instance(instance, a_class["value"], child_variables)'),
+                            arguments = create_instance('arguments', [[['instance']], [['a_class']]])),
     'assign': create_instance('function', 
                               create_instance('nylo_var_assignation', ''),
                               arguments = create_instance('arguments', [[['f_arguments']], [['value']]])),

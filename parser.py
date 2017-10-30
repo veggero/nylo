@@ -274,7 +274,7 @@ def parse(code):
                             # now loop all thru the elements before the symbol until we find a different symbol
                             while parsed[reading]['type'] != 'symbol' or parsed[reading] == symbol:
                                 
-                                # kill the symbols, we don't need them where we're going
+                                # kill the symbols, we don't need them where we're going # excuse me, what!?
                                 if parsed[reading]['type'] == 'symbol':
                                     arguments.append(definitions.create_instance('code', []))
                                 else:
@@ -285,6 +285,8 @@ def parse(code):
                                 if reading == -1:
                                     break
                         else:
+                            arguments[-1]['value'].append(definitions.create_instance('variable', 'implicit'))
+                        if len(arguments[-1]['value']) == 0:
                             arguments[-1]['value'].append(definitions.create_instance('variable', 'implicit'))
                         
                         reading += 1
@@ -303,6 +305,8 @@ def parse(code):
                                 if reading == len(parsed):
                                     break
                         else:
+                            arguments[-1]['value'].append(definitions.create_instance('variable', 'implicit'))
+                        if len(arguments[-1]['value']) == 0:
                             arguments[-1]['value'].append(definitions.create_instance('variable', 'implicit'))
                             
                         # get the function name

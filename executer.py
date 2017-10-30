@@ -19,13 +19,20 @@ def run(code, variables):
     
     # iter all of parsed in code
     for parsed in code['value']:
+    
+        if not 'type' in parsed:
+            parsed['type'] = 'unknow'
+    
         # if it's a variable replace it with his value
         if parsed['type'] == 'variable':
             parsed = get_var_value(parsed, variables)
-    
+        
+        if not 'type' in parsed:
+            parsed['type'] = 'unknow'
+            
         # if this is a code, and obj before was a function,
         # let's hella call that function
-        if parsed['type'] == 'code' and last['type'] in 'function overloaded_functions':
+        if parsed['type'] == 'code' and last['type'] in 'function overloaded_functions class':
             # delete from the values the function, and replace it with its output
             del values[-1]
             values.append(call(last, run(parsed, variables), variables))
@@ -60,19 +67,32 @@ def call(function, arguments, variables):
     # check if they're overloaded functions
     if function['type'] == 'overloaded_functions':
         accettable_functions = []
+        general = None
         # check which functions are accetable
         for function in function['value']:
-            try:
-                assign(function['arguments'], [arguments], variables)
-                accettable_functions.append(function)
-            except TypeError:
-                pass
+            # if no args are specified, this is a general function
+            if all([len(x)==1 for x in function['arguments']['value']]):
+                general = function
+            else:
+                try:
+                    assign(function['arguments'], [arguments], variables)
+                    accettable_functions.append(function)
+                except TypeError:
+                    pass
         # we selected the function we wanted?
         if len(accettable_functions) == 1:
             function = accettable_functions[0]
         else:
-            # well shit
-            raise TypeError('Unclear overloaded functions called')
+            # there is at least one function that apply in *any* case?
+            if general:
+                function = general
+            else:
+                # well shit
+                raise TypeError('Unclear overloaded functions called')
+        
+    # also, classes can be called in order to make instances
+    elif function['type'] == 'class': 
+        return assign(function['value'], [arguments], variables)
     
     # assign variables to arguments
     child_variables = assign(function['arguments'], [arguments], variables)
@@ -85,7 +105,14 @@ def call(function, arguments, variables):
     elif function['value']['type'] == 'nylo_var_assignation':
         f_arguments = child_variables['f_arguments']
         to_assign_value = child_variables['value']
-        new_dictionary = assign(f_arguments, [to_assign_value] if not to_assign_value["type"]=="list" else to_assign_value["value"], variables)
+        if 'type' in to_assign_value:
+            if not to_assign_value['type'] == 'list':
+                to_assign_value = [to_assign_value]
+            else:
+                to_assign_value = to_assign_value['value']
+        else:
+            to_assign_value = [to_assign_value]
+        new_dictionary = assign(f_arguments, to_assign_value, variables)
         for key in new_dictionary:
             # we have to check if there is already a function
             # if so, and if we are assigning another function, we need
@@ -187,13 +214,14 @@ def assign(args, args_values, variables):
     if len(args['value']) == 1 and len(args_values)>1: 
         args_values = [definitions.create_instance('list', args_values)]
         
-    # {x|}([[[1,2,3]]]) --> {x|}([1,2,3])
-    while len(args['value']) == 1 and len(args_values)==1 and args_values[0]['type'] == 'list' and len(args_values[0]['value']) == 0:
-        args_values = args_values[0]['value']
-        
-    #{a,b,c|}([1,2,3]) --> {a,b,c|}(1,2,3)
-    while len(args['value']) > 1 and len(args_values)==1 and args_values[0]['type'] == 'list': 
-        args_values = args_values[0]['value']
+    if 'type' in args_values[0]:
+        # {x|}([[[1,2,3]]]) --> {x|}([1,2,3])
+        while len(args['value']) == 1 and len(args_values)==1 and args_values[0]['type'] == 'list' and len(args_values[0]['value']) == 0:
+            args_values = args_values[0]['value']
+            
+        #{a,b,c|}([1,2,3]) --> {a,b,c|}(1,2,3)
+        while len(args['value']) > 1 and len(args_values)==1 and args_values[0]['type'] == 'list': 
+            args_values = args_values[0]['value']
         
     #{>1}(2) --> {x|x>1}(2)
     if len(args['value']) == 0 and len(args_values) == 1: 
