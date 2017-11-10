@@ -50,7 +50,7 @@ def parse(string):
 
 def new_code(behaviour):
     # Create the behaviour_list_object object
-    behaviour_list_object = nydict(tuple(enumerate(behaviour)))
+    behaviour_list_object = nydict(tuple([(new_int(couple[0]), couple[1]) for couple in enumerate(behaviour)]))
         
     # And set it as propriety of the nylo code object
     nylo_code_object = nydict(((new_str('behaviour'), behaviour_list_object),))
@@ -61,6 +61,9 @@ def new_str(string):
 
 def new_int(integer):
     return nydict((('py_int', integer),))
+
+def new_float(floating_point):
+    return nydict((('py_float', floating_point),))
  
 """
 #   STRING TO * PARSERS   #
@@ -108,13 +111,11 @@ def string_to_code(code, start_index = 0, until = ')', start_character = '('):
         # ' or " is a string
         elif code[index] == '"' or code[index] == "'":
             parsed, index = string_to_string(code, index)
-        # There are actually 3 cases for numbers:
+        # There are actually 2 cases for numbers:
         # 12 31 41 53 (starting with digits)
-        # -12 -42 .2 .5 (starting with ".-" and then a digit)
-        # -.3 -.5 (a "-", a "." and then a digit)
+        # .3 .5 (starting with a ".")
         elif ((code[index] in digits) or
-              (code[index] in '-.' and code[index+1] in digits) or
-              (code[index] == '.' and code[index+1] == '-' and code[index+2] in digits)):
+              (code[index] == '.' and code[index+1] in digits)):
             parsed, index = string_to_number(code, index)
         # Then variables are anything that starts with a ascii-letter .
         # This means variables such as "_a" or "__thing" are not allowed.
@@ -132,7 +133,7 @@ def string_to_code(code, start_index = 0, until = ')', start_character = '('):
                 # it's not, it's probably a space or a tab, kill it with fire
                 parsed = None
             # Weird case for symbols, successive symbols should be joined
-            # together. We also should check first is there is a symbol before
+            # together. We also should check first is there is a symbol before.
             elif len(every_parsed) > 0:
                 if new_str('symb') in every_parsed[-1]:
                     # Get the old and the new symbols.
@@ -159,4 +160,42 @@ def string_to_code(code, start_index = 0, until = ')', start_character = '('):
     index += 1
     return new_code(every_parsed), index
 
-print(parse('(())()'))
+def string_to_string(code, index):
+    """
+    Parse a string to a string. It's confusing, but just thing about it.
+    What this does is making "happy" a happy string object.
+    """
+    # Remember with what char we started, either ' or ".
+    # Obv it's also the char where we should end at.
+    end_character, start_character_index = code[index], index
+    # Go after it
+    index += 1
+    # Loop until closing character.
+    while code[index] != end_character:
+        index += 1
+    # Parse the string to a string object.
+    string = code[start_character_index + 1 : index]
+    string_object = new_str(string)
+    # Ignore the ending character.
+    index += 1
+    return string_object, index
+
+def string_to_number(code, index):
+    # Save the start index.
+    start_index = index
+    # Loop until first non-numeric character.
+    while code[index] in digits + '.':
+        # If this is the second '.', we should stop
+        if code[index] == '.' and '.' in code[start_index:index]:
+            break
+        index += 1
+    # Save the number
+    str_number = code[start_index:index]
+    # and make it an object
+    if '.' in str_number:
+        number = new_float(float(str_number))
+    else:
+        number = new_int(int(str_number))
+    return number, index
+
+print(parse('(1.23)1'))
