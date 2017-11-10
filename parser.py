@@ -14,9 +14,9 @@ argument: {list variable variables}
 variable: {str name, condition cond}
 symbol: {str symb}
 
-str: {python_str string}
-int: {python_int integer}
-float: {python_float floating_point}
+str: {py_str string}
+int: {py_int integer}
+float: {py_float floating_point}
 python_function: {function}
 python_string: {pystr}
 python_int: {pyint}
@@ -25,20 +25,8 @@ python_float: {pyflt}
 
 from string import *
 from collections import namedtuple
+from definitions import nydict 
 import definitions
-
-def new_code(behaviour):
-    # Create the behaviour_list_object object
-    behaviour_list_object = frozenset(enumerate(behaviour))
-    # And set it as propriety of the nylo code object
-    nylo_code_object = frozenset((new_str('behaviour'), behaviour_list_object))
-    return nylo_code_object
-
-def new_str(string):
-    return frozenset(('string', frozenset(('pystr', string))))
-
-def new_int(integer):
-    return frozenset(('integer', frozenset(('pyint', integer))))
 
 def parse(string):
     """
@@ -53,6 +41,33 @@ def parse(string):
         raise SyntaxError("Unmatched closed round bracket at character "+str(index-1))
     else:
         return parsed
+
+"""
+#  ISTANCES INITIALIZATORS   #
+# they take values and make  #
+#    nydicts out of them     #
+"""
+
+def new_code(behaviour):
+    # Create the behaviour_list_object object
+    behaviour_list_object = nydict(tuple(enumerate(behaviour)))
+        
+    # And set it as propriety of the nylo code object
+    nylo_code_object = nydict(((new_str('behaviour'), behaviour_list_object),))
+    return nylo_code_object
+
+def new_str(string):
+    return nydict((('py_string', string),))
+
+def new_int(integer):
+    return nydict((('py_int', integer),))
+ 
+"""
+#   STRING TO * PARSERS   #
+# they take a string and  #
+# create the right object #
+#       out of it         #
+"""
  
 def string_to_code(code, start_index = 0, until = ')', start_character = '('):
     """
@@ -107,20 +122,26 @@ def string_to_code(code, start_index = 0, until = ')', start_character = '('):
             parsed, index = string_to_variable(code, index)
             # Weird case for variables: they could be actually symbols - we
             # just have to check if they're a symbol and if so replace them
-            if parsed['name']['value'] in symbols:
+            if parsed[new_str('name')][new_str('value')] in symbols:
                 parsed = variable_to_symbol(parsed)
         # Anything else is a symbol.
         else:
             parsed, index = string_to_symbol(code, index)
             # Let's check if it's actually a symbol
-            if not parsed['symb']['value'] in definitions.symbols:
+            if not parsed[new_str('symb')][new_str('value')] in definitions.symbols:
                 # it's not, it's probably a space or a tab, kill it with fire
                 parsed = None
             # Weird case for symbols, successive symbols should be joined
             # together. We also should check first is there is a symbol before
             elif len(every_parsed) > 0:
-                if 'symb' in every_parsed[-1]:
-                    every_parsed[-1]['symb']['value'] = every_parsed[-1]['symb']['value'] + parsed['symb']['value']
+                if new_str('symb') in every_parsed[-1]:
+                    # Get the old and the new symbols.
+                    old_symb = every_parsed[-1][new_str('symb')][new_str('value')]
+                    new_symb = parsed[new_str('symb')][new_str('value')]
+                    # Set them.
+                    every_parsed[-1] = every_parsed[-1]['symb']('value', old_symb+new_symb)
+                    # We don't need the new symbol anymore, as we added it
+                    # to the old one.
                     parsed = None
         
         # Okay! Add what we parsed to every_parsed list
