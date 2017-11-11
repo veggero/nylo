@@ -1,4 +1,4 @@
-symbols = {'+', '-', '/', '*', ',', '&', 'and', 'or', '=', ': ', '.', '>', '<', 'is_a',}
+symbols = {'+', '-', '/', '*', ',', '&', 'and', 'or', '=', ': ', '.', '>', '<', 'is_a', '\n'}
 
 class nydict:
     """
@@ -26,7 +26,7 @@ class nydict:
         for couple in self.value:
             if couple[0] == key:
                 return couple[1]
-        raise IndexError(key) # newfags can't avoid indexerror
+        raise IndexError("Key "+str(key)+" can't be found in nydict "+str(self)) # newfags can't avoid indexerror
     
     def __contains__(self, key):
         return any([couple[0]==key for couple in self.value])
