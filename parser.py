@@ -273,7 +273,7 @@ def string_to_list(code, index):
         # Split the key and the value
         key, value = split(element, new_sym(':'))
         # Add them to the list of key values
-        protodict.append((key, value))
+        protodict.append((new_list(key), new_list(value)))
     # If no break was called, this is officially a dict.
     # Create it.
     else:
@@ -297,4 +297,4 @@ def split(alist, value):
     output.append(tuple(going))
     return output
 
-print(parse('["age", "sex"]'))
+print(parse('["symb": "+"]+'))
