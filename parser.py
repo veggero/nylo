@@ -6,7 +6,8 @@ give credits to me tho. Aka this is cc-nc. Have fun!
 This parser target is to take a formatted_text with nylo_formatting and make it an nylo object. Built-in classes
 made by this are:
 
-code: {list command behaviour}
+code: {list codeline lines}
+codeline: {list command behaviour}
 command: {function behaviour, list args}
 function: {code/python_function behaviour, argument args}
 condition: {list function conditions}
@@ -31,15 +32,10 @@ def parse(string):
     """
     Parse a string to a Nylo Object.
     """
-    # Add start and end of code
-    string = '('+string+'\n)'
+    # Add end of code
+    string += '\n'
     # Convert the string to code
-    parsed, index = string_to_code(string)
-    # Check that everything has been parsed
-    if len(string) != index:
-        raise SyntaxError("Unmatched closed round bracket at character "+str(index-1))
-    else:
-        return parsed
+    return string_to_code(string)
 
 """
 #  ISTANCES INITIALIZATORS   #
@@ -47,7 +43,10 @@ def parse(string):
 #    nydicts out of them     #
 """
 
-def new_code(behaviour):
+def new_code(lines):
+    return nydict(((new_str('lines'), new_list(lines)),))
+
+def new_codeline(behaviour):
     # Create the behaviour_list_object object
     behaviour_list_object = new_list(behaviour)
         
@@ -86,8 +85,23 @@ def new_var(variable):
 # create the right object #
 #       out of it         #
 """
- 
-def string_to_code(code, start_index = 0, until = ')', start_character = '(', returnpylist = False):
+
+def string_to_code(code):
+    """
+    This will loop string_to_codeline until every line
+    is read.
+    """
+    index = 0
+    parsed = []
+    while index != len(code):
+        # Read a single line.
+        parsed_line, index = string_to_codeline(code, index, '\n', '')
+        # Store the parsed values.
+        parsed.append(parsed_line)
+    return new_code(parsed)
+    
+
+def string_to_codeline(code, start_index = 0, until = ')', start_character = '(', returnpylist = False):
     """
     Parse a string and output its code and the index of ending.
     start_index --> start parsing from a character in the code.
@@ -97,18 +111,17 @@ def string_to_code(code, start_index = 0, until = ')', start_character = '(', re
     """
     # Set the index
     index = start_index
-    # We are going to parse all the components of code, and
-    # put them all in a list called every_parsed
-    every_parsed = list()
-    # First of all, skip the character at start, if there is
-    # one:
+    # First of all, skip the character at start, if there is one:
     if code[index] in start_character:
         index += 1
+    # We will store every element we'll parse in
+    # every_parsed.
+    every_parsed = [];
         
     """
     TYPES TO PARSE
     - function  (string_to_function)    {}      
-    - list      (string_to_list)        []
+    - list      (string_to_list)        []                      X
     - code      (string_to_code)        ()                      X
     - comment   (ignore_comment)        //\n                    X
     - ml_cmment (ignore_ml_comment)     /**/                    X
@@ -130,7 +143,7 @@ def string_to_code(code, start_index = 0, until = ')', start_character = '(', re
             parsed, index = string_to_list(code, index)
         # ( is a code
         elif code[index] == '(':
-            parsed, index = string_to_code(code, index)
+            parsed, index = string_to_codeline(code, index)
         # // is a comment
         elif code[index:index+2] == '//':
             parsed, index = ignore_comment(code, index)
@@ -165,14 +178,14 @@ def string_to_code(code, start_index = 0, until = ')', start_character = '(', re
             # Unrecognized character
             raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
         
-        # Okay! Add what we parsed to every_parsed list
+        # Okay! Add what we parsed to the every_parsed list
         # We need to check *if* we parsed something, things like comments
         # might not parse anything at all
         if parsed != None:
             every_parsed.append(parsed)
             
         # Also check if we are at the end of the file and we didn't find
-        # any until character
+        # any ending character
         if index == len(code):
             raise SyntaxError("Unmatched open "+start_character)
             
@@ -182,7 +195,7 @@ def string_to_code(code, start_index = 0, until = ')', start_character = '(', re
     if returnpylist:
         return every_parsed, index
     
-    return new_code(every_parsed), index
+    return new_codeline(every_parsed), index
 
 def string_to_string(code, index):
     """
@@ -254,8 +267,8 @@ def string_to_variable(code, index):
     return variable_obj, index
 
 def string_to_list(code, index):
-    # Parse the list with string_to_code.
-    parsed_list, index = string_to_code(code, index, ']', '[', True)
+    # Parse the list with string_to_codeline.
+    parsed_list, index = string_to_codeline(code, index, ']', '[', True)
     # Split the elements at ','s
     pylist = split(parsed_list, new_sym(','))
     # [] might be also a dict, we need to loop thru it and
@@ -281,6 +294,11 @@ def string_to_list(code, index):
 
     return output_obj, index
 
+def string_to_function(code, index):
+    """
+    Take a string of a funcion and make a funct object.
+    """
+
 """
 # LITTLE USEFUL FUNCTIONS #
 """
@@ -297,4 +315,4 @@ def split(alist, value):
     output.append(tuple(going))
     return output
 
-print(parse('["symb": "+"]+'))
+print(parse('''1+1'''))
