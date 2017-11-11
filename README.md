@@ -2,7 +2,7 @@ Welcome to the Nylo's documentation!
 
 ![](https://github.com/veggero/nylo/blob/master/images/NyloBanner.png?raw=true)
 
-**Why should I use Nylo?** Because it feels better than having sex.
+**Why should I use Nylo?** Because it feels better than having loli sex.
 
 **What's Nylo's target?** To change the world.
 
