@@ -6,8 +6,8 @@ give credits to me tho. Aka this is cc-nc. Have fun!
 This parser target is to take a formatted_text with nylo_formatting and make it an nylo object. Built-in classes
 made by this are:
 
-code: {list codeline lines}
-codeline: {list command behaviour}
+multiline_code: {list code lines}
+code: {list command behaviour}
 command: {function behaviour, list args}
 function: {code/python_function behaviour, argument args}
 condition: {list function conditions}
@@ -30,12 +30,14 @@ import definitions
 
 def parse(string):
     """
-    Parse a string to a Nylo Object.
+    Parse a string to Nylo Objects.
     """
-    # Add end of code
-    string += '\n'
+    # Add end of codeg
+    string += ')'
     # Convert the string to code
-    return string_to_code(string)
+    parsed, index = string_to_multiline_code(string, until = ')')
+
+    return parsed
 
 """
 #  ISTANCES INITIALIZATORS   #
@@ -43,25 +45,11 @@ def parse(string):
 #    nydicts out of them     #
 """
 
-def new_code(lines):
+def new_multiline_code(lines):
     return nydict(((new_str('lines'), new_list(lines)),))
 
-def new_codeline(behaviour):
-    # Create the behaviour_list_object object
-    behaviour_list_object = new_list(behaviour)
-        
-    # And set it as propriety of the nylo code object
-    nylo_code_object = nydict(((new_str('behaviour'), behaviour_list_object),))
-    return nylo_code_object
-
-def new_list(todo_list):
-    # [1] = 1 actually
-    if len(todo_list) == 1: 
-        return todo_list[0]
-    return nydict(tuple(
-        [(new_int(couple[0]), couple[1]) 
-         for couple 
-         in enumerate(todo_list)]))
+def new_code(behaviour):
+    return nydict(((new_str('behaviour'), new_list(behaviour)),))
 
 def new_str(string):
     return nydict((('py_string', string),))
@@ -78,46 +66,62 @@ def new_sym(symbol):
 def new_var(variable):
     return nydict(((new_str('name'), new_str(variable)),
                    (new_str('condition'), new_list([]))))
+
+#def new_fun(arguments, code):
+#    return nydict(((new_str('args'), new_str(variable)),
+#                   (new_str('behaviour'), code)))
+
+def new_list(todo_list):
+    # [1] = 1 actually
+    if len(todo_list) == 1: 
+        return todo_list[0]
+    return nydict(tuple(
+        [(new_int(couple[0]), couple[1]) 
+         for couple 
+         in enumerate(todo_list)]))
  
 """
 #   STRING TO * PARSERS   #
 # they take a string and  #
 # create the right object #
 #       out of it         #
-"""
+"""    
 
-def string_to_code(code):
-    """
-    This will loop string_to_codeline until every line
-    is read.
-    """
-    index = 0
-    parsed = []
-    while index != len(code):
-        # Read a single line.
-        parsed_line, index = string_to_codeline(code, index, '\n', '')
-        # Store the parsed values.
-        parsed.append(parsed_line)
-    return new_code(parsed)
-    
-
-def string_to_codeline(code, start_index = 0, until = ')', start_character = '(', returnpylist = False):
-    """
-    Parse a string and output its code and the index of ending.
-    start_index --> start parsing from a character in the code.
-    until --> when the until character is met, parsing will stop
-    start_character --> will ignore the specified start_character at given index if there is one
-    returnpylist --> return just code as python list
-    """
-    # Set the index
-    index = start_index
+def parse_until(code, index, until = '', ignore = ''):
     # First of all, skip the character at start, if there is one:
-    if code[index] in start_character:
-        index += 1
     # We will store every element we'll parse in
     # every_parsed.
     every_parsed = [];
         
+    # Loop thrugh code until we find the until character
+    while code[index] != until:
+        
+        # Check if the character to parse is not to ignore
+        if not code[index] == ignore:
+            # Parse the right type, depending on the character
+            parsed, index = parse_right_argument(code, index)
+        
+            # Okay! Add what we parsed to the every_parsed list
+            # We need to check *if* we parsed something, things like comments
+            # might not parse anything at all
+            if parsed != None:
+                every_parsed.append(parsed)
+                
+        else:
+            # Move over
+            index += 1
+            
+        # Also check if we are at the end of the file and we didn't find
+        # any ending character
+        if index == len(code):
+            raise SyntaxError("Unmatched open bracket.")
+            
+    # Eat the last character
+    index += 1
+    
+    return every_parsed, index
+
+def parse_right_argument(code, index):
     """
     TYPES TO PARSE
     - function  (string_to_function)    {}      
@@ -130,72 +134,78 @@ def string_to_codeline(code, start_index = 0, until = ')', start_character = '('
     - variable  (string_to_variable)     ascii_letters          X
     - symbol    (string_to_symbol)      in definitions.symbols  X
     """
-        
-    # Loop thrugh code until we find the until character
-    while code[index] != until:
-        # Now, we must get what we are parsing by giving a look to
-        # the character we're examinating.
-        # { is a function
-        if code[index] == '{':
-            parsed, index = string_to_function(code, index)
-        # [ is a list
-        elif code[index] == '[':
-            parsed, index = string_to_list(code, index)
-        # ( is a code
-        elif code[index] == '(':
-            parsed, index = string_to_codeline(code, index)
-        # // is a comment
-        elif code[index:index+2] == '//':
-            parsed, index = ignore_comment(code, index)
-        # /* is a multiline_comment
-        elif code[index:index+2] == '/*':
-            parsed, index = ignore_multiline_comment(code, index)
-        # ' or " is a string
-        elif code[index] == '"' or code[index] == "'":
-            parsed, index = string_to_string(code, index)
-        # There are actually 2 cases for numbers:
-        # 12 31 41 53 (starting with digits)
-        # .3 .5 (starting with a ".")
-        elif ((code[index] in digits) or
-              (code[index] == '.' and code[index+1] in digits)):
-            parsed, index = string_to_number(code, index)
-        # Then variables are anything that starts with a ascii-letter .
-        # This means variables such as "_a" or "__thing" are not allowed.
-        elif code[index] in ascii_letters:
-            parsed, index = string_to_variable(code, index)
-            # Weird case for variables: they could be actually symbols - we
-            # just have to check if they're a symbol and if so replace them
-            if parsed[new_str('name')]['py_string'] in definitions.symbols:
-                parsed = variable_to_symbol(parsed)
-        # Check if it's a symbol.
-        elif code[index] in definitions.symbols:
-            parsed, index = string_to_symbol(code, index)
-        # ignore spaces and tabs 
-        elif code[index] in ' \t':
-            index += 1
-            parsed = None
-        else:
-            # Unrecognized character
-            raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
-        
-        # Okay! Add what we parsed to the every_parsed list
-        # We need to check *if* we parsed something, things like comments
-        # might not parse anything at all
-        if parsed != None:
-            every_parsed.append(parsed)
-            
-        # Also check if we are at the end of the file and we didn't find
-        # any ending character
-        if index == len(code):
-            raise SyntaxError("Unmatched open "+start_character)
-            
-    # Eat the last character
-    index += 1
+    # Now, we must get what we are parsing by giving a look to
+    # the character we're examinating.
+    # { is a function
+    if code[index] == '{':
+        parsed, index = string_to_function(code, index)
+    # [ is a list
+    elif code[index] == '[':
+        parsed, index = string_to_list(code, index)
+    # ( is a code
+    elif code[index] == '(':
+        # get past the (
+        index += 1
+        parsed, index = string_to_code(code, index)
+    # // is a comment
+    elif code[index:index+2] == '//':
+        parsed, index = ignore_comment(code, index)
+    # /* is a multiline_comment
+    elif code[index:index+2] == '/*':
+        parsed, index = ignore_multiline_comment(code, index)
+    # ' or " is a string
+    elif code[index] == '"' or code[index] == "'":
+        parsed, index = string_to_string(code, index)
+    # There are actually 2 cases for numbers:
+    # 12 31 41 53 (starting with digits)
+    # .3 .5 (starting with a ".")
+    elif ((code[index] in digits) or
+            (code[index] == '.' and code[index+1] in digits)):
+        parsed, index = string_to_number(code, index)
+    # Then variables are anything that starts with a ascii-letter .
+    # This means variables such as "_a" or "__thing" are not allowed.
+    elif code[index] in ascii_letters:
+        parsed, index = string_to_variable(code, index)
+        # Weird case for variables: they could be actually symbols - we
+        # just have to check if they're a symbol and if so replace them
+        if parsed[new_str('name')]['py_string'] in definitions.symbols:
+            parsed = variable_to_symbol(parsed)
+    # Check if it's a symbol.
+    elif code[index] in definitions.symbols:
+        parsed, index = string_to_symbol(code, index)
+    # ignore spaces and tabs 
+    elif code[index] in ' \t':
+        index += 1
+        parsed = None
+    else:
+        # Unrecognized character
+        raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
+    return parsed, index
+
+def string_to_code(code, index):
+    """
+    Parse a string and output its code and the index of ending.
+    """
+    # Parse until the until character
+    parsed, index = parse_until(code, index, ')', ignore = '\n')
     
-    if returnpylist:
-        return every_parsed, index
+    return new_code(parsed), index
+
+def string_to_multiline_code(code, index = 0, until = ')'):
+    """
+    Parse a string and output its code and the index of ending.
+    """
+    # Parse until the until character
+    parsed, index = parse_until(code, index, until)
     
-    return new_codeline(every_parsed), index
+    # Split code at new lines
+    parsed = split(parsed, new_sym('\n'))
+    
+    # Replace every code with its code nylo object
+    for i in range(len(parsed)):
+        parsed[i] = new_code(parsed[i])
+        
+    return new_multiline_code(parsed), index
 
 def string_to_string(code, index):
     """
@@ -267,8 +277,10 @@ def string_to_variable(code, index):
     return variable_obj, index
 
 def string_to_list(code, index):
-    # Parse the list with string_to_codeline.
-    parsed_list, index = string_to_codeline(code, index, ']', '[', True)
+    # Get past the [
+    index += 1
+    # Parse the list with string_to_code.
+    parsed_list, index = parse_until(code, index, ']')
     # Split the elements at ','s
     pylist = split(parsed_list, new_sym(','))
     # [] might be also a dict, we need to loop thru it and
@@ -298,6 +310,20 @@ def string_to_function(code, index):
     """
     Take a string of a funcion and make a funct object.
     """
+    # {x|x*2} / {*2} / {x}
+    # Get over the '{'
+    index += 1
+    # Parse the first argument until | or }
+    first_argument = string_to_codeline(code, index, '|}')
+    # Check if last character is a | (if so
+    # there's a another argument)
+    if code[index-1] == '|':
+        # This is a classical function.
+        second_argument = string_to_codeline(code, index, '}')
+        # First of all, let's make the first argument an
+        # actual function argument.
+        first_argument = code_to_argument(first_argument)
+        return new_fun(first_argument, second_argument)
 
 """
 # LITTLE USEFUL FUNCTIONS #
@@ -315,4 +341,4 @@ def split(alist, value):
     output.append(tuple(going))
     return output
 
-print(parse('''1+1'''))
+print(parse('''[1,2,(1+1)]'''))
