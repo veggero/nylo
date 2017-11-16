@@ -1,4 +1,5 @@
 symbols = {'+', '-', '/', '*', ',', '&', 'and', 'or', '=', ': ', '.', '>', '<', 'is_a', '\n', ':'}
+arguments = {'int', 'str', 'float', 'list', 'dict'}
 
 class nydict:
     """

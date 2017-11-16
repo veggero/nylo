@@ -32,74 +32,100 @@ def parse(string):
     """
     Parse a string to Nylo Objects.
     """
-    # Add end of codeg
+    # Add end of code
     string += ')'
     # Convert the string to code
-    parsed, index = string_to_multiline_code(string, until = ')')
+    parsed, index = parse_string_to_multiline_code(string, until = ')')
 
     return parsed
-
-"""
-#  ISTANCES INITIALIZATORS   #
-# they take values and make  #
-#    nydicts out of them     #
-"""
-
-def new_multiline_code(lines):
-    return nydict(((new_str('lines'), new_list(lines)),))
-
-def new_code(behaviour):
-    return nydict(((new_str('behaviour'), new_list(behaviour)),))
-
-def new_str(string):
-    return nydict((('py_string', string),))
-
-def new_int(integer):
-    return nydict((('py_int', integer),))
-
-def new_float(floating_point):
-    return nydict((('py_float', floating_point),))
-
-def new_sym(symbol):
-    return nydict(((new_str('symb'), new_str(symbol)),))
-
-def new_var(variable):
-    return nydict(((new_str('name'), new_str(variable)),
-                   (new_str('condition'), new_list([]))))
-
-#def new_fun(arguments, code):
-#    return nydict(((new_str('args'), new_str(variable)),
-#                   (new_str('behaviour'), code)))
-
-def new_list(todo_list):
-    # [1] = 1 actually
-    if len(todo_list) == 1: 
-        return todo_list[0]
-    return nydict(tuple(
-        [(new_int(couple[0]), couple[1]) 
-         for couple 
-         in enumerate(todo_list)]))
  
 """
-#   STRING TO * PARSERS   #
-# they take a string and  #
-# create the right object #
-#       out of it         #
+#   GENERAL PURPOSE PARSERS      #
+#  they do not take a string and #
+#  create out of it a type, but  #
+#  they're more general purpose  #
 """    
 
-def parse_until(code, index, until = '', ignore = ''):
+def call_right_parser(code, index):
+    """
+    TYPES TO PARSE
+    - function  (parse_string_to_function)    {}
+    - list      (parse_string_to_list)        []
+    - code      (parse_string_to_code)        ()
+    - comment   (ignore_comment)        //\n
+    - ml_cmment (ignore_ml_comment)     /**/
+    - string    (parse_string_to_string)      ''
+    - number    (parse_string_to_number)      . digits
+    - variable  (parse_string_to_variable)     ascii_letters
+    - symbol    (parse_string_to_symbol)      in definitions.symbols
+    """
+    # Now, we must get what we are parsing by giving a look to
+    # the character we're examinating.
+    # { is a function
+    if code[index] == '{':
+        parsed, index = parse_string_to_function(code, index)
+    # [ is a list
+    elif code[index] == '[':
+        parsed, index = parse_string_to_list(code, index)
+    # ( is a code
+    elif code[index] == '(':
+        parsed, index = parse_string_to_code(code, index)
+    # // is a comment
+    elif code[index:index+2] == '//':
+        parsed, index = ignore_comment(code, index)
+    # /* is a multiline_comment
+    elif code[index:index+2] == '/*':
+        parsed, index = ignore_multiline_comment(code, index)
+    # ' or " is a string
+    elif code[index] == '"' or code[index] == "'":
+        parsed, index = parse_string_to_string(code, index)
+    # There are actually 2 cases for numbers:
+    # 12 31 41 53 (starting with digits)
+    # .3 .5 (starting with a ".")
+    elif ((code[index] in digits) or (code[index] == '.' and code[index+1] in digits)):
+        parsed, index = parse_string_to_number(code, index)
+    # Anything in the symbols set, is a symbol.
+    elif code[index] in definitions.symbols:
+        parsed, index = parse_string_to_symbol(code, index)
+    # Then variables are anything that starts with a ascii-letter .
+    # This means variables such as "_a" or "__thing" are not allowed.
+    elif code[index] in ascii_letters:
+        start_index = index
+        string, index = parse_string(code, index)
+        # The string is either a symbol, a argument, or a variable
+        # If it's in symbols, it's a symbol
+        if string in definitions.symbols:
+            parsed = new_sym(string)
+        # If it's in arguments, it's a arg
+        elif string in definitions.arguments:
+            # If it's an argument, we actually have to parse
+            # the whole thing, even after this single word
+            parsed, index = parse_string_to_argument(code, start_index)
+        # Any other case, it's a variable
+        else:
+            parsed = new_var(string)
+    # ignore spaces and tabs 
+    elif code[index] in ' \t':
+        index += 1
+        parsed = None
+    else:
+        # Unrecognized character
+        raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
+    return parsed, index
+
+def parse_code_until(code, index, until = '', ignore = ''):
     # First of all, skip the character at start, if there is one:
     # We will store every element we'll parse in
     # every_parsed.
     every_parsed = [];
         
     # Loop thrugh code until we find the until character
-    while code[index] != until:
+    while not code[index] in until:
         
         # Check if the character to parse is not to ignore
-        if not code[index] == ignore:
+        if not code[index] in ignore:
             # Parse the right type, depending on the character
-            parsed, index = parse_right_argument(code, index)
+            parsed, index = call_right_parser(code, index)
         
             # Okay! Add what we parsed to the every_parsed list
             # We need to check *if* we parsed something, things like comments
@@ -121,82 +147,40 @@ def parse_until(code, index, until = '', ignore = ''):
     
     return every_parsed, index
 
-def parse_right_argument(code, index):
-    """
-    TYPES TO PARSE
-    - function  (string_to_function)    {}      
-    - list      (string_to_list)        []                      X
-    - code      (string_to_code)        ()                      X
-    - comment   (ignore_comment)        //\n                    X
-    - ml_cmment (ignore_ml_comment)     /**/                    X
-    - string    (string_to_string)      ''                      X
-    - number    (string_to_number)      . digits                X
-    - variable  (string_to_variable)     ascii_letters          X
-    - symbol    (string_to_symbol)      in definitions.symbols  X
-    """
-    # Now, we must get what we are parsing by giving a look to
-    # the character we're examinating.
-    # { is a function
-    if code[index] == '{':
-        parsed, index = string_to_function(code, index)
-    # [ is a list
-    elif code[index] == '[':
-        parsed, index = string_to_list(code, index)
-    # ( is a code
-    elif code[index] == '(':
-        # get past the (
+def parse_string(code, index):
+    # Rembember the start.
+    start_index = index
+    # Go on until space.
+    while code[index] in digits + ascii_letters + '_':
         index += 1
-        parsed, index = string_to_code(code, index)
-    # // is a comment
-    elif code[index:index+2] == '//':
-        parsed, index = ignore_comment(code, index)
-    # /* is a multiline_comment
-    elif code[index:index+2] == '/*':
-        parsed, index = ignore_multiline_comment(code, index)
-    # ' or " is a string
-    elif code[index] == '"' or code[index] == "'":
-        parsed, index = string_to_string(code, index)
-    # There are actually 2 cases for numbers:
-    # 12 31 41 53 (starting with digits)
-    # .3 .5 (starting with a ".")
-    elif ((code[index] in digits) or
-            (code[index] == '.' and code[index+1] in digits)):
-        parsed, index = string_to_number(code, index)
-    # Then variables are anything that starts with a ascii-letter .
-    # This means variables such as "_a" or "__thing" are not allowed.
-    elif code[index] in ascii_letters:
-        parsed, index = string_to_variable(code, index)
-        # Weird case for variables: they could be actually symbols - we
-        # just have to check if they're a symbol and if so replace them
-        if parsed[new_str('name')]['py_string'] in definitions.symbols:
-            parsed = variable_to_symbol(parsed)
-    # Check if it's a symbol.
-    elif code[index] in definitions.symbols:
-        parsed, index = string_to_symbol(code, index)
-    # ignore spaces and tabs 
-    elif code[index] in ' \t':
-        index += 1
-        parsed = None
-    else:
-        # Unrecognized character
-        raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
-    return parsed, index
+    # Return the string and the final index
+    return code[start_index:index], index
+ 
+"""
+#   STRING TO * PARSERS   #
+# they take a string and  #
+# create the right object #
+#       out of it         #
+"""    
 
-def string_to_code(code, index):
+def parse_string_to_code(code, index):
     """
     Parse a string and output its code and the index of ending.
     """
+    # get past the (
+    index += 1
+    
     # Parse until the until character
-    parsed, index = parse_until(code, index, ')', ignore = '\n')
+    parsed, index = parse_code_until(code, index, ')', ignore = '\n\t ')
     
     return new_code(parsed), index
 
-def string_to_multiline_code(code, index = 0, until = ')'):
+def parse_string_to_multiline_code(code, index = 0, until = ')'):
     """
     Parse a string and output its code and the index of ending.
     """
     # Parse until the until character
-    parsed, index = parse_until(code, index, until)
+    parsed, index = parse_code_until(code, index, until)
     
     # Split code at new lines
     parsed = split(parsed, new_sym('\n'))
@@ -207,7 +191,7 @@ def string_to_multiline_code(code, index = 0, until = ')'):
         
     return new_multiline_code(parsed), index
 
-def string_to_string(code, index):
+def parse_string_to_string(code, index):
     """
     Parse a string to a string. It's confusing, but just thing about it.
     What this does is making "happy" a happy string object.
@@ -227,7 +211,7 @@ def string_to_string(code, index):
     index += 1
     return string_object, index
 
-def string_to_number(code, index):
+def parse_string_to_number(code, index):
     # Save the start index.
     start_index = index
     # Loop until first non-numeric character.
@@ -259,28 +243,18 @@ def ignore_multiline_comment(code, index):
     index += 2
     return None, index
 
-def string_to_symbol(code, index):
+def parse_string_to_symbol(code, index):
     # Create the symbol object
     symbol_obj = new_sym(code[index])
     # Move index past the symbol
     index += 1
     return symbol_obj, index
 
-def string_to_variable(code, index):
-    # Read every character until non-ascii-letters one.
-    # Numbers and _ in variables are OK, so we get past them too.
-    start_index = index
-    while code[index] in digits + ascii_letters + '_':
-        index += 1
-    variable_str = code[start_index:index]
-    variable_obj = new_var(variable_str)
-    return variable_obj, index
-
-def string_to_list(code, index):
+def parse_string_to_list(code, index):
     # Get past the [
     index += 1
-    # Parse the list with string_to_code.
-    parsed_list, index = parse_until(code, index, ']')
+    # Parse the list with parse_string_to_code.
+    parsed_list, index = parse_code_until(code, index, ']')
     # Split the elements at ','s
     pylist = split(parsed_list, new_sym(','))
     # [] might be also a dict, we need to loop thru it and
@@ -292,9 +266,9 @@ def string_to_list(code, index):
     for element in pylist:
         if not new_sym(':') in element:
             # Not a dict.
-            # Create the list object
-            output_obj = new_list([new_list(element) for element in pylist])
-            break
+            # This should be a list
+            return new_list([new_list(element) for element in pylist]), index
+        
         # Split the key and the value
         key, value = split(element, new_sym(':'))
         # Add them to the list of key values
@@ -302,11 +276,9 @@ def string_to_list(code, index):
     # If no break was called, this is officially a dict.
     # Create it.
     else:
-        output_obj = nydict(protodict)
+        return nydict(protodict), index
 
-    return output_obj, index
-
-def string_to_function(code, index):
+def parse_string_to_function(code, index):
     """
     Take a string of a funcion and make a funct object.
     """
@@ -314,20 +286,91 @@ def string_to_function(code, index):
     # Get over the '{'
     index += 1
     # Parse the first argument until | or }
-    first_argument = string_to_codeline(code, index, '|}')
-    # Check if last character is a | (if so
-    # there's a another argument)
-    if code[index-1] == '|':
-        # This is a classical function.
-        second_argument = string_to_codeline(code, index, '}')
-        # First of all, let's make the first argument an
-        # actual function argument.
-        first_argument = code_to_argument(first_argument)
-        return new_fun(first_argument, second_argument)
+    first_argument, index = parse_code_until(code, index, '|}')
+    # Check if last character is } or |
+    if code[index-1] == '}':
+        # Okay. This is either a class {list int x} or 
+        # a function with no arguments {*2}
+        if could_be_argument(first_argument):
+            pass
+    else:
+        pass
+
+
+"""
+#  ISTANCES INITIALIZATORS   #
+# they take values and make  #
+#    nydicts out of them     #
+"""
+
+def new_multiline_code(lines):
+    return nydict(((new_str('lines'), new_list(lines)),))
+
+def new_code(behaviour):
+    return nydict(((new_str('behaviour'), new_list(behaviour)),))
+
+def new_str(string):
+    return nydict((('py_string', string),))
+
+def new_int(integer):
+    return nydict((('py_int', integer),))
+
+def new_float(floating_point):
+    return nydict((('py_float', floating_point),))
+
+def new_sym(symbol):
+    return nydict(((new_str('symb'), new_str(symbol)),))
+
+def new_var(variable):
+    return nydict(((new_str('name'), new_str(variable)),
+                   (new_str('condition'), new_list([]))))
+
+def new_fun(arguments, code):
+    return nydict(((new_str('args'), arguments),
+                   (new_str('behaviour'), code)))
+
+def new_arg(variables):
+    return nydict(((new_str('variables'), variables),))
+
+def new_list(todo_list):
+    # [1] = 1 actually
+    if len(todo_list) == 1: 
+        return todo_list[0]
+    return nydict(tuple(
+        [(new_int(couple[0]), couple[1]) 
+         for couple 
+         in enumerate(todo_list)]))
 
 """
 # LITTLE USEFUL FUNCTIONS #
 """
+
+def could_be_argument(parsed):
+    # Example argument: list[len()>2] int x, y
+    index = 0
+    # iter on parsed
+    while index != len(parsed):
+        element = parsed[index]
+        
+        # First is always a variable
+        if new_str('name') in element and new_str('condition') in element:
+            index += 1
+        else:
+            # No variable? No party.
+            return False
+        
+        # There might be a function after that
+        if new_str('behaviour') in element and new_str('args') in element:
+            index += 1
+        
+        # Or a comma to end it all
+        elif new_str('symbol') in element:
+            if element[new_str('symbol')]['py_string'] == ',':
+                index += 1
+            else:
+                # Symbol that's not ,? not an argument
+                return False
+    return True
 
 def split(alist, value):
     output = []
@@ -341,4 +384,4 @@ def split(alist, value):
     output.append(tuple(going))
     return output
 
-print(parse('''[1,2,(1+1)]'''))
+print(parse('''print(1 is_a 2)'''))
