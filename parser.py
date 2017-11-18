@@ -1,5 +1,5 @@
 """
-This is the Zero parser for Nylo, wrote by Veggero. This file has been created on the fifth of November.
+This is the Parser Zero for Nylo, wrote by Veggero. This file has been created on the fifth of November.
 You can absolutely what you want with this file BUT you can't monetize it. Sorry. You don't have to
 give credits to me tho. Aka this is cc-nc. Have fun!
 
@@ -19,6 +19,22 @@ python_function: {function}
 python_string: {pystr}
 python_int: {pyint}
 python_float: {pyflt}
+"""
+
+"""
+TODO - b4 Nylo Zero
+- Replacing symbols
+
+TODO - b4 Nylo One
+- Indent control
+- Binary, oct, ascii/utf string/number declarations
+- Special arguments
+- Special chars in strings
+
+TODO - should be okay but not sure
+- Functions (done? executer-side?)
+- Arguments (executer-side?)
+- Calling (executer-side?)
 """
 
 from string import *
@@ -97,10 +113,6 @@ def call_right_parser(code, index):
         if string in definitions.symbols:
             parsed = new_sym(string)
         # If it's in arguments, it's a arg
-        elif string in definitions.arguments:
-            # If it's an argument, we actually have to parse
-            # the whole thing, even after this single word
-            parsed, index = parse_string_to_argument(code, start_index)
         # Any other case, it's a variable
         else:
             parsed = new_var(string)
@@ -287,15 +299,30 @@ def parse_string_to_function(code, index):
     index += 1
     # Parse the first argument until | or }
     first_argument, index = parse_code_until(code, index, '|}')
-    # Check if last character is } or |
-    if code[index-1] == '}':
-        # Okay. This is either a class {list int x} or 
-        # a function with no arguments {*2}
-        if could_be_argument(first_argument):
-            pass
+    # Check if there is more to parse, like in {x | x+1}
+    if code[index-1] == '|':
+        # There is a second argument. Parse it.
+        second_argument, index = parse_code_until(code, index, '}')
+        # In this case, first argument is the function's argument,
+        # and the second one is the behaviour
+        args, behaviour = new_code(first_argument), new_code(second_argument)
     else:
-        pass
+        # If function ends on a }, the only argument is code
+        args, behaviour = new_code([]), new_code(first_argument)
+        
+    return new_fun(args, behaviour), index
 
+def parse_string_to_argument(code, index):
+    argument = []
+    conditions = []
+    # Parse the first word
+    word, index = parse_string(code, index)
+    # [ is a condition, like in int[=2] x
+    if code[index] == '[':
+        condition, index = parse_code_until(code, index, ']', ignore = '\n\t ')
+    # Comma to separate 'em all.
+    if code[index] == ',':
+        new_var(word)
 
 """
 #  ISTANCES INITIALIZATORS   #
@@ -321,9 +348,9 @@ def new_float(floating_point):
 def new_sym(symbol):
     return nydict(((new_str('symb'), new_str(symbol)),))
 
-def new_var(variable):
+def new_var(variable, conds=[]):
     return nydict(((new_str('name'), new_str(variable)),
-                   (new_str('condition'), new_list([]))))
+                   (new_str('condition'), new_list(conds))))
 
 def new_fun(arguments, code):
     return nydict(((new_str('args'), arguments),
@@ -345,33 +372,6 @@ def new_list(todo_list):
 # LITTLE USEFUL FUNCTIONS #
 """
 
-def could_be_argument(parsed):
-    # Example argument: list[len()>2] int x, y
-    index = 0
-    # iter on parsed
-    while index != len(parsed):
-        element = parsed[index]
-        
-        # First is always a variable
-        if new_str('name') in element and new_str('condition') in element:
-            index += 1
-        else:
-            # No variable? No party.
-            return False
-        
-        # There might be a function after that
-        if new_str('behaviour') in element and new_str('args') in element:
-            index += 1
-        
-        # Or a comma to end it all
-        elif new_str('symbol') in element:
-            if element[new_str('symbol')]['py_string'] == ',':
-                index += 1
-            else:
-                # Symbol that's not ,? not an argument
-                return False
-    return True
-
 def split(alist, value):
     output = []
     going = []
@@ -384,4 +384,4 @@ def split(alist, value):
     output.append(tuple(going))
     return output
 
-print(parse('''print(1 is_a 2)'''))
+print(parse('''{x | x+1}'''))
