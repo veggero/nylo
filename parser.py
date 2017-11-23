@@ -265,30 +265,35 @@ def parse_string_to_symbol(code, index):
 def parse_string_to_list(code, index):
     # Get past the [
     index += 1
-    # Parse the list with parse_string_to_code.
-    parsed_list, index = parse_code_until(code, index, ']')
-    # Split the elements at ','s
-    pylist = split(parsed_list, new_sym(','))
-    # [] might be also a dict, we need to loop thru it and
-    # check if there are ':'s, and if so make a dict.
-    # We still don't know if it's a dict, but we need to get
-    # an empity list to store couples that will be the dict
-    # just for sure.
-    protodict = []
-    for element in pylist:
-        if not new_sym(':') in element:
-            # Not a dict.
-            # This should be a list
-            return new_list([new_list(element) for element in pylist]), index
-        
-        # Split the key and the value
-        key, value = split(element, new_sym(':'))
-        # Add them to the list of key values
-        protodict.append((new_list(key), new_list(value)))
-    # If no break was called, this is officially a dict.
-    # Create it.
+    # Create the list of the bracket items.
+    py_bracket_items = []
+    # Parse code until every item separator (,)
+    # until we find end of list (]).
+    while code[index-1] != ']':
+        key, index = parse_code_until(code, index, until=':,]')
+        key = new_code(key)
+        # If we ended on a :, this is actually a dictionary
+        if code[index-1] == ':':
+            # If we still though this was a list, convert it
+            # to a dict
+            if type(py_bracket_items) == list:
+                # TODO if len(py_bracket_items) exception should be raised
+                py_bracket_items = {}
+            # parse the value
+            value, index = parse_code_until(code, index, until=',]')
+            value = new_code(value)
+            py_bracket_items[key] = value
+        # TODO elif type(py_bracket_items) == dict should raise exception
+        else:
+            # this is a list element, add it
+            py_bracket_items.append(key)
+            
+    # if it was a list
+    if type(py_bracket_items) == list:
+        return new_list(py_bracket_items), index
+    # else it was a dict
     else:
-        return nydict(protodict), index
+        return new_dict(py_bracket_items), index
 
 def parse_string_to_function(code, index):
     """
@@ -358,7 +363,7 @@ def new_fun(arguments, code):
 
 def new_arg(variables):
     return nydict(((new_str('variables'), variables),))
-
+                  
 def new_list(todo_list):
     # [1] = 1 actually
     if len(todo_list) == 1: 
@@ -367,6 +372,9 @@ def new_list(todo_list):
         [(new_int(couple[0]), couple[1]) 
          for couple 
          in enumerate(todo_list)]))
+        
+def new_dict(todo_dict):
+    return nydict(tuple(todo_dict.items()))
 
 """
 # LITTLE USEFUL FUNCTIONS #
@@ -384,4 +392,5 @@ def split(alist, value):
     output.append(tuple(going))
     return output
 
-print(parse('''{x | x+1}'''))
+print(parse('''[0:1]'''))
+
