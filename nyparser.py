@@ -23,7 +23,6 @@ python_float: {pyflt}
 
 """
 TODO - b4 Nylo Zero
-- Replacing symbols
 
 TODO - b4 Nylo One
 - Indent control
