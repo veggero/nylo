@@ -1,5 +1,31 @@
-symbols = {'+', '-', '/', '*', ',', '&', 'and', 'or', '=', ': ', '.', '>', '<', 'is_a', '\n', ':'}
-arguments = {'int', 'str', 'float', 'list', 'dict'}
+symbols = {'+', '-', '/', '*', ',', '&', 'and', 'or', '=', ': ', '.', '>', '<', 'is_a',  ':'}
+
+symbols_parsing_order = [
+    {'.'},
+    {':'},
+    {'*', '/'},
+    {'+', '-'},
+    {'&', 'and', 'or', '=', '<', '>', 'is_a'},
+    {': ', ','}
+    ]
+
+unary_symbols = {'-'}
+
+symbols_functions = {'+': 'sum',
+                     '-': 'sub',
+                     '/': 'div',
+                     '*': 'mul',
+                     ',': 'to_list',
+                     '&': 'join',
+                     'and': 'all',
+                     'or': 'any',
+                     '=': 'equals',
+                     ': ': 'set',
+                     '.': 'get_propriety',
+                     '>': 'greater_than',
+                     '<': 'less_than',
+                     'is_a': 'is_instance',
+                     ':': 'range'}
 
 class nydict:
     """

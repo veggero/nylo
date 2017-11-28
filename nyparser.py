@@ -15,7 +15,7 @@ argument: {list variable variables}
 variable: {str name, condition cond}
 symbol: {str symb}
 
-python_function: {function}
+python_function: {function} 
 python_string: {pystr}
 python_int: {pyint}
 python_float: {pyflt}
@@ -49,9 +49,11 @@ def parse(string):
     Parse a string to Nylo Objects.
     """
     # Add end of code
-    string += ')'
+    string += '\n)'
     # Convert the string to code
     parsed, index = parse_string_to_multiline_code(string, until = ')')
+    
+    # TODO index != len(code) should raise exception
 
     return parsed
  
@@ -125,7 +127,7 @@ def call_right_parser(code, index):
         raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
     return parsed, index
 
-def parse_code_until(code, index, until = '', ignore = ''):
+def parse_code_until(code, index, until = '', ignore = '\n\t'):
     # First of all, skip the character at start, if there is one:
     # We will store every element we'll parse in
     # every_parsed.
@@ -135,25 +137,25 @@ def parse_code_until(code, index, until = '', ignore = ''):
     while not code[index] in until:
         
         # Check if the character to parse is not to ignore
-        if not code[index] in ignore:
-            # Parse the right type, depending on the character
-            parsed, index = call_right_parser(code, index)
+        if code[index] in ignore: 
+            index +=1
+            continue
         
-            # Okay! Add what we parsed to the every_parsed list
-            # We need to check *if* we parsed something, things like comments
-            # might not parse anything at all
-            if parsed != None:
-                every_parsed.append(parsed)
-                
-        else:
-            # Move over
-            index += 1
-            
-        # Also check if we are at the end of the file and we didn't find
-        # any ending character
-        if index == len(code):
-            raise SyntaxError("Unmatched open bracket.")
-            
+        # Parse the right type, depending on the character
+        parsed, index = call_right_parser(code, index)
+    
+        # Okay! Add what we parsed to the every_parsed list
+        # We need to check *if* we parsed something, things like comments
+        # might not parse anything at all
+        if parsed != None: every_parsed.append(parsed)
+        
+    # Also check if we are at the end of the file and we didn't find
+    # any ending character
+    if index == len(code): raise SyntaxError("Unmatched open bracket.")
+        
+    # 1+1 --> sum(1,1)
+    every_parsed = replace_symbols(every_parsed)
+        
     # Eat the last character
     index += 1
     
@@ -163,8 +165,7 @@ def parse_string(code, index):
     # Rembember the start.
     start_index = index
     # Go on until space.
-    while code[index] in digits + ascii_letters + '_':
-        index += 1
+    while code[index] in digits + ascii_letters + '_': index += 1
     # Return the string and the final index
     return code[start_index:index], index
  
@@ -183,7 +184,7 @@ def parse_string_to_code(code, index):
     index += 1
     
     # Parse until the until character
-    parsed, index = parse_code_until(code, index, ')', ignore = '\n\t ')
+    parsed, index = parse_code_until(code, index, ')')
     
     return new_code(parsed), index
 
@@ -191,17 +192,23 @@ def parse_string_to_multiline_code(code, index = 0, until = ')'):
     """
     Parse a string and output its code and the index of ending.
     """
-    # Parse until the until character
-    parsed, index = parse_code_until(code, index, until)
+    # Parse first line
+    parsed, index = parse_code_until(code, index, until+'\n', ignore = '')
+    # Start saving every parsed line
+    parsed_lines = [parsed]
     
-    # Split code at new lines
-    parsed = split(parsed, new_sym('\n'))
+    # Keep parsing until you get to )
+    while code[index-1] != ')':
+    # Parse until the until character
+        parsed, index = parse_code_until(code, index, until+'\n', ignore = '')
+        parsed_lines.append(parsed)
+    parsed_lines.pop()
     
     # Replace every code with its code nylo object
-    for i in range(len(parsed)):
-        parsed[i] = new_code(parsed[i])
+    for i in range(len(parsed_lines)):
+        parsed_lines[i] = new_code(parsed_lines[i])
         
-    return new_multiline_code(parsed), index
+    return new_multiline_code(parsed_lines), index
 
 def parse_string_to_string(code, index):
     """
@@ -214,8 +221,8 @@ def parse_string_to_string(code, index):
     # Go after it
     index += 1
     # Loop until closing character.
-    while code[index] != end_character:
-        index += 1
+    while code[index] != end_character: index += 1
+        # TODO, if EOF should raise exception
     # Parse the string to a string object.
     string = code[start_character_index + 1 : index]
     string_object = new_str(string)
@@ -243,14 +250,13 @@ def parse_string_to_number(code, index):
 
 def ignore_comment(code, index):
     # This simply has to wait until new line.
-    while code[index] != '\n':
-        index += 1
+    while code[index] != '\n': index += 1
     return None, index
 
 def ignore_multiline_comment(code, index):
     # This simply has to wait until */
-    while code[index:index+2] != '*/':
-        index += 1
+    while code[index:index+2] != '*/': index += 1
+        # TODO len(code)=index+2 should raise exception
     # Getting past */
     index += 2
     return None, index
@@ -317,18 +323,6 @@ def parse_string_to_function(code, index):
         
     return new_fun(args, behaviour), index
 
-def parse_string_to_argument(code, index):
-    argument = []
-    conditions = []
-    # Parse the first word
-    word, index = parse_string(code, index)
-    # [ is a condition, like in int[=2] x
-    if code[index] == '[':
-        condition, index = parse_code_until(code, index, ']', ignore = '\n\t ')
-    # Comma to separate 'em all.
-    if code[index] == ',':
-        new_var(word)
-
 """
 #  ISTANCES INITIALIZATORS   #
 # they take values and make  #
@@ -377,6 +371,77 @@ def new_dict(todo_dict):
     return nydict(tuple(todo_dict.items()))
 
 """
+# FUNCTIONS #
+"""
+
+def replace_symbols(parsed_elements):
+    """
+    Parse code's symbols, 1+1 --> sum(1,1)
+    """
+    # Parse symbols in order:
+    for parsing_symbols in definitions.symbols_parsing_order:
+        index = 0
+        while index < len(parsed_elements):
+            parsed_element = parsed_elements[index]
+            # Check if it'sa a symbol
+            if new_str('symb') in parsed_element:
+                # Check if it's a symbol we're searching for
+                if parsed_element[new_str('symb')]['py_string'] in parsing_symbols:
+
+                    # Let's parse the symbol! Such a fun
+                    # Take the elements before the symbol
+                    before_symbol = parsed_elements[:index]
+                    # Take the elements aftwer the symbol
+                    after_symbol = parsed_elements[index+1:]
+                    # Store the symbol on a var and remove it, we don't
+                    # need it where we're going
+                    symbol = parsed_element
+                    del parsed_elements[index]
+                    index -= 1
+                    
+                    # elements is a list of coded (aka, list of list of parsed)
+                    # where we'll store the values to pass to the symbol's function
+                    # like, for 1+1, elements = [new_code(new_int(1)), new_code(new_int(1))]
+                    elements = [[]]
+                    
+                    # Now we have to take every element before the symbol
+                    # and add it to element, but we'll iter backwards!
+                    while len(before_symbol) > 0:
+                        # If there is the same symbol, ignore
+                        # it and keep parsing another element
+                        if before_symbol[-1] == symbol:
+                            del before_symbol[-1]
+                            elements.append([])
+                        # Any other symbol? stop.
+                        elif new_str('symb') in before_symbol[-1]: break
+                        # If it's anything else, add it to the parsed elements
+                        else: elements[-1].insert(0, before_symbol.pop())
+                        index -= 1
+                        
+                    # Parse elements *after* the symbol
+                    elements.append([])
+                    while len(after_symbol) > 0:
+                        # If there is the same symbol, ignore
+                        # it and keep parsing another element
+                        if after_symbol[0] == symbol:
+                            del after_symbol[0]
+                            elements.append([])
+                        # Any other symbol? stop.
+                        elif new_str('symb') in after_symbol[0]: break
+                        # If it's anything else, add it to the parsed elements
+                        else: elements[-1].append(after_symbol.pop(0))
+                            
+                    # Replace every element of elements with his code
+                    elements = [new_code(element) for element in elements]
+                    # Make the list and the code
+                    elements = new_code([new_list(elements)])
+                    # Re-make the entire parsed
+                    parsed_elements = before_symbol + [new_var(definitions.symbols_functions[symbol[new_str('symb')]['py_string']]), elements] + after_symbol
+                
+            index += 1
+    return parsed_elements
+
+"""
 # LITTLE USEFUL FUNCTIONS #
 """
 
@@ -392,5 +457,5 @@ def split(alist, value):
     output.append(tuple(going))
     return output
 
-print(parse('''[0:1]'''))
+print(parse('''1*3+1'''))
 
