@@ -1,5 +1,6 @@
 symbols = {'+', '-', '/', '*', ',', '&', 'and', 'or', '=', ': ', '.', '>', '<', 'is_a',  ':'}
 
+# TODO: sort
 symbols_parsing_order = [
     {'.'},
     {':'},
