@@ -26,7 +26,7 @@ __author__ = 'Niccolo\' "Veggero" Venerandi'
 
 """
 TODO - b4 Nylo Zero
-- Arguments (sorry.)
+- Friggin' get value and propr on assignation
 
 TODO - b4 Nylo One
 - Indent control
@@ -40,7 +40,7 @@ TODO - should be okay but not sure
 - Calling (executer-side?)
 """
 
-from string import *
+from string import *\
 
 # I also import all definitions, but I want to quickly use nydict
 from definitions import nydict 
@@ -97,7 +97,7 @@ def call_right_parser(code, index):
 	# /* is a multiline_comment
 	elif code[index:index+2] == '/*':
 		parsed, index = ignore_multiline_comment(code, index)
-	elif code[index:index+2] == ': ':
+	elif code[index:index+2] == ': ': 
 		parsed, index = new_sym(': '), index+2
 	# ' or " is a string
 	elif code[index] == '"' or code[index] == "'":
@@ -132,7 +132,7 @@ def call_right_parser(code, index):
 		raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
 	return parsed, index
 
-def parse_code_until(code, index, until = '', ignore = '\n\t'):
+def parse_code_until(code, index, until='', ignore='\n\t', no_symbols_replacing=False):
 	# First of all, skip the character at start, if there is one:
 	# We will store every element we'll parse in
 	# every_parsed.
@@ -149,6 +149,9 @@ def parse_code_until(code, index, until = '', ignore = '\n\t'):
 		# Parse the right type, depending on the character
 		parsed, index = call_right_parser(code, index)
 	
+		# If we parsed ': ', we also need to create the arguments before
+		if parsed == new_sym(': '): every_parsed = [parsed_to_argument(every_parsed)]
+	
 		# Okay! Add what we parsed to the every_parsed list
 		# We need to check *if* we parsed something, things like comments
 		# might not parse anything at all
@@ -159,7 +162,7 @@ def parse_code_until(code, index, until = '', ignore = '\n\t'):
 	if index == len(code): raise SyntaxError("Unmatched open bracket.")
 		
 	# 1+1 --> sum(1,1)
-	every_parsed = replace_symbols(every_parsed)
+	if not no_symbols_replacing: every_parsed = replace_symbols(every_parsed)
 		
 	# Eat the last character
 	index += 1
@@ -310,20 +313,39 @@ def parse_string_to_function(code, index):
 	# {x|x*2} / {*2} / {x}
 	# Get over the '{'
 	index += 1
-	# Parse the first argument until | or }
-	first_argument, index = parse_string_to_multiline_code(code, index, until = '|}')
+	
+	# We need to check if first argument is code or argument
+	# therefore, we check that everything is either variable, code or ","
+	first_argument, end_index = parse_code_until(code, index, '|}', no_symbols_replacing=True)
+	if all(new_str('name') in element or
+		   new_str('behaviour') in element or
+		   element == new_sym(',') or
+		   element == new_sym('.') for element in first_argument):
+		first_argument_type = 'argument'
+		index = end_index
+		first_argument = parsed_to_argument(first_argument)
+	else:
+		first_argument_type = 'code'
+		# Parse the first argument until | or }
+		first_argument, index = parse_string_to_multiline_code(code, index, until = '|}')
+
 	# Check if there is more to parse, like in {x | x+1}
 	if code[index-1] == '|':
 		# There is a second argument. Parse it.
 		second_argument, index = parse_string_to_multiline_code(code, index, until = '}')
 		# In this case, first argument is the function's argument,
 		# and the second one is the behaviour
-		args, behaviour = first_argument, second_argument
+		# TODO check if first_argument_type is 'argument'
+		return new_fun(first_argument, second_argument), index
 	else:
-		# If function ends on a }, the only argument is code
-		args, behaviour = new_code([]), first_argument
+		# This is either something like {+1}, aka code
+		# or like {int x, y}, aka argument
+		if first_argument_type == 'code':
+			return new_fun(new_code([]), first_argument), index
+		else:
+			return first_argument, index
 		
-	return new_fun(args, behaviour), index
+	
 
 """
 #  ISTANCES INITIALIZATORS   #
@@ -358,7 +380,7 @@ def new_fun(arguments, code):
 				(new_str('behaviour'), code)))
 
 def new_arg(variables):
-	return nydict(((new_str('variables'), variables),))
+	return nydict(((new_str('variables'), new_list(variables)),))
 
 def new_list(todo_list):
 	# [1] = 1 actually
@@ -445,9 +467,51 @@ def replace_symbols(parsed_elements):
 			index += 1
 	return parsed_elements
 
-def code_to_class(code):
-	"""
-	Parse a code to its class, e.g.: list int x, y
-	"""
-	# TODO
+def parsed_to_argument(parsed):
+	
+	# Here we will store variables we'll parse
+	variables = []
+	# Here we store conditions we'll parse - this should be reset
+	# for every variable
+	conditions = []
+	# We also need to remember the previous conditions, because if condition
+	# is empity, such as in 'int x, y' for y, we'll take the previous condition
+	last_conditions = []
+	parsed_iter = iter(parsed)
+	for i, parse in enumerate(parsed_iter):
 
+		# If it's a variable, add it to the conditions (e.g.: the 'int' in 'int x')
+		if new_str('name') in parse:
+			conditions.append([parse])
+			
+		# If it's a code, we also need to add it as condition (e.g.: 'int[=2] x')
+		elif new_str('behaviour') in parse:
+			conditions[-1].append(parse)
+		
+		# Actually . is fine too ('x.y: 3')
+		elif parse == new_sym('.'):
+			conditions[-1].append(parsed[i+1][new_str('name')])
+			next(parsed_iter)
+			i+=1
+			
+		# If it's a ",", we finished parsing the conditions
+		# If parse is last element of parsed, we're also over
+		if parse == new_sym(',') or i+1==len(parsed):
+			for i, conds in enumerate(conditions):
+				last_var_conditions = conds[1:]
+				conditions[i] = new_var(conds[0][new_str('name')]['py_string'], conds[1:])
+			# The last variable we parsed it's actually the variable we're doing
+			# e.g.: 'x' in 'int x'
+			variable = conditions.pop()
+			# If there is no condition, we have to take the previous one
+			if len(conditions) == 0:
+				conditions = [i for i in last_conditions]
+			# Create the new variable with the conditions.
+			new_variable = new_var(variable[new_str('name')], conditions+last_var_conditions)
+			# Append it to the parsed variables
+			variables.append(new_variable)
+			
+			last_conditions = [i for i in conditions]
+			conditions = []
+			
+	return new_arg(variables)
