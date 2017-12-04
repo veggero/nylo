@@ -25,11 +25,9 @@ __version__ = '0'
 __author__ = 'Niccolo\' "Veggero" Venerandi'
 
 """
-TODO - b4 Nylo Zero
-- Friggin' get value and propr on assignation
+TODO - b4 Nylo 
 
 TODO - b4 Nylo One
-- Indent control
 - Binary, oct, ascii/utf string/number declarations
 - Special arguments
 - Special chars in strings
