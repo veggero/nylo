@@ -51,7 +51,7 @@ def parse(string):
 	Parse a string to Nylo Objects.
 	"""
 	# Add end of code
-	string += ')'
+	string += '\n)'
 	# Convert the string to code
 	parsed, index = parse_string_to_multiline_code(string)
 	
@@ -99,6 +99,8 @@ def call_right_parser(code, index):
 		parsed, index = ignore_multiline_comment(code, index)
 	elif code[index:index+2] == ': ': 
 		parsed, index = new_sym(': '), index+2
+	elif code[index:index+2] == ':\n':
+		parsed, index = new_sym(': '), index+1
 	# ' or " is a string
 	elif code[index] == '"' or code[index] == "'":
 		parsed, index = parse_string_to_string(code, index)
@@ -132,7 +134,7 @@ def call_right_parser(code, index):
 		raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
 	return parsed, index
 
-def parse_code_until(code, index, until='', ignore='\n\t', no_symbols_replacing=False):
+def parse_code_until(code, index, until='', ignore='\n\t'):
 	# First of all, skip the character at start, if there is one:
 	# We will store every element we'll parse in
 	# every_parsed.
@@ -160,9 +162,6 @@ def parse_code_until(code, index, until='', ignore='\n\t', no_symbols_replacing=
 	# Also check if we are at the end of the file and we didn't find
 	# any ending character
 	if index == len(code): raise SyntaxError("Unmatched open bracket.")
-		
-	# 1+1 --> sum(1,1)
-	if not no_symbols_replacing: every_parsed = replace_symbols(every_parsed)
 		
 	# Eat the last character
 	index += 1
@@ -193,6 +192,7 @@ def parse_string_to_code(code, index):
 	
 	# Parse until the until character
 	parsed, index = parse_code_until(code, index, ')')
+	parsed = replace_symbols(parsed)
 	
 	return new_code(parsed), index
 
@@ -201,19 +201,47 @@ def parse_string_to_multiline_code(code, index = 0, until = ')'):
 	Parse a string and output its code and the index of ending.
 	"""
 	# Parse first line
+	last_line_indentation, index = parse_string_to_indentation(code, index)
 	parsed, index = parse_code_until(code, index, until+'\n', ignore = '')
+	
 	# Start saving every parsed line
 	parsed_lines = [parsed] if len(parsed)>0 else []
 	
 	# Keep parsing until you get to until character
 	while not code[index-1] in until: 
-		parsed, index = parse_code_until(code, index, until+'\n', ignore = '')
-		if len(parsed)>0: parsed_lines.append(parsed)
+		indentation, after_indentation_index = parse_string_to_indentation(code, index)
+		# If code is indented, there is a function ahead
+		if indentation > last_line_indentation:
+			parsed, index = parse_string_to_function(code, index)
+			parsed_lines[-1].append(parsed)
+			
+		# If code is de-indented, we are actually in a function, 
+		# that is finished, so we need to return
+		elif indentation < last_line_indentation:
+			for i in range(len(parsed_lines)): parsed_lines[i] = new_code(replace_symbols(parsed_lines[i]))
+			return new_multiline_code(parsed_lines), index
+			
+		else:
+			parsed, index = parse_code_until(code, after_indentation_index, until+'\n', ignore = '')
+			if len(parsed)>0: parsed_lines.append(parsed)
 	
 	# Replace every code with its code nylo object
-	for i in range(len(parsed_lines)): parsed_lines[i] = new_code(parsed_lines[i])
+	for i in range(len(parsed_lines)): parsed_lines[i] = new_code(replace_symbols(parsed_lines[i]))
 
 	return new_multiline_code(parsed_lines), index
+
+def parse_string_to_indentation(code, index):
+	indentation_level = 0
+	# Raise indentation_level at every space or tab until first non
+	# whitespace element
+	while code[index] in '\t ':
+		indentation_level += 1
+		index += 1
+		
+	if code[index] == '\n':
+		indentation_level, index = parse_string_to_indentation(code, index+1)
+
+	return indentation_level, index
 
 def parse_string_to_string(code, index):
 	"""
@@ -282,6 +310,7 @@ def parse_string_to_list(code, index):
 	# until we find end of list (]).
 	while code[index-1] != ']':
 		key, index = parse_code_until(code, index, until=':,]')
+		key = replace_symbols(key)
 		key = new_code(key)
 		# If we ended on a :, this is actually a dictionary
 		if code[index-1] == ':':
@@ -292,6 +321,8 @@ def parse_string_to_list(code, index):
 				py_bracket_items = {}
 			# parse the value
 			value, index = parse_code_until(code, index, until=',]')
+			value = replace_symbols(value)
+			
 			value = new_code(value)
 			py_bracket_items[key] = value
 		# TODO elif type(py_bracket_items) == dict should raise exception
@@ -312,13 +343,27 @@ def parse_string_to_function(code, index):
 	"""
 	# {x|x*2} / {*2} / {x}
 	# Get over the '{'
-	index += 1
+	if code[index] == '{':
+		index += 1
+		
+	function_indent, end_index = parse_string_to_indentation(code, index)
 	
-	# We need to check if first argument is code or argument
-	# therefore, we check that everything is either variable, code or ","
-	first_argument, end_index = parse_code_until(code, index, '|}', no_symbols_replacing=True)
+	last_indent = function_indent
+	first_argument = []
+	while last_indent == function_indent:
+		# We need to check if first argument is code or argument
+		# therefore, we check that everything is either variable, code or ","
+		first_argument_parsed, end_index = parse_code_until(code, end_index, '|}\n')
+		
+		first_argument += first_argument_parsed
+		
+		if code[end_index-1] == '\n':
+			last_indent, end_index = parse_string_to_indentation(code, end_index)
+		else:
+			break
+		
 	if all(new_str('name') in element or
-		   new_str('behaviour') in element or
+		   (new_str('behaviour') in element and not new_str('args') in element) or
 		   element == new_sym(',') or
 		   element == new_sym('.') for element in first_argument):
 		first_argument_type = 'argument'
@@ -332,7 +377,11 @@ def parse_string_to_function(code, index):
 	# Check if there is more to parse, like in {x | x+1}
 	if code[index-1] == '|':
 		# There is a second argument. Parse it.
-		second_argument, index = parse_string_to_multiline_code(code, index, until = '}')
+		# Also, replicate function indent with insert(code, ' '*function_indent, index)
+		second_argument, index = parse_string_to_multiline_code(insert(code, ' '*function_indent, index)
+														  , index, until = '}')
+		# Remove the spaces we put 
+		index -= function_indent
 		# In this case, first argument is the function's argument,
 		# and the second one is the behaviour
 		# TODO check if first_argument_type is 'argument'
@@ -485,7 +534,7 @@ def parsed_to_argument(parsed):
 			conditions.append([parse])
 			
 		# If it's a code, we also need to add it as condition (e.g.: 'int[=2] x')
-		elif new_str('behaviour') in parse:
+		elif new_str('behaviour') in parse and not new_str('args') in parse:
 			conditions[-1].append(parse)
 		
 		# Actually . is fine too ('x.y: 3')
@@ -507,7 +556,7 @@ def parsed_to_argument(parsed):
 			if len(conditions) == 0:
 				conditions = [i for i in last_conditions]
 			# Create the new variable with the conditions.
-			new_variable = new_var(variable[new_str('name')], conditions+last_var_conditions)
+			new_variable = new_var(variable[new_str('name')]['py_string'], conditions+last_var_conditions)
 			# Append it to the parsed variables
 			variables.append(new_variable)
 			
@@ -515,3 +564,6 @@ def parsed_to_argument(parsed):
 			conditions = []
 			
 	return new_arg(variables)
+
+def insert (source_str, insert_str, pos):
+    return source_str[:pos]+insert_str+source_str[pos:]
