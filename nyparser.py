@@ -359,7 +359,7 @@ def parse_string_to_function(code, index):
 			last_indent, end_index = parse_string_to_indentation(code, end_index)
 		else:
 			break
-		
+
 	if all(new_str('name') in element or
 		   (new_str('behaviour') in element and not new_str('args') in element) or
 		   element == new_sym(',') or
@@ -388,7 +388,7 @@ def parse_string_to_function(code, index):
 		# This is either something like {+1}, aka code
 		# or like {int x, y}, aka argument
 		if first_argument_type == 'code':
-			return new_fun(new_code([]), first_argument), index
+			return new_fun(new_arg([]), first_argument), index
 		else:
 			return first_argument, index
 		
@@ -431,8 +431,8 @@ def new_arg(variables):
 
 def new_list(todo_list):
 	# [1] = 1 actually
-	if len(todo_list) == 1: 
-		return todo_list[0]
+	#if len(todo_list) == 1: 
+	#	return todo_list[0]
 	return nydict(tuple(
 		[(new_int(couple[0]), couple[1]) 
 		for couple 
@@ -440,6 +440,9 @@ def new_list(todo_list):
 		
 def new_dict(todo_dict):
 	return nydict(tuple(todo_dict.items()))
+
+def new_pyfunction(pyf):
+	return nydict(((new_str('python_function'), pyf),))
 
 """
 # FUNCTIONS #
@@ -501,11 +504,16 @@ def replace_symbols(parsed_elements):
 						elif new_str('symb') in after_symbol[0]: break
 						# If it's anything else, add it to the parsed elements
 						else: elements[-1].append(after_symbol.pop(0))
-							
+					
+					if (symbol[new_str('symb')]['py_string'] in definitions.unary_symbols
+							and elements[0] == []):
+						del elements[0]
+						
 					# Replace every element of elements with his code
-					elements = [new_code(element) if len(element)>0
-												  else new_code([new_var('implicit')])
+					elements = [(new_code(element) 	if len(element)>0
+														else new_code([new_var('implicit')]))
 												for element in elements]
+						
 					# Make the list and the code
 					elements = new_code([new_list(elements)])
 					# Re-make the entire parsed
