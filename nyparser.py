@@ -38,20 +38,17 @@ TODO - should be okay but not sure
 - Calling (executer-side?)
 """
 
-from string import *\
-
-# I also import all definitions, but I want to quickly use nydict
-from definitions import nydict 
+import string
 import definitions
 
-def parse(string):
+def parse(string_code):
 	"""
 	Parse a string to Nylo Objects.
 	"""
 	# Add end of code
-	string += '\n)'
+	string_code += '\n)'
 	# Convert the string to code
-	parsed, index = parse_string_to_multiline_code(string)
+	parsed, index = parse_string_to_multiline_code(string_code)
 	
 	# TODO index != len(code) should raise exception
 
@@ -96,33 +93,33 @@ def call_right_parser(code, index):
 	elif code[index:index+2] == '/*':
 		parsed, index = ignore_multiline_comment(code, index)
 	elif code[index:index+2] == ': ': 
-		parsed, index = new_sym(': '), index+2
+		parsed, index = definitions.new_sym(': '), index+2
 	elif code[index:index+2] == ':\n':
-		parsed, index = new_sym(': '), index+1
+		parsed, index = definitions.new_sym(': '), index+1
 	# ' or " is a string
 	elif code[index] == '"' or code[index] == "'":
 		parsed, index = parse_string_to_string(code, index)
 	# There are actually 2 cases for numbers:
 	# 12 31 41 53 (starting with digits)
 	# .3 .5 (starting with a ".")
-	elif ((code[index] in digits) or (code[index] == '.' and code[index+1] in digits)):
+	elif ((code[index] in string.digits) or (code[index] == '.' and code[index+1] in string.digits)):
 		parsed, index = parse_string_to_number(code, index)
 	# Anything in the symbols set, is a symbol.
 	elif code[index] in definitions.symbols:
 		parsed, index = parse_string_to_symbol(code, index)
 	# Then variables are anything that starts with a ascii-letter .
 	# This means variables such as "_a" or "__thing" are not allowed.
-	elif code[index] in ascii_letters:
+	elif code[index] in string.ascii_letters:
 		start_index = index
-		string, index = parse_string(code, index)
+		parsed_string, index = parse_string(code, index)
 		# The string is either a symbol, a argument, or a variable
 		# If it's in symbols, it's a symbol
-		if string in definitions.symbols:
-			parsed = new_sym(string)
+		if parsed_string in definitions.symbols:
+			parsed = definitions.new_sym(parsed_string)
 		# If it's in arguments, it's a arg
 		# Any other case, it's a variable
 		else:
-			parsed = new_var(string)
+			parsed = definitions.new_var(parsed_string)
 	# ignore spaces and tabs 
 	elif code[index] in ' \t':
 		index += 1
@@ -150,7 +147,7 @@ def parse_code_until(code, index, until='', ignore='\n\t'):
 		parsed, index = call_right_parser(code, index)
 	
 		# If we parsed ': ', we also need to create the arguments before
-		if parsed == new_sym(': '): every_parsed = [parsed_to_argument(every_parsed)]
+		if parsed == definitions.new_sym(': '): every_parsed = [parsed_to_argument(every_parsed)]
 	
 		# Okay! Add what we parsed to the every_parsed list
 		# We need to check *if* we parsed something, things like comments
@@ -170,7 +167,7 @@ def parse_string(code, index):
 	# Rembember the start.
 	start_index = index
 	# Go on until space.
-	while code[index] in digits + ascii_letters + '_': index += 1
+	while code[index] in string.digits + string.ascii_letters + '_': index += 1
 	# Return the string and the final index
 	return code[start_index:index], index
 
@@ -192,7 +189,7 @@ def parse_string_to_code(code, index):
 	parsed, index = parse_code_until(code, index, ')')
 	parsed = replace_symbols(parsed)
 	
-	return new_code(parsed), index
+	return definitions.new_code(parsed), index
 
 def parse_string_to_multiline_code(code, index = 0, until = ')'):
 	"""
@@ -216,17 +213,17 @@ def parse_string_to_multiline_code(code, index = 0, until = ')'):
 		# If code is de-indented, we are actually in a function, 
 		# that is finished, so we need to return
 		elif indentation < last_line_indentation:
-			for i in range(len(parsed_lines)): parsed_lines[i] = new_code(replace_symbols(parsed_lines[i]))
-			return new_multiline_code(parsed_lines), index
+			for i in range(len(parsed_lines)): parsed_lines[i] = definitions.new_code(replace_symbols(parsed_lines[i]))
+			return definitions.new_multiline_code(parsed_lines), index
 			
 		else:
 			parsed, index = parse_code_until(code, after_indentation_index, until+'\n', ignore = '')
 			if len(parsed)>0: parsed_lines.append(parsed)
 	
 	# Replace every code with its code nylo object
-	for i in range(len(parsed_lines)): parsed_lines[i] = new_code(replace_symbols(parsed_lines[i]))
+	for i in range(len(parsed_lines)): parsed_lines[i] = definitions.new_code(replace_symbols(parsed_lines[i]))
 
-	return new_multiline_code(parsed_lines), index
+	return definitions.new_multiline_code(parsed_lines), index
 
 def parse_string_to_indentation(code, index):
 	indentation_level = 0
@@ -256,7 +253,7 @@ def parse_string_to_string(code, index):
 		# TODO, if EOF should raise exception
 	# Parse the string to a string object.
 	string = code[start_character_index + 1 : index]
-	string_object = new_str(string)
+	string_object = definitions.new_str(string)
 	# Ignore the ending character.
 	index += 1
 	return string_object, index
@@ -265,7 +262,7 @@ def parse_string_to_number(code, index):
 	# Save the start index.
 	start_index = index
 	# Loop until first non-numeric character.
-	while code[index] in digits + '.':
+	while code[index] in string.digits + '.':
 		# If this is the second '.', we should stop
 		if code[index] == '.' and '.' in code[start_index:index]:
 			break
@@ -274,9 +271,9 @@ def parse_string_to_number(code, index):
 	str_number = code[start_index:index]
 	# and make it an object
 	if '.' in str_number:
-		number = new_float(float(str_number))
+		number = definitions.new_float(float(str_number))
 	else:
-		number = new_int(int(str_number))
+		number = definitions.new_int(int(str_number))
 	return number, index
 
 def ignore_comment(code, index):
@@ -294,7 +291,7 @@ def ignore_multiline_comment(code, index):
 
 def parse_string_to_symbol(code, index):
 	# Create the symbol object
-	symbol_obj = new_sym(code[index])
+	symbol_obj = definitions.new_sym(code[index])
 	# Move index past the symbol
 	index += 1
 	return symbol_obj, index
@@ -309,7 +306,7 @@ def parse_string_to_list(code, index):
 	while code[index-1] != ']':
 		key, index = parse_code_until(code, index, until=':,]')
 		key = replace_symbols(key)
-		key = new_code(key)
+		key = definitions.new_code(key)
 		# If we ended on a :, this is actually a dictionary
 		if code[index-1] == ':':
 			# If we still though this was a list, convert it
@@ -321,7 +318,7 @@ def parse_string_to_list(code, index):
 			value, index = parse_code_until(code, index, until=',]')
 			value = replace_symbols(value)
 			
-			value = new_code(value)
+			value = definitions.new_code(value)
 			py_bracket_items[key] = value
 		# TODO elif type(py_bracket_items) == dict should raise exception
 		else:
@@ -330,10 +327,10 @@ def parse_string_to_list(code, index):
 			
 	# if it was a list
 	if type(py_bracket_items) == list:
-		return new_list(py_bracket_items), index
+		return definitions.new_list(py_bracket_items), index
 	# else it was a dict
 	else:
-		return new_dict(py_bracket_items), index
+		return definitions.new_dict(py_bracket_items), index
 
 def parse_string_to_function(code, index):
 	"""
@@ -360,10 +357,10 @@ def parse_string_to_function(code, index):
 		else:
 			break
 
-	if all(new_str('name') in element or
-		   (new_str('behaviour') in element and not new_str('args') in element) or
-		   element == new_sym(',') or
-		   element == new_sym('.') for element in first_argument):
+	if all(definitions.new_str('name') in element or
+		   (definitions.new_str('behaviour') in element and not definitions.new_str('args') in element) or
+		   element == definitions.new_sym(',') or
+		   element == definitions.new_sym('.') for element in first_argument):
 		first_argument_type = 'argument'
 		index = end_index
 		first_argument = parsed_to_argument(first_argument)
@@ -383,66 +380,14 @@ def parse_string_to_function(code, index):
 		# In this case, first argument is the function's argument,
 		# and the second one is the behaviour
 		# TODO check if first_argument_type is 'argument'
-		return new_fun(first_argument, second_argument), index
+		return definitions.new_fun(first_argument, second_argument), index
 	else:
 		# This is either something like {+1}, aka code
 		# or like {int x, y}, aka argument
 		if first_argument_type == 'code':
-			return new_fun(new_arg([]), first_argument), index
+			return definitions.new_fun(definitions.new_arg([]), first_argument), index
 		else:
 			return first_argument, index
-		
-	
-
-"""
-#  ISTANCES INITIALIZATORS   #
-# they take values and make  #
-#    nydicts out of them     #
-"""
-
-def new_multiline_code(lines):
-	return nydict(((new_str('lines'), new_list(lines)),))
-
-def new_code(behaviour):
-	return nydict(((new_str('behaviour'), new_list(behaviour)),))
-
-def new_str(string):
-	return nydict((('py_string', string),))
-
-def new_int(integer):
-	return nydict((('py_int', integer),))
-
-def new_float(floating_point):
-	return nydict((('py_float', floating_point),))
-
-def new_sym(symbol):
-	return nydict(((new_str('symb'), new_str(symbol)),))
-
-def new_var(variable, conds=[]):
-	return nydict(((new_str('name'), new_str(variable)),
-				(new_str('condition'), new_list(conds))))
-
-def new_fun(arguments, code):
-	return nydict(((new_str('args'), arguments),
-				(new_str('behaviour'), code)))
-
-def new_arg(variables):
-	return nydict(((new_str('variables'), new_list(variables)),))
-
-def new_list(todo_list):
-	# [1] = 1 actually
-	#if len(todo_list) == 1: 
-	#	return todo_list[0]
-	return nydict(tuple(
-		[(new_int(couple[0]), couple[1]) 
-		for couple 
-		in enumerate(todo_list)]))
-		
-def new_dict(todo_dict):
-	return nydict(tuple(todo_dict.items()))
-
-def new_pyfunction(pyf):
-	return nydict(((new_str('python_function'), pyf),))
 
 """
 # FUNCTIONS #
@@ -458,9 +403,9 @@ def replace_symbols(parsed_elements):
 		while index < len(parsed_elements):
 			parsed_element = parsed_elements[index]
 			# Check if it'sa a symbol
-			if new_str('symb') in parsed_element:
+			if definitions.new_str('symb') in parsed_element:
 				# Check if it's a symbol we're searching for
-				if parsed_element[new_str('symb')]['py_string'] in parsing_symbols:
+				if parsed_element[definitions.new_str('symb')]['py_string'] in parsing_symbols:
 
 					# Let's parse the symbol! Such a fun
 					# Take the elements before the symbol
@@ -475,7 +420,7 @@ def replace_symbols(parsed_elements):
 					
 					# elements is a list of coded (aka, list of list of parsed)
 					# where we'll store the values to pass to the symbol's function
-					# like, for 1+1, elements = [new_code(new_int(1)), new_code(new_int(1))]
+					# like, for 1+1, elements = [definitions.new_code(definitions.new_int(1)), definitions.new_code(definitions.new_int(1))]
 					elements = [[]]
 					
 					# Now we have to take every element before the symbol
@@ -487,7 +432,7 @@ def replace_symbols(parsed_elements):
 							del before_symbol[-1]
 							elements.append([])
 						# Any other symbol? stop.
-						elif new_str('symb') in before_symbol[-1]: break
+						elif definitions.new_str('symb') in before_symbol[-1]: break
 						# If it's anything else, add it to the parsed elements
 						else: elements[-1].insert(0, before_symbol.pop())
 						index -= 1
@@ -501,23 +446,23 @@ def replace_symbols(parsed_elements):
 							del after_symbol[0]
 							elements.append([])
 						# Any other symbol? stop.
-						elif new_str('symb') in after_symbol[0]: break
+						elif definitions.new_str('symb') in after_symbol[0]: break
 						# If it's anything else, add it to the parsed elements
 						else: elements[-1].append(after_symbol.pop(0))
 					
-					if (symbol[new_str('symb')]['py_string'] in definitions.unary_symbols
+					if (symbol[definitions.new_str('symb')]['py_string'] in definitions.unary_symbols
 							and elements[0] == []):
 						del elements[0]
 						
 					# Replace every element of elements with his code
-					elements = [(new_code(element) 	if len(element)>0
-														else new_code([new_var('implicit')]))
+					elements = [(definitions.new_code(element) 	if len(element)>0
+														else definitions.new_code([definitions.new_var('implicit')]))
 												for element in elements]
 						
 					# Make the list and the code
-					elements = new_code([new_list(elements)])
+					elements = definitions.new_code([definitions.new_list(elements)])
 					# Re-make the entire parsed
-					parsed_elements = before_symbol + [new_var(definitions.symbols_functions[symbol[new_str('symb')]['py_string']]), elements] + after_symbol
+					parsed_elements = before_symbol + [definitions.new_var(definitions.symbols_functions[symbol[definitions.new_str('symb')]['py_string']]), elements] + after_symbol
 				
 			index += 1
 	return parsed_elements
@@ -536,25 +481,29 @@ def parsed_to_argument(parsed):
 	for i, parse in enumerate(parsed_iter):
 
 		# If it's a variable, add it to the conditions (e.g.: the 'int' in 'int x')
-		if new_str('name') in parse:
+		if definitions.new_str('name') in parse:
 			conditions.append([parse])
 			
-		# If it's a code, we also need to add it as condition (e.g.: 'int[=2] x')
-		elif new_str('behaviour') in parse and not new_str('args') in parse:
-			conditions[-1].append(parse)
+		# If it's a list, it contains only a code obj, therefore
+		# we also need to add it as condition (e.g.: 'int[=2] x')
+		elif definitions.is_nylo_list(parse) and len(parse) == 1:
+			# TODO assert the only element is a function
+			function_condition = parse[definitions.new_int(0)]
+			conditions[-1].append(function_condition)
 		
-		# Actually . is fine too ('x.y: 3')
-		elif parse == new_sym('.'):
-			conditions[-1].append(parsed[i+1][new_str('name')])
+		# TODO
+		"""# Actually . is fine too ('x.y: 3')
+		elif parse == definitions.new_sym('.'):
+			conditions[-1].append(parsed[i+1][definitions.new_str('name')])
 			next(parsed_iter)
-			i+=1
+			i+=1"""
 			
 		# If it's a ",", we finished parsing the conditions
 		# If parse is last element of parsed, we're also over
-		if parse == new_sym(',') or i+1==len(parsed):
+		if parse == definitions.new_sym(',') or i+1==len(parsed):
 			for i, conds in enumerate(conditions):
 				last_var_conditions = conds[1:]
-				conditions[i] = new_var(conds[0][new_str('name')]['py_string'], conds[1:])
+				conditions[i] = definitions.new_var(conds[0][definitions.new_str('name')]['py_string'], conds[1:])
 			# The last variable we parsed it's actually the variable we're doing
 			# e.g.: 'x' in 'int x'
 			variable = conditions.pop()
@@ -562,14 +511,14 @@ def parsed_to_argument(parsed):
 			if len(conditions) == 0:
 				conditions = [i for i in last_conditions]
 			# Create the new variable with the conditions.
-			new_variable = new_var(variable[new_str('name')]['py_string'], conditions+last_var_conditions)
+			definitions.new_variable = definitions.new_var(variable[definitions.new_str('name')]['py_string'], conditions+last_var_conditions)
 			# Append it to the parsed variables
-			variables.append(new_variable)
+			variables.append(definitions.new_variable)
 			
 			last_conditions = [i for i in conditions]
 			conditions = []
 			
-	return new_arg(variables)
+	return definitions.new_arg(variables)
 
 def insert (source_str, insert_str, pos):
     return source_str[:pos]+insert_str+source_str[pos:]

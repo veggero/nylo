@@ -1,4 +1,6 @@
-import nyparser
+"""
+# NYLO LANGUAGE DESCRIPTIVE OBJECTS #
+"""
 
 symbols = {'+', '-', '/', '*', ',', '&', 'and', 'or', '=', ': ', '.', '>', '<', 'is_a',  ':'}
 
@@ -30,24 +32,121 @@ symbols_functions = {'+': 'sum',
 					 'is_a': 'is_instance',
 					 ':': 'range'}
 
+def nylo():
+	return {
+		
+	# VARIABLES
+	new_var('print'): new_pyfunction(nyprint),
+	new_var('sum'): new_pyfunction(nysum),
+	new_var('to_list'): new_pyfunction(to_list),
+	
+	# CLASSES
+	new_var('int'): new_arg([new_var('py_int')]), 
+	new_var('str'): new_arg([new_var('py_string')]), 
+	new_var('float'): new_arg([new_var('py_float')]),
+	new_var('list'): new_arg([new_subtle_var(new_int(0))]),
+	
+	new_var('test'): new_pyfunction(test),
+	
+	}
+
+"""
+# BUILT-IN FUNCTIONS #
+"""
+
 def nyprint(thing):
 	print(thing)
 	return nydict(())
 
 def nysum(numbers):
-	return nyparser.new_int(
-		sum(number['py_int'] for number in nyparsed_to_iterable(numbers)))
+	return new_int(sum(numbers))
 
 def to_list(args):
-	# Actually, assign made the whole work for us
-	return args
+	# Actually, nyexecuter.assign made the whole work for us
+	return new_list(args)
 
-def nylo():
-	return {
-	nyparser.new_var('print'): nyparser.new_pyfunction(nyprint),
-	nyparser.new_var('sum'): nyparser.new_pyfunction(nysum),
-	nyparser.new_var('to_list'): nyparser.new_pyfunction(to_list),
-	}
+def int_to_python(ny_int):
+	return ny_int['py_int']
+
+def str_to_python(ny_str):
+	return ny_str['py_string']
+
+def test(k):
+	print(k)
+	return nydict(())
+	
+"""
+#  ISTANCES INITIALIZATORS   #
+# they take values and make  #
+#    nydicts out of them     #
+"""
+
+# ABOUT CODING
+
+def new_multiline_code(lines):
+	return nydict(((new_str('lines'), new_list(lines)),))
+
+def new_code(behaviour):
+	return nydict(((new_str('behaviour'), new_list(behaviour)),))
+
+# BASE ELEMENTS
+
+def new_str(string):
+	return nydict((('py_string', string),))
+
+def new_int(integer):
+	return nydict((('py_int', integer),))
+
+def new_float(floating_point):
+	return nydict((('py_float', floating_point),))
+
+# CONSTRUCTS
+
+def new_bool(boolean):
+	if boolean:
+		return nydict(((new_str('truthfulness'), new_int(1)),))
+	else:
+		return nydict(((new_str('truthfulness'), new_int(0)),))
+	# Plot twist: {'thruthfulness': 0.5}
+
+def new_sym(symbol):
+	return nydict(((new_str('symb'), new_str(symbol)),))
+
+def new_var(variable, conds=[]):
+	return nydict(((new_str('name'), new_str(variable)),
+				(new_str('condition'), new_list(conds))))
+
+def new_subtle_var(variable, conds=[]):
+	return nydict(((new_str('name'), variable),
+				(new_str('condition'), new_list(conds))))
+
+def new_fun(arguments, code):
+	return nydict(((new_str('args'), arguments),
+				(new_str('behaviour'), code)))
+
+def new_pyfunction(pyf, arguments=[]):
+	if arguments==[]:
+		arguments = new_list([])
+	return nydict((('python_function', pyf),
+				(new_str('args'), arguments)))
+
+def new_overloded_fun(functions):
+	return nydict(((new_str('functions'), new_list(functions)),))
+
+def new_arg(variables):
+	return nydict(((new_str('variables'), new_list(variables)),))
+
+def new_list(todo_list):
+	# [1] = 1 actually
+	#if len(todo_list) == 1: 
+	#	return todo_list[0]
+	return nydict(tuple(
+		[(new_int(couple[0]), couple[1]) 
+		for couple 
+		in enumerate(todo_list)]))
+		
+def new_dict(todo_dict):
+	return nydict(tuple(todo_dict.items()))
 
 class nydict:
 	"""
@@ -95,17 +194,28 @@ class nydict:
 	def __len__(self):
 		return len(self.value)
 	
+	def __iter__(self):
+		for key in self.value:
+			yield key[0]
+	
+"""
+# HELPER FUNCTIONS #
+"""
+	
 def nyparsed_to_iterable(nylist):
 	if nylist == nydict(()):
 		return []
 	
-	if not nyparser.new_int(0) in nylist:
+	if not new_int(0) in nylist:
 		yield nylist
 		
 	i = 0
 	while 1:
-		nyint_i = nyparser.new_int(i) 
+		nyint_i = new_int(i) 
 		if not nyint_i in nylist:
 			raise StopIteration
 		yield nylist[nyint_i]
 		i+=1
+		
+def is_nylo_list(nyp): return new_int(0) in nyp
+	
