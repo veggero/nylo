@@ -1,7 +1,6 @@
 """
 This is the Parser Zero for Nylo, wrote by Veggero. This file has been created on the fifth of November.
-You can absolutely what you want with this file BUT you can't monetize it. Sorry. You don't have to
-give credits to me tho. Aka this is cc-nc. Have fun!
+You can absolutely what you want with this file.
 
 This parser target is to take a formatted_text with nylo_formatting and make it an nylo object. Built-in classes
 made by this are:

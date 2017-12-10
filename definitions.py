@@ -36,17 +36,16 @@ def nylo():
 	return {
 		
 	# VARIABLES
-	new_var('print'): new_pyfunction(nyprint),
-	new_var('sum'): new_pyfunction(nysum),
-	new_var('to_list'): new_pyfunction(to_list),
+	new_var('print'): new_pyfunction(nyprint, new_arg([new_var('to_print')])),
+	new_var('sum'): new_pyfunction(nysum, new_arg([new_var('to_sum')])),
+	new_var('to_list'): new_pyfunction(to_list, new_arg([new_var('to_list')])),
 	
 	# CLASSES
 	new_var('int'): new_arg([new_var('py_int')]), 
 	new_var('str'): new_arg([new_var('py_string')]), 
+	new_var('pi'): new_int(3),
 	new_var('float'): new_arg([new_var('py_float')]),
 	new_var('list'): new_arg([new_subtle_var(new_int(0))]),
-	
-	new_var('test'): new_pyfunction(test),
 	
 	}
 
@@ -59,21 +58,12 @@ def nyprint(thing):
 	return nydict(())
 
 def nysum(numbers):
+	numbers = [int(n['py_int']) for n in nyparsed_to_iterable(numbers)]
 	return new_int(sum(numbers))
 
 def to_list(args):
 	# Actually, nyexecuter.assign made the whole work for us
-	return new_list(args)
-
-def int_to_python(ny_int):
-	return ny_int['py_int']
-
-def str_to_python(ny_str):
-	return ny_str['py_string']
-
-def test(k):
-	print(k)
-	return nydict(())
+	return args
 	
 """
 #  ISTANCES INITIALIZATORS   #
@@ -207,15 +197,21 @@ def nyparsed_to_iterable(nylist):
 		return []
 	
 	if not new_int(0) in nylist:
-		yield nylist
+		return [nylist]
 		
+	elements = []
 	i = 0
 	while 1:
 		nyint_i = new_int(i) 
 		if not nyint_i in nylist:
-			raise StopIteration
-		yield nylist[nyint_i]
+			return elements
+		elements.append(nylist[nyint_i])
 		i+=1
 		
 def is_nylo_list(nyp): return new_int(0) in nyp
-	
+"""
+ny_to_python = new_overloded_fun([
+				new_pyfunction(int_to_python, new_arg([new_var('k', [new_var('int')])])),
+				new_pyfunction(str_to_python, new_arg([new_var('k', [new_var('str')])])),
+				new_pyfunction(list_to_python, new_arg([new_var('k', [new_var('list')])])),
+			])"""
