@@ -1,25 +1,38 @@
 """
 This is the Parser Zero for Nylo, wrote by Veggero. This file has been created on the fifth of November.
-You can absolutely what you want with this file.
+You can absolutely what you want with this file. Please, be gentle, Senpai.
 
-# TODO b4 Nylo Zero
-01| ??? | Quick Instance Creation
-02| ??? | Get Propriety
-03| ??? | Set Propriety
-04| ??? | Make Getted Functions Working
-05| FES | Special Arguments
-06| ??? | Multiple Calls?
-07| ??? | Exception Managing
-08| FES | Built-in Function & Types
-09| ??? | Actual Error Traceback
-10| ??? | Return, Break, Continue, Else
-11| FES | Better Object Calling
+# TODO inb4 Nylo Zero					Dec 25 2017
+00| ??? | Quick Instance Creation
+01| ??? | Get Propriety
+02| ??? | Set Propriety
+03| FES | Make Getted Functions Working
+04| ??? | Multiple Calls?
+05| ??? | Exception Managing
+06| FES | Built-in Function & Types
+07| FES | Actual Error Traceback
+08| FES | Return, Break, Continue, Else
+09| FES | Better Object Calling
+10| FES | Iteration on too many arguments
+11| FES | Colons;
 
+# TODO inb4 Nylo One					May 25 2018
+00| FES | Special Arguments
+01| FES | Binary, oct, ascii/utf string/number declarations
+02| ??? | Special arguments
+03| FES | Special chars in strings
+04| FES | Errrors raising
 """
 
 """
 # NYLO LANGUAGE DESCRIPTIVE OBJECTS #
 """
+
+import string
+import readline
+
+__version__ = '0'
+__author__ = 'Niccolo\' "Veggero" Venerandi'
 
 symbols = {'+', '-', '/', '*', ',', '&', 'and', 'or', '=', ': ', '.', '>', '<', 'is_a',  ':'}
 
@@ -55,16 +68,43 @@ def nylo():
 	return {
 		
 	# VARIABLES
-	new_var('print'): new_pyfunction(nyprint, new_arg([new_var('to_print')])),
-	new_var('sum'): new_pyfunction(nysum, new_arg([new_var('to_sum')])),
-	new_var('to_list'): new_pyfunction(to_list, new_arg([new_var('to_list')])),
+	new_var('print'): new_pyfunction(nyprint, new_arg([new_var('k')])),
+	new_var('sum'): new_pyfunction(nysum, new_arg([new_var('k')])),
+	new_var('to_list'): new_pyfunction(to_list, new_arg([new_var('k')])),
 	
 	# CLASSES
+	# to-user
 	new_var('int'): new_arg([new_var('py_int')]), 
 	new_var('str'): new_arg([new_var('py_string')]), 
-	new_var('pi'): new_int(3),
 	new_var('float'): new_arg([new_var('py_float')]),
 	new_var('list'): new_arg([new_subtle_var(new_int(0))]),	
+	# to-nylo
+	new_var('argument'): new_arg([new_var('variables', [new_var('list'), new_var('variable')])]),
+	new_var('variable'): new_arg([new_var('name', [new_var('str')]), new_var('condition')]),
+	new_var('function'): new_arg([new_var('behaviour'), new_var('args')]),
+	new_var('pyfunction'): new_arg([new_var('python_function')]),
+	new_var('overloaded_function'): new_arg([new_var('functions', [new_var('list', new_var('function'))])]),
+	
+	# NYLO-RELATED
+	new_var('to_python'): new_overloded_fun([
+		new_pyfunction(pass_argument, new_arg([new_var('k')])),
+		new_pyfunction(nylo_integer_to_python, new_arg([new_var('k', [new_var('int')])])),
+		new_pyfunction(nylo_string_to_python, new_arg([new_var('k', [new_var('str')])])),
+		new_pyfunction(nylo_list_to_python, new_arg([new_var('k', [new_var('list')])])),
+	]),
+	new_var('to_str'): new_overloded_fun([
+		new_pyfunction(to_str, new_arg([new_var('k')])),
+		new_pyfunction(to_str, new_arg([new_var('k', [new_var('int')])])),
+		new_pyfunction(to_str, new_arg([new_var('k', [new_var('str')])])),
+		new_pyfunction(list_to_str, new_arg([new_var('k', [new_var('list')])])),
+	]),
+	new_var('call'): new_overloded_fun([
+		new_pyfunction(call_argument, new_arg([new_var('k', [new_var('argument')]), new_var('g')])),
+		new_pyfunction(call_function, new_arg([new_var('k', [new_var('function')]), new_var('g')])),
+		new_pyfunction(call_pyfunction, new_arg([new_var('k', [new_var('pyfunction')]), new_var('g')])),
+		new_pyfunction(call_overloaded_function, new_arg([new_var('k', [new_var('overloaded_function')]), new_var('g')])),
+	]),
+	new_var('set'): new_pyfunction(nyset, new_arg([new_var('arguments'), new_var('values')])),
 	
 	}
 
@@ -72,24 +112,147 @@ def nylo():
 # BUILT-IN FUNCTIONS #
 """
 
+# TOOLS
+
 def nyprint(thing):
-	print(thing)
-	return nydict(())
+	print(call_overloaded_function(fetch_variable(new_var('to_str')), to_nylo(thing))['py_string'])
+
+def to_list(arg):
+	# Actually, assign made the whole work for us
+	return arg
+
+# MATH
 
 def nysum(numbers):
-	numbers = [int(n['py_int']) for n in nyparsed_to_iterable(numbers)]
-	return new_int(sum(numbers))
+	if not type(numbers) == list:
+		numbers = [numbers]
+	return sum(numbers)
 
-def to_list(args):
-	# Actually, assign made the whole work for us
-	return args
+# NYLO-RELATED
 
-def yell_int(k):
-	print('INTEGEEEEEEEEER')
+def nylo_integer_to_python(nyint):
+	return nyint['py_int']
+
+def nylo_string_to_python(nystr):
+	return nystr['py_string']
+
+def nylo_list_to_python(pylist):
+	return [call_overloaded_function(fetch_variable(new_var('to_python')), element) for element in nyparsed_to_iterable(pylist)]
+
+def nyset(arguments, values):
+	arguments, values = nylo_call_to_python(arguments, to_nylo(values))
+	arguments, values = elaborate_arguments(arguments, values)
+	if not arguments_follows_conditions(arguments, values): 
+		raise_traceback_exception('Error with arguments types.')
+		
+	# Assign might've raised an exception, check for it
+	if len(traceback[-1]['events']) > 0: return nydict(())
+
+	traceback[-1]['variables'].update(assign(arguments, values))
+
+def to_str(k):
+	return str(k)
+
+def list_to_str(k):
+	return '['+', '.join([call_overloaded_function(fetch_variable(new_var('to_str')), to_nylo(element))['py_string'] for element in k])+']'
+
+def to_nylo(python):
+	if type(python) == int:
+		return new_int(python)
+	elif type(python) == float:
+		return new_float(python)
+	elif type(python) == str:
+		return new_str(python)
+	elif type(python) == list:
+		return new_list([to_nylo(element) for element in python])
+	elif python == None:
+		return nydict(())
+	else:
+		return python
+
+def call_function(function, values):
+	values = to_nylo(values)
+		
+	arguments, values = nylo_call_to_python(function[new_str('args')], values)
+	arguments, values = elaborate_arguments(arguments, values)
+	arguments, values = elaborate_implicit_arguments(arguments, values)
+	if not arguments_follows_conditions(arguments, values): 
+		raise_traceback_exception('Error with arguments types.')
+		
+	# Assign might've raised an exception, check for it
+	if len(traceback[-1]['events']) > 0: return nydict(())
+
+	local_variables = assign(arguments, values)
 	
-def yell_str(k):
-	print('STRIIIIIIIIIING')
+	# Get the Nylo object of function's code
+	function_code = function[new_str('behaviour')]
+	# Run and return function's value
+	return run_multiline_code(function_code, local_variables)
+
+def call_argument(argument, values):
+	values = to_nylo(values)
+	arguments, values = nylo_call_to_python(argument, values)
+	arguments, values = elaborate_arguments(arguments, values)
+	if not arguments_follows_conditions(arguments, values): 
+		raise_traceback_exception('Error with arguments types.')
+		
+	# Assign might've raised an exception, check for it
+	if len(traceback[-1]['events']) > 0: return nydict(())
+
+	# Manually assign values
+	variables = {}
+	for argument, value in zip(arguments, values): 
+		variables[argument[new_str('name')]] = value
+	return nydict(variables.items())
 	
+def call_pyfunction(pyfun, values):
+	values = to_nylo(values)
+	ny_to_python = fetch_variable(new_var('to_python'))
+	arguments, values = nylo_call_to_python(pyfun[new_str('args')], values)
+	arguments, values = elaborate_arguments(arguments, values)
+	
+	# A call to to_python will make a nylo object like {'py_int': 3} --> 3, 
+	# making it easier to be used on the function. We should not do that if 
+	# we are calling to_python function, or we'd have a loop
+	if not pyfun in nyparsed_to_iterable(ny_to_python[new_str('functions')]):
+		for i, value in enumerate(values):
+			values[i] = call_overloaded_function(ny_to_python, value)
+
+	# If there is only one argument, like [3], we should call just with it
+	if len(values) == 0:
+		values = values[0]
+	#print(values)		
+	# Call the python function, just like a python function
+	python_output = pyfun['python_function'](*values)
+	# Again, if this isn't to_python, we should make the output back to 
+	# be nylonic
+	if not pyfun in nyparsed_to_iterable(ny_to_python[new_str('functions')]):
+		python_output = to_nylo(python_output)
+	
+	return python_output
+	
+def call_overloaded_function(overloaded, to_call_values):
+	to_call_values = to_nylo(to_call_values)
+
+	# So we check wich ones are good
+	functions = nyparsed_to_iterable(overloaded[new_str('functions')])
+	
+	ok_functions = []
+	for function in functions:
+		arguments, values = nylo_call_to_python(function[new_str('args')], to_call_values)
+		arguments, values = elaborate_arguments(arguments, values)
+		arguments, values = elaborate_implicit_arguments(arguments, values)
+		if arguments_follows_conditions(arguments, values):
+			ok_functions.append(function)
+		
+	if len(ok_functions) == 0: raise_traceback_exception('Wrong types.')
+	if len(traceback[-1]['events']) > 0: return nydict(())
+	# Call last ok function
+	return call(ok_functions[-1], to_call_values)
+
+def pass_argument(arg):
+	return arg
+
 """
 #  ISTANCES INITIALIZATORS   #
 # they take values and make  #
@@ -234,16 +397,9 @@ def nyparsed_to_iterable(nylist):
 		i+=1
 		
 def is_nylo_list(nyp): return new_int(0) in nyp
-"""
-ny_to_python = new_overloded_fun([
-				new_pyfunction(int_to_python, new_arg([new_var('k', [new_var('int')])])),
-				new_pyfunction(str_to_python, new_arg([new_var('k', [new_var('str')])])),
-				new_pyfunction(list_to_python, new_arg([new_var('k', [new_var('list')])])),
-			])"""
 
 """
-
-***************************************** PARSER **********************************************
+************************************************************ PARSER **********************************************************
 
 This parser target is to take a formatted_text with nylo_formatting and make it an nylo object. Built-in classes
 made by this are:
@@ -262,26 +418,6 @@ python_string: {pystr}
 python_int: {pyint}
 python_float: {pyflt}
 """
-
-__version__ = '0'
-__author__ = 'Niccolo\' "Veggero" Venerandi'
-
-"""
-TODO - b4 Nylo 
-
-TODO - b4 Nylo One
-- Binary, oct, ascii/utf string/number declarations
-- Special arguments
-- Special chars in strings
-- Errorrs raising
-
-TODO - should be okay but not sure
-- Functions (done? executer-side?)
-- Calling (executer-side?)
-"""
-
-import string
-import definitions
 
 def parse(string_code):
 	"""
@@ -371,7 +507,7 @@ def call_right_parser(code, index):
 		raise SyntaxError("Unrecognized character while parsing: '"+code[index]+"'")
 	return parsed, index
 
-def parse_code_until(code, index, until='', ignore='\n\t'):
+def parse_code_until(code, index, until='', ignore='\n\t;'):
 	# First of all, skip the character at start, if there is one:
 	# We will store every element we'll parse in
 	# every_parsed.
@@ -439,7 +575,7 @@ def parse_string_to_multiline_code(code, index = 0, until = ')'):
 	"""
 	# Parse first line
 	last_line_indentation, index = parse_string_to_indentation(code, index)
-	parsed, index = parse_code_until(code, index, until+'\n', ignore = '')
+	parsed, index = parse_code_until(code, index, until+'\n;', ignore = '')
 	
 	# Start saving every parsed line
 	parsed_lines = [parsed] if len(parsed)>0 else []
@@ -453,13 +589,13 @@ def parse_string_to_multiline_code(code, index = 0, until = ')'):
 			parsed_lines[-1].append(parsed)
 			
 		# If code is de-indented, we are actually in a function, 
-		# that is finished, so we need to return
+		# that is finished, so we need to return nydict(())
 		elif indentation < last_line_indentation:
 			for i in range(len(parsed_lines)): parsed_lines[i] = new_code(replace_symbols(parsed_lines[i]))
 			return new_multiline_code(parsed_lines), index
 			
 		else:
-			parsed, index = parse_code_until(code, after_indentation_index, until+'\n', ignore = '')
+			parsed, index = parse_code_until(code, after_indentation_index, until+'\n;', ignore = '')
 			if len(parsed)>0: parsed_lines.append(parsed)
 	
 	# Replace every code with its code nylo object
@@ -475,7 +611,7 @@ def parse_string_to_indentation(code, index):
 		indentation_level += 1
 		index += 1
 		
-	if code[index] == '\n':
+	if code[index] in '\n;':
 		indentation_level, index = parse_string_to_indentation(code, index+1)
 
 	return indentation_level, index
@@ -520,7 +656,7 @@ def parse_string_to_number(code, index):
 
 def ignore_comment(code, index):
 	# This simply has to wait until new line.
-	while code[index] != '\n': index += 1
+	while not code[index] in '\n;': index += 1
 	return None, index
 
 def ignore_multiline_comment(code, index):
@@ -590,11 +726,11 @@ def parse_string_to_function(code, index):
 	while last_indent == function_indent:
 		# We need to check if first argument is code or argument
 		# therefore, we check that everything is either variable, code or ","
-		first_argument_parsed, end_index = parse_code_until(code, end_index, '|}\n')
+		first_argument_parsed, end_index = parse_code_until(code, end_index, '|}\n;')
 		
 		first_argument += first_argument_parsed
 		
-		if code[end_index-1] == '\n':
+		if code[end_index-1] == '\n;':
 			last_indent, end_index = parse_string_to_indentation(code, end_index)
 		else:
 			break
@@ -767,7 +903,7 @@ def insert (source_str, insert_str, pos):
 
 
 """
-# EXECUTING-CODE RELATED #
+********************************************************* EXECUTER ***********************************************************
 """
 
 def run(code):
@@ -840,11 +976,13 @@ def run_multiline_code(nylo_multiline_code, with_arguments):
 				close_traceback_call()
 				return event['return']
 			
-	# If the code was one line long, we should juust return 
+	
+	# If the code was one line long, we should juust return nydict(())
+	# THIS NEEDS THE TRACEBACK TO BE STILL OPEN
 	if traceback[-1]['line'] == 0:
+		close_traceback_call()
 		return output
 	
-	# No value returned. Close the call and return nothing
 	close_traceback_call()
 	return nydict(())
 		
@@ -860,7 +998,7 @@ def run_codeline(codeline):
 
 	# Execute every bracket and replace variables
 	py_code = execute_brackets(py_code)
-	if len(traceback[-1]['events'])>0: return
+	if len(traceback[-1]['events'])>0: return nydict(())
 
 	# The first element of a line is the object that's gonna be called
 	# e.g.: print 'hi' --> print is gonna be called
@@ -868,9 +1006,11 @@ def run_codeline(codeline):
 	
 	# While there are arguments after the calling object, take
 	# them and use them to call the called object.
-	while py_code: called = call(called, py_code.pop(0))
+	while py_code: 
+		called = call_overloaded_function(fetch_variable(new_var('call')), to_nylo([called, py_code.pop(0)]) )
+		if len(traceback[-1]['events']) > 0: return nydict(())
 		
-	# What's left is what we should return
+	# What's left is what we should return nydict(())
 	return called
 	
 def call(called, argument):
@@ -882,60 +1022,20 @@ def call(called, argument):
 	"""
 	# Check what type of callable object is 'called':
 	
-	# If it has 'functions', it's an overloaded function
-	if new_str('functions') in called:
-		
-		# So we check wich ones are good
-		functions = nyparsed_to_iterable(called[new_str('functions')])
-		
-		ok_functions = []
-		for function in functions:
-			arguments, values = nylo_call_to_python(function[new_str('args')], argument)
-			arguments, values = elaborate_arguments(arguments, values)
-			arguments, values = elaborate_implicit_arguments(arguments, values)
-			if arguments_follows_conditions(arguments, values):
-				ok_functions.append(function)
-			
-		if len(ok_functions) == 0: raise_traceback_exception('None of the overloaded function can accept argument value type.')
-		if len(traceback[-1]['events']) > 0: return
-		# Call last ok function
-		return call(ok_functions[-1], argument)
-	
-	# If it has args and behaviour, it's a function
-	if new_str('args') in called and new_str('behaviour') in called:
-		
-		arguments, values = nylo_call_to_python(called[new_str('args')], argument)
-		arguments, values = elaborate_arguments(arguments, values)
-		arguments, values = elaborate_implicit_arguments(arguments, values)
-		if not arguments_follows_conditions(arguments, values): 
-			raise_traceback_exception('Error with arguments types.')
-			
-		# Assign might've raised an exception, check for it
-		if len(traceback[-1]['events']) > 0: return
-	
-		local_variables = assign(arguments, values)
-		
-		# Get the Nylo object of function's code
-		function_code = called[new_str('behaviour')]
-		# Run and return function's value
-		return run_multiline_code(function_code, local_variables)
-	
 	# If it has 'python_function', it's actually a Python
 	# function; You can't really define them within Nylo
 	# syntax, so usually they're built-ins
-	elif 'python_function' in called:
-		arguments, values = nylo_call_to_python(called[new_str('args')], argument)
-		arguments, values = elaborate_arguments(arguments, values)
-		"""if not called in nyparsed_to_iterable(ny_to_python[new_str('functions')]):
-			argument = call(ny_to_python, argument)"""
-		# Call the python function, just like a python function
-		return called['python_function'](*values)
+	if 'python_function' in called:
+		
+		return call_pyfunction(called, argument)
+	
+	return call_overloaded_function(fetch_variable(new_var('call')), argument)
 	
 """
 # DATA MANIPULATION RELATED #
 """
 	
-def fetch_variable(variable):
+def fetch_variable(variable, default=None):
 	"""
 	Get the value of a variable from the trackeback.
 	"""
@@ -951,6 +1051,8 @@ def fetch_variable(variable):
 			if local_variable[new_str('name')] == to_fetch_variable_name:
 				return local_variables[local_variable]
 	
+	if default != None:
+		return default
 	# We found nothing; return an exception
 	raise_traceback_exception('Variable '+to_fetch_variable_name['py_string']+' not found.')
 	
@@ -973,7 +1075,6 @@ def elaborate_arguments(py_arguments, py_values):
 	"""
 	Change arguments and values to match the best, e.g.: sum ([[1,2]]) --> sum (1,2)
 	"""
-	
 	# {x|}(1,2,3) --> {x|}([1,2,3])
 	py_values = [new_list(py_values)]
 	
@@ -1010,7 +1111,21 @@ def assign(py_arguments, py_values):
 	dictionary of variables.
 	"""
 	# Iter on both list of arguments and values at the same time
-	variables = {argument: value for argument, value in zip(py_arguments, py_values)}
+	variables = {}
+	for argument, value in zip(py_arguments, py_values): 
+		if new_str('behaviour') in value and new_str('args') in value:
+			var_to_replace = fetch_variable(argument, default=[])
+			# If the variable to be replaced is a overloaded function, we should add
+			# ours to the overloadeds
+			if new_str('behaviour') in var_to_replace and new_str('args') in var_to_replace:
+				variables[argument] = new_overloded_fun([var_to_replace, value])
+			elif new_str('functions') in var_to_replace:
+				variables[argument] = new_overloded_fun(nyparsed_to_iterable(var_to_replace[new_str('functions')])+[value])
+			else:
+				variables[argument] = value
+		else:
+			variables[argument] = value
+
 	return variables
 
 def arguments_follows_conditions(py_arguments, py_values):
@@ -1064,9 +1179,9 @@ def follows_conditions(value, conditions):
 			return False
 	
 	class_to_check = fetch_variable(condition_to_check)
-	# fetch_variable might've raise an error, if so return
+	# fetch_variable might've raise an error, if so return nydict(())
 	if len(traceback[-1]['events']) > 0:
-		return
+		return nydict(())
 	variables_to_check = class_to_check[new_str('variables')]
 	py_variables_to_check = nyparsed_to_iterable(variables_to_check)
 		
@@ -1124,9 +1239,9 @@ def execute_brackets(py_code):
 		for prop in parsed_element:
 			val = parsed_element[prop]
 			if not type(prop) == str:
-				if new_str('behaviour') in prop:
+				if new_str('behaviour') in prop and not new_str('args') in prop:
 					prop = run_codeline(prop)
-				if new_str('behaviour') in val:
+				if new_str('behaviour') in val and not new_str('args') in val:
 					val = run_codeline(val)
 			new_parsed_element[prop] = val
 			
@@ -1162,12 +1277,37 @@ def raise_traceback_exception(message):
 	
 def get_traceback_events():
 	for i, event in enumerate(traceback[-1]['events']):
-		del traceback[-1]['events']
+		del traceback[-1]['events'][i]
 		yield event
 		
 def close_traceback_call():
 	del traceback[-1]
 
 
-if __name__ = "__main__":
-	print(run(input("nylo> ")))
+if __name__ == "__main__":
+	clear_traceback()
+	
+	# Base process to remember variables
+	add_call_to_traceback({
+		'code': None,
+		'events': [],
+		'line': None,
+		'variables': nylo(),
+	})
+		
+	while 1:
+	
+		out = run_codeline(nyparsed_to_iterable(parse(input("nylo> "))[new_str('lines')])[0])
+		
+		# Manage the events (such as return, break, exceptions)
+		for event in get_traceback_events():
+			
+			# If an exception is raised
+			if 'raise' in event:
+				
+				# This is the last layer, therefore we should
+				# print out the exception
+				show_raised_exception(event['raise'])
+			
+		if out != nydict(()):
+			call_pyfunction(fetch_variable(new_var('print')), out)
