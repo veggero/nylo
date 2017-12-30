@@ -1,7 +1,7 @@
 ![](https://github.com/veggero/nylo/blob/master/images/NyloBanner.png?raw=true)
 
     fib:
-      int n |
+      with int n
       =0 or =1
         1
       else
