@@ -1,4 +1,4 @@
-![](https://github.com/veggero/nylo/blob/master/docs/images/NyloBanner.png?raw=true)
+![](https://github.com/pyTeens/nylo/blob/bloody-nylo-zero/docs/images/NyloBanner.png?raw=true)
 
 ## What's Nylo?
 
