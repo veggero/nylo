@@ -1,9 +1,9 @@
 from . import nydict
 
 
-def new_str(string):
+def str(string):
     return nydict.Nydict((('py_string', string),))
 
 
-def new_int(integer):
+def int(integer):
     return nydict.Nydict((('py_int', integer),))
