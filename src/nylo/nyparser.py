@@ -74,40 +74,27 @@ class nydict:
             yield key[0]
 
 
+# See specifications 2.0.1: parse_string
 def parse_string(code, index):
-    """
-    Parse a string to a string. It's confusing, but just thing about it.
-    What this does is making "happy" a happy string object.
-    """
-    # Remember with what char we started, either ' or ".
-    # Obv it's also the char where we should end at.
     end_character, start_character_index = code[index], index
-    # Go after it
     index += 1
-    # Loop until closing character.
     while code[index] != end_character:
         index += 1
         # TODO, if EOF should raise exception
-    # Parse the string to a string object.
     string = code[start_character_index + 1: index]
     string_object = new_str(string)
-    # Ignore the ending character.
     index += 1
     return string_object, index
 
 
+# See specifications 2.0.2: parse_numbers
 def parse_numbers(code, index):
-    # Save the start index.
     start_index = index
-    # Loop until first non-numeric character.
     while code[index] in string.digits + '.':
-        # If this is the second '.', we should stop
         if code[index] == '.' and '.' in code[start_index:index]:
             break
         index += 1
-    # Save the number
     str_number = code[start_index:index]
-    # and make it an object
     if '.' in str_number:
         number = new_float(float(str_number))
     else:
