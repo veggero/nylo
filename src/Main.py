@@ -3,19 +3,47 @@ import sys
 import platform
 import datetime
 import time
+from io import IOBase
 
+nodeSpace = '    '
 
 def main(argv):
     try:
         command = getCommand(argv)
-        if command == 'version':
-            print("Nylo 0.10 (" + date(time.time()) + ")\n(" +
-                  platform.release() + ") on " + platform.system())
-            exit()
-        if command == 'help':
-            print(helpMessage())
+        if isinstance(command, str):
+            if command == 'version':
+                print("Nylo 0.10 (" + date(time.time()) + ")\n(" +
+                    platform.release() + ") on " + platform.system())
+                exit()
+            elif command == 'help':
+                print(helpMessage())
+            elif command == 'file_not_found':
+                print("Error: File not found\n\n" + helpMessage())
+        elif isinstance(command, IOBase):
+            program(command)
     except KeyError:
         pass
+
+
+def program(code):
+    with code as obj:
+        lines = list(obj)
+    for line in lines:
+        node = getNode(line)
+        if not isComment(line):
+            pass
+        else:
+            continue
+
+
+def isComment(line: str):
+    return (line.lstrip()).startswith('#')
+
+
+def getNode(line: str):
+    global nodeSpace
+    whitespace = line.replace(line.lstrip(), '')
+    return whitespace.count(nodeSpace)
 
 
 def getCommand(parsedArguments):
@@ -24,6 +52,12 @@ def getCommand(parsedArguments):
             return 'version'
         elif key == 'help' and value:
             return 'help'
+        elif key == 'i' and value:
+            try:
+                file = open(value, 'r')
+                return file
+            except FileNotFoundError:
+                return 'file_not_found'
 
 
 def helpMessage():
