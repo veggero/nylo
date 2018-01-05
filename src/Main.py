@@ -7,13 +7,14 @@ from io import IOBase
 
 nodeSpace = '    '
 
+
 def main(argv):
     try:
         command = getCommand(argv)
         if isinstance(command, str):
             if command == 'version':
                 print("Nylo 0.10 (" + date(time.time()) + ")\n(" +
-                    platform.release() + ") on " + platform.system())
+                      platform.release() + ") on " + platform.system())
                 exit()
             elif command == 'help':
                 print(helpMessage())
