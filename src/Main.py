@@ -6,7 +6,32 @@ import time
 from io import IOBase
 
 nodeSpace = '    '
-tokens = {"COMMENT_ONELINE": '//'}
+tokens = {
+     "COMMENT_ONELINE": '//',
+     "OPEN_QUICKFUNCTION": '{',
+     "CLOSE_QUICKFUNCTION": '}',
+     "ASSIGNMENT": ':',
+     "OPEN_LIST": '[',
+     "CLOSE_LIST": ']',
+     "GREATER": '>',
+     "LESS": '<',
+     "EQUAL": '=',
+     "PLUS": '+',
+     "MINUS": '-',
+     "MOLTIPLICATE": '*',
+     "DIVIDE": '/',
+     "POW": '**',
+     "CONCATENATION": '&',
+     "OPEN_DOUBLEQUOTE": '"',
+     "CLOSE_DOUBLEQUOTE": '"',
+     "OPEN_SINGLEQUOTE": '\'',
+     "CLOSE_SINGLEQUOTE": '\''}
+types = {
+     "INTEGER": 'int',
+     "STRING": 'string',
+     "LIST": 'list',
+     "FLOAT": 'float',
+     "DICTIONARY": 'dict'}
 
 
 def main(argv):
