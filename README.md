@@ -3,7 +3,7 @@
 ## What's Nylo?
 
 **Nylo** is a new programming language ideated by [@veggero](https://github.com/veggero).
-Its __performance__ and its __syntax__ are so awesome that you'll reconsider s*x.
+Its __performance__ and its __syntax__ are so awesome that you'll reconsider sex.
 
 ```
 fib:
