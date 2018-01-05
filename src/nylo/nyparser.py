@@ -1,5 +1,39 @@
 import string
 
+tokens = {
+     "COMMENT_ONELINE": '//',
+     "OPEN_QUICKFUNCTION": '{',
+     "CLOSE_QUICKFUNCTION": '}',
+     "ASSIGNMENT": ':',
+     "OPEN_LIST": '[',
+     "CLOSE_LIST": ']',
+     "GREATER": '>',
+     "LESS": '<',
+     "EQUAL": '=',
+     "PLUS": '+',
+     "MINUS": '-',
+     "MOLTIPLICATE": '*',
+     "DIVIDE": '/',
+     "POW": '**',
+     "CONCATENATION": '&',
+     "OPEN_DOUBLEQUOTE": '"',
+     "CLOSE_DOUBLEQUOTE": '"',
+     "OPEN_SINGLEQUOTE": '\'',
+     "CLOSE_SINGLEQUOTE": '\'',
+     "OPEN_NODE": '{',
+     "CLOSE_NODE": '}',
+     "OPEN_MULTILINECOMMENT": '/*',
+     "CLOSE_MULTILINECOMMENT": '*/',
+     "OPEN_ROUNDBRACES": '(',
+     "CLOSE_ROUNDBRACES": ')',
+     "EXA": '#'}
+types = {
+     "INTEGER": 'int',
+     "STRING": 'string',
+     "LIST": 'list',
+     "FLOAT": 'float',
+     "DICTIONARY": 'dict'}
+
 # TODO These are the parser that should be defined.
 # Since the code isn't ready yet, I
 # initialize them with None to use
@@ -123,12 +157,12 @@ def parse_element(code: str, index: int):
 right_parser_by_start = {
         (tuple(string.digits) +
          tuple("." + digit for digit in string.digits)): parse_numbers,
-        ("["): parse_square_bracket,
-        ("'", "\""): parse_string,
+        (tokens['OPEN_LIST']): parse_square_bracket,
+        (tokens['OPEN_SINGLEQUOTE'], tokens['OPEN_DOUBLEQUOTE']): parse_string,
         string.ascii_letters: parse_variable,
-        ("{"): parse_curly_bracket,
-        ("//"): parse_inline_comment,
-        ("/*"): parse_multiline_comment,
-        ("#"): parse_exa,
-        ("("): parse_round_bracket
+        (tokens['OPEN_NODE']): parse_curly_bracket,
+        (tokens['COMMENT_ONELINE']): parse_inline_comment,
+        (tokens['OPEN_MULTILINECOMMENT']): parse_multiline_comment,
+        (tokens['EXA']): parse_exa,
+        (tokens['OPEN_ROUNDBRACES']): parse_round_bracket
 }
