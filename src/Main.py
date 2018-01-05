@@ -6,6 +6,7 @@ import time
 from io import IOBase
 
 nodeSpace = '    '
+tokens = {"COMMENT_ONELINE": '//'}
 
 
 def main(argv):
@@ -33,12 +34,14 @@ def program(code):
         node = getNode(line)
         if not isComment(line):
             pass
+            # TODO - Parsing function
         else:
             continue
 
 
 def isComment(line: str):
-    return (line.lstrip()).startswith('#')
+    global tokens
+    return (line.lstrip()).startswith(tokens['COMMENT_ONELINE'])
 
 
 def getNode(line: str):
