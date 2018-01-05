@@ -23,3 +23,5 @@ It's going to change how we code, that's it.
 **Nylo** is going to be released on the **25th of May 2018**.
 Support and watch the development on [its repository](https://github.com/pyTeens/nylo).
 You can also take a look of the [Quick Deep Documentation](https://github.com/pyTeens/nylo/wiki/Quick-Deep-Documentation) and [its docs (for now, in Italian)](https://pyteens.github.io/nylo/docs/Nylo.odt).
+
+Take a look at the [latest available changelog!](CHANGELOG.md)!
