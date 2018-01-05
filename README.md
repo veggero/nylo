@@ -1,4 +1,4 @@
-![](https://github.com/pyTeens/nylo/blob/bloody-nylo-zero/docs/images/NyloBanner.png?raw=true)
+![](https://raw.githubusercontent.com/pyTeens/nylo/gh-pages/docs/images/NyloBanner.png) [![](https://travis-ci.org/pyTeens/nylo.svg?branch=master)](https://travis-ci.org/pyTeens/nylo)
 
 ## What's Nylo?
 
@@ -8,7 +8,7 @@ Its __performance__ and its __syntax__ are so awesome that you'll reconsider s*x
 ```
 fib:
     with int n
-    =0 or =1
+    if (=0 or =1)
       1
     else
       fib(n-1) + fib(n-2)
@@ -22,4 +22,4 @@ It's going to change how we code, that's it.
 
 **Nylo** is going to be released on the **25th of May 2018**.
 Support and watch the development on [its repository](https://github.com/pyTeens/nylo).
-You can also take a look of the [Quick Deep Documentation](https://github.com/veggero/nylo/wiki/Quick-Deep-Documentation) and [its docs (for now, in Italian)](docs/Nylo.odt).
+You can also take a look of the [Quick Deep Documentation](https://github.com/pyTeens/nylo/wiki/Quick-Deep-Documentation) and [its docs (for now, in Italian)](https://pyteens.github.io/nylo/docs/Nylo.odt).
