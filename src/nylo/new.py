@@ -1,4 +1,5 @@
-import nydict
+from . import nydict
+
 
 def new_str(string):
     return nydict.Nydict((('py_string', string),))
