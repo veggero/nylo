@@ -1,12 +1,13 @@
 import string
 
+# TODO: FUNCTIONS TO TAKE HERE
+# old code link: https://github.com/pyTeens/nylo/blob/f1d7b6edbce36a7b8272d1457354942f1efcc0d0/nylo.py
+
 # TODO These are the parser that should be defined.
 # Since the code isn't ready yet, I
 # initialize them with None to use
 # their keyword anyway, for testing purposes.
-parse_numbers = None
 parse_square_bracket = None
-parse_string = None
 parse_variable = None
 parse_curly_bracket = None
 parse_inline_comment = None
@@ -15,63 +16,13 @@ parse_exa = None
 parse_round_bracket = None
 
 
-class nydict:
-
-    """
-    Nylo object is just a dict, but it needs to be hashable.
-    Therefore I use tuples, but I create a new class to make
-    it prettier (such as, dict-like declaration and dict get and
-    assign functions)
-    """
-
-    def __init__(self, args):
-        self.value = frozenset(args)
-
-    def __eq__(x, y):
-        try:
-            return x.value == y.value
-        except AttributeError:
-            return False
-
-    def __hash__(self):
-        return hash(self.value)
-
-    def __getitem__(self, key):
-        """
-        Get an item: nylo_obj(('age',16))['age'] --> 16
-        """
-        for couple in self.value:
-            if couple[0] == key:
-                return couple[1]
-        raise IndexError(
-            "Key " + str(
-                key) + " can't be found in nydict " + str(
-                    self))  # newfags can't avoid indexerror
-
-    def __contains__(self, key):
-        return any([couple[0] == key for couple in self.value])
-
-    def __call__(self, key, value):
-        """
-        Set a value and return the new tupledict.
-        nylo_obj(('age', 16))('age', 17)
-        --> nylo_obj(('age', 17))
-        """
-        return [couple
-                if couple[0] != key
-                else (couple[0], value)
-                for couple in self.value]
-
-    def __repr__(self):
-        return ('{' + ', '.join([repr(son[0]) + ': ' +
-                repr(son[1]) for son in self.value]) + '}')
-
-    def __len__(self):
-        return len(self.value)
-
-    def __iter__(self):
-        for key in self.value:
-            yield key[0]
+# See specifications 2.0.0: parse_element
+def parse_element(code: str, index: int):
+    for possible_starts in right_parser_by_start:
+        if any(code.startswith(start, index) for start in possible_starts):
+            parsed_object, new_index = right_parser_by_start[
+                possible_starts](code, index)
+    return parsed_object, new_index
 
 
 # See specifications 2.0.1: parse_string
@@ -100,23 +51,6 @@ def parse_numbers(code, index):
     else:
         number = new_int(int(str_number))
     return number, index
-
-
-def new_str(string):
-    return nydict((('py_string', string),))
-
-
-def new_int(integer):
-    return nydict((('py_int', integer),))
-
-
-# See specifications 2.0.0: parse_element
-def parse_element(code: str, index: int):
-    for possible_starts in right_parser_by_start:
-        if any(code.startswith(start, index) for start in possible_starts):
-            parsed_object, new_index = right_parser_by_start[
-                possible_starts](code, index)
-    return parsed_object, new_index
 
 
 # See specifications 2.0: parsing
