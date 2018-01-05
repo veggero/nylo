@@ -4,13 +4,15 @@ from . import new
 
 
 # TODO: FUNCTIONS TO TAKE HERE
-# old code link: https://github.com/pyTeens/nylo/blob/f1d7b6edbce36a7b8272d1457354942f1efcc0d0/nylo.py
+# Old code link:
+# https://github.com/pyTeens/nylo/blob/f1d7b6edbce36a7b8272d1457354942f1efcc0d0/nylo.py
 #
 # parse -> parse (as is)
 # parse_code_until -> parse_until (a lot of changes needed)
 # parse_string -> parse_variable (adding new.var before output)
 # parse_string_to_code -> parse_round_braces (little change needed)
-# parse_string_to_multiline_code -> parse_multiline_code (major changes needed.)
+# parse_string_to_multiline_code -> parse_multiline_code
+# <- (major changes needed.)
 # parse_string_to_indentation -> parse_indent (no changes)
 # ignore_comment -> parse_inline_comment (no changes)
 # ignore_multiline_comment -> parse_multiline_comment (no changes)
@@ -25,7 +27,7 @@ from . import new
 # call_right_parser --> parse_element
 # parse_string_to_string --> parse_string
 # parse_string_to_number --> parse_number
-# 
+#
 
 
 # These are the parser that should be defined.
