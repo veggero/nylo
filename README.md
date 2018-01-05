@@ -1,4 +1,4 @@
-![](https://github.com/pyTeens/nylo/blob/master/docs/images/NyloBanner.png?raw=true) [![](https://travis-ci.org/pyTeens/nylo.svg?branch=master)](https://travis-ci.org/pyTeens/nylo)
+![](https://raw.githubusercontent.com/pyTeens/nylo/gh-pages/docs/images/NyloBanner.png) [![](https://travis-ci.org/pyTeens/nylo.svg?branch=master)](https://travis-ci.org/pyTeens/nylo)
 
 ## What's Nylo?
 
