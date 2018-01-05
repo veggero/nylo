@@ -8,7 +8,7 @@ Its __performance__ and its __syntax__ are so awesome that you'll reconsider s*x
 ```
 fib:
     with int n
-    =0 or =1
+    if (=0 or =1)
       1
     else
       fib(n-1) + fib(n-2)
