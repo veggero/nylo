@@ -52,11 +52,11 @@ def getNode(line: str):
 
 def getCommand(parsedArguments):
     for key, value in parsedArguments.items():
-        if key == 'version' and value:
+        if (key == 'version' or key == 'v') and value:
             return 'version'
-        elif key == 'help' and value:
+        elif (key == 'help' or key == 'h') and value:
             return 'help'
-        elif key == 'i' and value:
+        elif key == 'i':
             try:
                 file = open(value, 'r')
                 return file
@@ -67,11 +67,11 @@ def getCommand(parsedArguments):
 def helpMessage():
     return ("usage: nylo [options] file\n\n" +
             "A new programming language\n\n" +
-            "nylo options:\n      --version" +
+            "nylo options:\n   -v, --version" +
             "            display version" +
             " number of nylo and platform" +
-            " details\n      --help      " +
-            "          display this help message")
+            " details\n   -h, --help      " +
+            "         display this help message")
 
 
 def parseArguments(argv):
@@ -83,10 +83,16 @@ def parseArguments(argv):
             if parsedArguments[lastArgument] == '':
                 parsedArguments[lastArgument] = True
             lastArgument = argument.replace('--', '')
+        elif argument.startswith('-'):
+            parsedArguments[argument.replace('-', '')] = ''
+            if parsedArguments[lastArgument] == '':
+                parsedArguments[lastArgument] = True
+            lastArgument = argument.replace('-', '')
         else:
             parsedArguments[lastArgument] = argument
+            continue
     for key, value in parsedArguments.items():
-        if value == '':
+        if value == '' and not key == 'i':
             parsedArguments[key] = True
     return parsedArguments
 
