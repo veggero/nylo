@@ -19,6 +19,11 @@ def main(argv):
                 exit()
             elif command == 'help':
                 print(helpMessage())
+            elif command == 'command version':
+                print("Or va, ch’un sol volere è d’ambedue: \
+                        \ntu duca, tu segnore, e tu maestro». \
+                        \nCosì li dissi; e poi che mosso fue, \
+                        \nintrai per lo cammino alto e silvestro.")
             elif command == 'file_not_found':
                 print("Error: File not found\n\n" + helpMessage())
         elif isinstance(command, IOBase):
@@ -56,6 +61,8 @@ def getCommand(parsedArguments):
             return 'version'
         elif (key == 'help' or key == 'h') and value:
             return 'help'
+        elif (key == 'cm') and value:
+            return 'command version'
         elif key == 'i':
             try:
                 file = open(value, 'r')
