@@ -1,4 +1,6 @@
 import string
+from typing import Tuple
+
 from . import tokens
 from . import new
 
@@ -44,7 +46,7 @@ parse_round_braces = None
 
 
 # See specifications 2.0.0: parse_element
-def parse_element(code: str, index: int):
+def parse_element(code: str, index: int) -> Tuple[str, int]:
     for possible_starts in right_parser_by_start:
         if any(code.startswith(start, index) for start in possible_starts):
             parsed_object, new_index = right_parser_by_start[
@@ -53,7 +55,7 @@ def parse_element(code: str, index: int):
 
 
 # See specifications 2.0.1: parse_string
-def parse_string(code, index):
+def parse_string(code, index) -> Tuple[str, int]:
     end_character, start_character_index = code[index], index
     index += 1
     while code[index] != end_character:
@@ -66,7 +68,7 @@ def parse_string(code, index):
 
 
 # See specifications 2.0.2: parse_number
-def parse_number(code, index):
+def parse_number(code, index) -> Tuple[str, int]:
     start_index = index
     while code[index] in string.digits + '.':
         if code[index] == '.' and '.' in code[start_index:index]:
