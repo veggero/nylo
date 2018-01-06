@@ -60,7 +60,7 @@ def parse_string(code, index):
         index += 1
         # TODO, if EOF should raise exception
     string = code[start_character_index + 1: index]
-    string_object = new.str(string)
+    string_object = new.nystr(string)
     index += 1
     return string_object, index
 
@@ -74,9 +74,9 @@ def parse_number(code, index):
         index += 1
     str_number = code[start_index:index]
     if '.' in str_number:
-        number = new.float(float(str_number))
+        number = new.nyfloat(float(str_number))
     else:
-        number = new.int(int(str_number))
+        number = new.nyint(int(str_number))
     return number, index
 
 
