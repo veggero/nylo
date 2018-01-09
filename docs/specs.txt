@@ -1,0 +1,165 @@
+namespace builtins
+
+    "Built-in stuctures and functions of Nylo."
+    
+    fun equals
+    struct iterator
+    struct var
+    struct fun
+    struct namespace
+    
+    namespace struct
+    
+        struct struct:
+            list var variables
+            
+        fun call:
+            with list[
+            (-> [0]) is_a struct 
+            ] to_call
+            "Create an istance of the structure
+            {int a, b} 1 2 = ['a': 1, 'b': 2]"
+            
+        fun call:
+            with 
+                struct[=struct] base_struct,
+                list struct to_inherit,
+                struct new_struct
+            "Create a new structure inheriting from an old one
+            struct (exception) {int line}"
+            
+        fun join:
+            with list struct
+            "Join two structures"
+            
+        fun to:
+            with
+                struct[=string] base_string,
+                struct to_convert
+            "Convert a structure to its string rappresentation"
+            
+        fun to_string:
+            with struct to_convert
+            "Convert a structure to string, readable way to call to(str, struct)"
+    
+    namespace exception
+    
+        struct exception:
+            str name,
+            str error_message,
+            str common_fixes
+        
+        fun to:
+            with 
+                struct[=exception] base_exception, 
+                str name, 
+                error_message, 
+                common_fixes
+            "Create a new exception based on the error message and common_fixes"
+            
+        fun to_exception:
+            with 
+                str name,
+                error_message, 
+                common_fixes
+            "Readable way to call to(exception,).
+            to_exception('oh!', 'foo', 'bar') = to(exception, 'oh!', 'foo', 'bar')"
+        
+        fun to: 
+            with 
+                struct[=string] base_string, 
+                exception to_convert
+            "Convert an exception to a string"
+        
+        fun to_string:
+            with exception to_convert
+            "Convert an exception to a string, readable way to call to(str, exception)
+            to_string(raised) = to(str, raised)"
+
+    namespace str
+    
+        pystruct str:
+            pystr value
+            
+        fun to:
+            with
+                struct[=int] base_int,
+                str to_convert
+            "Convert a string to an integer"
+            
+        fun to:
+            with
+                struct[=float] base_float,
+                str to_convert
+            "Convert a string to a floating point"
+            
+        fun to_int:
+            with str to_convert
+            "Convert a string to a integer, readable way to call to(int, str)"
+            
+        fun to_float:
+            with str to_convert
+            "Convert a string to a floating point, readable way to call to(float, str)"
+            
+        fun join:
+            with list str to_join
+            "Join a list of strings in a single one"
+            
+        fun call:
+            with
+                str subject,
+                int index
+            "Get the character at the given index"
+            
+        fun contains:
+            with
+                list to_check,
+                element to_find
+            "Check if the element to_find is inside the list to_check"
+            
+        fun greater_than:
+            with list str to_check
+            "Check if a list of strings are in alphabetical order"
+            
+        fun less_than:
+            with list str to_check
+            "Check if a list of strings are in reverse alphabetical order"
+            
+        fun iter:
+            with str to_iterate
+            "Return an iterator over the characters of a string to_iterate"
+            
+        fun to:
+            with 
+                struct[=str] base_str   
+                str to_convert
+            "Convert a string to a string, aka does nothig"
+            
+        fun to_string:
+            with str to_convert
+            "Convert a string to a string, aka does nothing"
+            
+        fun bytesize:
+            with string to_measure
+            "Return the syze of a string to_measure in memory, in bytes"
+            
+        fun capitalize:
+            with string to_capitalize
+            "Capitalize a string, aka make the first character have upper
+            case and the rest lower case"
+            
+        fun center:
+            with
+                str to_center,
+                str[len=1] fillchar[' ']
+            "Return S centered in a string of length width. Padding is
+            done using the specified fill character (default is a space)"
+            
+        fun count:
+            with
+                str complete_string,
+                str to_find,
+                int start[0],
+                int end[-1]
+            "Count how many times a substring to find appears in a complete_string"
+                
