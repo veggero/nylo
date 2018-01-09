@@ -36,7 +36,6 @@ def program(code):
     with code as obj:
         lines = list(obj)
     for line in lines:
-        node = getNode(line)
         if not isComment(line):
             pass
             # TODO - Parsing function
@@ -47,12 +46,6 @@ def program(code):
 def isComment(line: str):
     global tokens
     return (line.lstrip()).startswith(tokens['COMMENT_ONELINE'])
-
-
-def getNode(line: str):
-    global nodeSpace
-    whitespace = line.replace(line.lstrip(), '')
-    return whitespace.count(nodeSpace)
 
 
 def getCommand(parsedArguments):
