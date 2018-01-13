@@ -55,3 +55,6 @@ class Nydict:
     def __iter__(self):
         for key in self.value:
             yield key[0]
+            
+    def __add__(self, another):
+        return Nydict(self.value.union(another.value))
