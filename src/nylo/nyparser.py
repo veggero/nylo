@@ -3,10 +3,14 @@ from typing import Tuple, List
 
 from . import new
 from . import nydef
+from . import nydict
 
-parse_curly_braces = None
-parse_round_braces = None
-parse_square_braces = None
+
+def parse(code):
+    code += '\n'
+    parsed, index, indent = parse_multiline_code(code)
+    return parsed
+
 
 def parse_multiline_code(code: str, index=0, prev_indent=-1, indent=0) -> Tuple[object, int, int]:
     lines = []
@@ -32,16 +36,59 @@ def get_indentation(code: str, index: int) -> Tuple[int, int]:
     return index - start_index, index
 
 
-def parse_until(code: str, index: int, endings: List[str], to_ignore: List[str]):
+def parse_until(code: str, index: int, endings: List[str]):
     parsed_objects_sectors = [[]]
-    while not  any(code.startswith(end_char, index) for end_char in endings):
-        if not code[index] in to_ignore: parsed_object, index = parse_element(code, index)
-        else: parsed_object, index = None, index + 1
+    while not any(code.startswith(end_char, index) for end_char in endings):
+        parsed_object, index = parse_element(code, index)
         if parsed_object in nydef.symbols: 
             parsed_objects_sectors.extend((parsed_object, []))
         elif parsed_object: parsed_objects_sectors[-1].append(parsed_object)
     parsed_objects = replace_symbols(parsed_objects_sectors)
     return new.nycode(parsed_objects), index
+
+
+def parse_round_braces(code: str, index: int) -> Tuple[object, int]:
+    index += 1
+    parsed, index = parse_until(code, index, [':', ')'])
+    if code[index] == ':':
+        index += 1
+        keys, values = [parsed], []
+        value, index = parse_until(code, index, [',', ')'])
+        values.append(value)
+        while code[index] != ')':
+            index += 1
+            key, index = parse_until(code, index, [':'])
+            index += 1
+            value, index = parse_until(code, index, [',', ')'])
+            keys.append(key)
+            values.append(value)
+        parsed = nydict.Nydict(zip(keys, values))
+    return parsed, index + 1
+
+
+def parse_curly_braces(code: str, index: int) -> Tuple[object, int]:
+    index += 1
+    first_argument, index = parse_until(code, index, ['}', '|'])
+    if code[index] == '|':
+        second_argument, index = parse_until(code, index + 1, ['}'])
+        return new.nyfun(second_argument, first_argument), index + 1
+    return new.nyfun(first_argument), index + 1
+
+
+def parse_square_braces(code: str, index: int) -> Tuple[object, int]:
+    index += 1
+    labels = []
+    while code[index] != ']':
+        if code[index] == '[':
+            index += 1
+            parsed, index = parse_until(code, index, [']'])
+            index += 1
+            labels.append(parsed)
+        else:
+            parsed, index = parse_element(code, index)
+            if parsed: labels.append(parsed)
+    index += 1
+    return new.reference(labels), index
 
 
 def parse_element(code: str, index: int) -> Tuple[object, int]:
@@ -50,6 +97,7 @@ def parse_element(code: str, index: int) -> Tuple[object, int]:
             parsed_object, new_index = \
                 right_parser_by_start[possible_starts](code, index)
             return parsed_object, new_index
+    print(list(enumerate(code)), index)
 
 def parse_inline_comment(code: str, index: int) -> Tuple[type(None), int]:
     while code[index] != '\n': index += 1
@@ -67,11 +115,6 @@ def parse_whitespace(code: str, index: int) -> Tuple[type(None), int]:
 
 def parse_prevent_new_line(code: str, index: int) -> Tuple[type(None), int]:
     return None, index + 2
-
-
-def parse_round_braces(code: str, index: int) -> Tuple[object, int]:
-    index += 1
-    round_braces_objects = parse_until(code, index, [')'], to_ignore='\n')   
 
 
 def parse_exa(code: str, index: int) -> Tuple[object, int]:
@@ -139,7 +182,10 @@ def get_value_from_sector(sectors: list, index: int, unary=False):
     return value
 
 def parse_symbol(code: str, index: int) -> Tuple[str, str]:
-    return code[index], index + 1
+    if code[index:index+2] in nydef.symbols:
+        return code[index:index+2], index+2
+    else:
+        return code[index], index+1
 
 right_parser_by_start = {
         (tuple(string.digits) +
@@ -152,7 +198,7 @@ right_parser_by_start = {
         ('/*',): parse_multiline_comment,
         ('#',): parse_exa,
         ('(',): parse_round_braces,
-        tuple(nydef.single_symbols): parse_symbol,
-        (' ',): parse_whitespace,
+        tuple(nydef.symbols): parse_symbol,
+        (' ', '\t', '\n',): parse_whitespace,
         ('\\n'): parse_prevent_new_line,
 }

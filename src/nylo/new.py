@@ -33,3 +33,9 @@ def nymultiline_code(lines):
 
 def pylist(nylist):
     return [nylist[index] for index in (nyint(k) for k in range(len(nylist)))]
+
+def nyfun(code, args=nycode([])):
+    return nydict.Nydict((('function_code', code), ('arguments', args)))
+    
+def reference(labels):
+    return nydict.Nydict((('path', nylist(labels)),))
