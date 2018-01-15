@@ -43,6 +43,8 @@ def parse_until(code: str, index: int, endings: List[str]):
         if parsed_object in nydef.symbols: 
             parsed_objects_sectors.extend((parsed_object, []))
         elif parsed_object: parsed_objects_sectors[-1].append(parsed_object)
+        if index == len(code): 
+            raise Exception("Parsing error: end of file while searching for \""+'" or "'.join(endings)+'"')
     parsed_objects = replace_symbols(parsed_objects_sectors)
     return new.nycode(parsed_objects), index
 
@@ -87,6 +89,7 @@ def parse_square_braces(code: str, index: int) -> Tuple[object, int]:
         else:
             parsed, index = parse_element(code, index)
             if parsed: labels.append(parsed)
+        if index == len(code): raise Exception('Parsing error: end of file while searching for "]"')
     index += 1
     return new.reference(labels), index
 
@@ -97,7 +100,7 @@ def parse_element(code: str, index: int) -> Tuple[object, int]:
             parsed_object, new_index = \
                 right_parser_by_start[possible_starts](code, index)
             return parsed_object, new_index
-    print(list(enumerate(code)), index)
+    raise Exception('Parsing error: unexpected character "'+str(code[index])+'"')
 
 def parse_inline_comment(code: str, index: int) -> Tuple[type(None), int]:
     while code[index] != '\n': index += 1
@@ -128,6 +131,7 @@ def parse_string(code: str, index: int) -> Tuple[object, int]:
     index += 1
     while code[index] != end_character:
         index += 1
+        if index == len(code): raise Exception("Parsing error: unclosed string.")
     string = code[start_character_index + 1: index]
     string_object = new.nystr(string)
     index += 1
