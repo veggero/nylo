@@ -25,14 +25,17 @@ def parse_multiline_code(code: str, index=0, prev_indent=-1, indent=0) -> Tuple[
         next_line_indent, index = get_indentation(code, index)
         if next_line_indent > indent:
             indented_code, index, indent = parse_multiline_code(code, index, indent, next_line_indent)
-            lines[-1] = new.nycode(new.pylist(lines[-1][new.nystr('behaviour')]) + [indented_code])
+            lines[-1] = new.nycode(new.pylist(lines[-1][new.nyvar('behaviour')]) + [indented_code])
         else: indent = next_line_indent
     return new.nymultiline_code(lines), index, indent
         
 
 def get_indentation(code: str, index: int) -> Tuple[int, int]:
     start_index = index
-    while code[index] in ' \t': index += 1
+    while code[index] in ' \t\n':
+        while code[index] == '\n': index += 1
+        start_index = index
+        while code[index] in ' \t': index += 1
     return index - start_index, index
 
 
@@ -206,3 +209,6 @@ right_parser_by_start = {
         (' ', '\t', '\n',): parse_whitespace,
         ('\\n'): parse_prevent_new_line,
 }
+        
+        
+print(parse("""1+1"""))
