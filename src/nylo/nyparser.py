@@ -1,3 +1,8 @@
+"""
+Main Nylo file parser. Contains all the parser that act based on the
+informations on nydef.py.
+"""
+
 import string
 from typing import Tuple, List
 
@@ -6,53 +11,133 @@ from . import nydef
 from . import nydict
 
 
+parse_assignation, parse_curly_braces = None
+
+
 def parse(code):
+    """
+    Parse a string to a Nylo Object.
+    """
+    # Add end of file, for sure.
     code += '\n'
+    
+    # Actually parse the code as a multiline_code element
     parsed, index, indent = parse_multiline_code(code)
+    
+    # Return the code.
     return parsed
 
 
-def parse_multiline_code(code: str, index=0, prev_indent=-1, indent=0) -> Tuple[object, int, int]:
+def parse_multiline_code(code: str, index=0, prev_indent=-1, 
+                         indent=0) -> Tuple[nydict.Nydict, int, int]:
+    """
+    Parse a multiline code starting from index. This is used
+    recursevly to parse indented code: every new indent will
+    call a new parse_multiline_code, passing the index, the
+    previous indent and the new indent.
+    """
+    # We are going to store here all the lines we parse.
     lines = []
+    
+    # As soon as the code deindents, we should stop.
     while indent > prev_indent:
+        # Parse the first line, aka until new line, or :\n that's
+        # supposed to introduce indented code.
         line, index = parse_until(code, index, ['\n', ':\n'])
-        if code[index] == '\n': index += 1
-        elif code[index] == ':': index += 2
+        # Get past the \n. If there is a :\n, we need to skip
+        # two characters.
+        while code[index] in ':\n': index += 1
+        # Append the parsed line to the lines.
         lines.append(line)
+        # If the string is over, we need to finish the function
+        # and return what we parsed, so we break the loop.
         if index == len(code): 
+            # Indent is set to -1 so that every parse_multiline_code
+            # knows that the code is over and will return its value.
             indent = -1
             break
+        
+        # Calculate the indent of the following line, to 
+        # choose what to do next (parse a indented line, or
+        # parse normally a line, or finish)
         next_line_indent, index = get_indentation(code, index)
+        # If the indent of the next line is greater than the indent
+        # of the function, there is an indented code we should parse
         if next_line_indent > indent:
-            indented_code, index, indent = parse_multiline_code(code, index, indent, next_line_indent)
-            lines[-1] = new.nycode(new.pylist(lines[-1][new.nyvar('behaviour')]) + [indented_code])
+            indented_code, index, indent = \
+                parse_multiline_code(code, index, indent, next_line_indent)
+            # Indented code should be added at the and of the last line, that's
+            # a nylo code object, so we transform it to a normal list, append the
+            # indented parsed code, and re-transform it back to a nylo code.
+            lines[-1] = new.nycode(new.pylist(lines[-1][new.nyvar('behaviour')]) + 
+                                   [indented_code])
+        # Else, the indent of the next line is the indent
+        # of this multiline_code we're working on.
         else: indent = next_line_indent
+        
+    # Return a new instance of nymultiline_code based on the 
+    # parsed lines.
     return new.nymultiline_code(lines), index, indent
         
 
 def get_indentation(code: str, index: int) -> Tuple[int, int]:
+    """
+    This is a parser for indentation. 
+    """
     start_index = index
     while code[index] in ' \t\n':
+        # First of all, we need to get to the first
+        # non empity line.
         while code[index] == '\n': index += 1
+        # We save the index of the beginning of the line
         start_index = index
+        # Skip indentation
         while code[index] in ' \t': index += 1
+    # If after the last line there is something different
+    # from a whitespace, and therefore it's not an empity line,
+    # we should return the indentaton level and the index
+    # we're at.
     return index - start_index, index
 
 
 def parse_until(code: str, index: int, endings: List[str]):
+    """
+    Parse_until will call multiple times parse_element until
+    a endind is met. This allows to parse multiple successive
+    elements.
+    This functions also manages symbols by calling 
+    replace_symbols.
+    """
+    # A line of code is divided into sectors, separated by
+    # symbols. E.g.:
+    # 1+1 will produce [[1], '+', [1]]
+    # wich will be replaced with replace_symbols into
+    # ['sum', [1, 1]] 
     parsed_objects_sectors = [[]]
+    # endings might be of more than one character, so we check
+    # if the code starts with any of the endings at the index we're at.
     while not any(code.startswith(end_char, index) for end_char in endings):
+        # Parse a single element
         parsed_object, index = parse_element(code, index)
+        # If the element is in the symbols, we add both the symbol
+        # to the list of sectors, and a new empity sector after the
+        # symbol
         if parsed_object in nydef.symbols: 
             parsed_objects_sectors.extend((parsed_object, []))
+        # If it's not a symbol, but it's also not None, just
+        # append it to the last sector.
         elif parsed_object: parsed_objects_sectors[-1].append(parsed_object)
+        # If the file is over while still searching for the end, raise an
+        # error
         if index == len(code): 
-            raise Exception("Parsing error: end of file while searching for \""+'" or "'.join(endings)+'"')
+            raise Exception("Parsing error: end of file while searching for \""
+                +'" or "'.join(endings)+'"')
+    # Replace the symbols.
     parsed_objects = replace_symbols(parsed_objects_sectors)
     return new.nycode(parsed_objects), index
 
 
-def parse_round_braces(code: str, index: int) -> Tuple[object, int]:
+def parse_round_braces(code: str, index: int) -> Tuple[nydict.Nydict, int]:
     index += 1
     parsed, index = parse_until(code, index, [':', ')'])
     if code[index] == ':':
@@ -71,16 +156,7 @@ def parse_round_braces(code: str, index: int) -> Tuple[object, int]:
     return parsed, index + 1
 
 
-def parse_curly_braces(code: str, index: int) -> Tuple[object, int]:
-    index += 1
-    first_argument, index = parse_until(code, index, ['}', '|'])
-    if code[index] == '|':
-        second_argument, index = parse_until(code, index + 1, ['}'])
-        return new.nyfun(second_argument, first_argument), index + 1
-    return new.nyfun(first_argument), index + 1
-
-
-def parse_square_braces(code: str, index: int) -> Tuple[object, int]:
+def parse_square_braces(code: str, index: int) -> Tuple[nydict.Nydict, int]:
     index += 1
     labels = []
     while code[index] != ']':
@@ -97,7 +173,7 @@ def parse_square_braces(code: str, index: int) -> Tuple[object, int]:
     return new.reference(labels), index
 
 
-def parse_element(code: str, index: int) -> Tuple[object, int]:
+def parse_element(code: str, index: int) -> Tuple[nydict.Nydict, int]:
     for possible_starts in right_parser_by_start:
         if any(code.startswith(start, index) for start in possible_starts):
             parsed_object, new_index = \
@@ -123,13 +199,13 @@ def parse_prevent_new_line(code: str, index: int) -> Tuple[type(None), int]:
     return None, index + 2
 
 
-def parse_exa(code: str, index: int) -> Tuple[object, int]:
+def parse_exa(code: str, index: int) -> Tuple[nydict.Nydict, int]:
     index += 1
     start_index = index
     while code[index] in string.hexdigits: index += 1
     return new.nyint(int(code[start_index:index], base=16)), index
 
-def parse_string(code: str, index: int) -> Tuple[object, int]:
+def parse_string(code: str, index: int) -> Tuple[nydict.Nydict, int]:
     end_character, start_character_index = code[index], index
     index += 1
     while code[index] != end_character:
@@ -141,7 +217,7 @@ def parse_string(code: str, index: int) -> Tuple[object, int]:
     return string_object, index
 
 
-def parse_number(code: str, index: int) -> Tuple[object, int]:
+def parse_number(code: str, index: int) -> Tuple[nydict.Nydict, int]:
     start_index = index
     while code[index] in string.digits + '.':
         if code[index] == '.' and '.' in code[start_index:index]: break
@@ -151,13 +227,13 @@ def parse_number(code: str, index: int) -> Tuple[object, int]:
     else: number = new.nyint(int(str_number))
     return number, index
 
-def parse_variable(code: str, index: int) -> Tuple[object, int]:
+def parse_variable(code: str, index: int) -> Tuple[nydict.Nydict, int]:
     start_index = index
     while code[index] in string.ascii_letters + '_': index += 1
     variable_name = code[start_index:index]
     if variable_name in nydef.symbols: return variable_name, index
-    variable_object = new.nyvar(variable_name)
-    return variable_object, index
+    variable_objects = new.nyvar(variable_name)
+    return variable_objects, index
 
 
 def replace_symbols(sectors: list):
@@ -195,20 +271,19 @@ def parse_symbol(code: str, index: int) -> Tuple[str, str]:
         return code[index], index+1
 
 right_parser_by_start = {
-        (tuple(string.digits) +
-         tuple("." + digit for digit in string.digits)): parse_number,
-        ('['): parse_square_braces,
-        ("'", '"'): parse_string,
-        string.ascii_letters: parse_variable,
-        ('{',): parse_curly_braces,
-        ('//',): parse_inline_comment,
-        ('/*',): parse_multiline_comment,
-        ('#',): parse_exa,
-        ('(',): parse_round_braces,
-        tuple(nydef.symbols): parse_symbol,
-        (' ', '\t', '\n',): parse_whitespace,
-        ('\\n'): parse_prevent_new_line,
+        nydef.number_starts: parse_number, #OK
+        nydef.square_brace_start: parse_square_braces, #OK
+        nydef.string_starts: parse_string, #OK, \n
+        nydef.variable_starts: parse_variable, #OK
+        nydef.curly_braces_start: parse_curly_braces, #{int x]
+        nydef.inline_comment_start: parse_inline_comment, #OK
+        nydef.multiline_comment_start: parse_multiline_comment, #OK
+        nydef.exa_start: parse_exa, #OK
+        nydef.round_braces_start: parse_round_braces, #OK
+        nydef.symbols: parse_symbol, #OK
+        nydef.whitespaces: parse_whitespace, #OK
+        nydef.prevent_new_line: parse_prevent_new_line, #OK
+        nydef.assignation: parse_assignation, #TODO
 }
         
-        
-print(parse("""1+1"""))
+print(parse("{list int a}"))

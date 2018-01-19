@@ -1,7 +1,7 @@
 from . import nydict
 
 
-DEBUG = False
+DEBUG = True
 
 
 def nystr(string: str):
@@ -49,7 +49,7 @@ def nyfun(code, args=nycode([])):
 
 
 def nypyfun(pyfun, args=nycode([])):
-    return nydict.Nydict((('python_function', pyfun), (nyvar('args'), nylist(args))))
+    return nydict.Nydict((('python_function', pyfun), (nyvar('arguments'), nylist(args))))
 
 
 def nyoverloaded(funs):
