@@ -1,0 +1,43 @@
+# regex elements used
+# ? -> one or zero times
+# + -> at least one time
+# * -> any number of times
+# () -> grouping elementns
+# a-Z -> letters
+# 0-9 -> numbers
+# \) \( -> ) (
+
+# TODO
+# (easy) comments
+# (easy) implicit variables
+# (easy) unary symbols
+# (easy) (a: 3) = (obj a: 3)
+
+typedef ::= keyword+
+valuedef ::= typedef: value
+structel ::= typedef | valuedef | keyword -> keyword? | <-keyword | value
+struct ::= \(structel(, structel)?\)
+block ::= {value*}
+value ::= keyword struct | block | num | string | expr | value[value] | keyword | struct
+keyword ::= (_a-Z)+(_a-Z0-9)*
+num ::= (0-9)(_0-9)* | ((0-9)(_0-9)*)?.(_0-9)+
+string ::= "(.*)" | '(.*)'
+expr ::= value symb value
+symb ::= = | and | > | or | < | not | != | xor | >=
+symb ::= >> | <= | << | \+ | .. | - | in | \* | +-
+symb ::= / | ^ | -> | <- | % | , | & | :
+
+# symbols priority:
+# :
+# -> <-
+# ,
+# not
+# and or not xor
+# = > < >= <= !=
+# in & .. << >>
+# ^
+# * / %
+# + -
+# +-
+# value[value]
+# .

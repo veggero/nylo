@@ -20,11 +20,15 @@ def code(objects):
 def path(gets):
     return no.NyloObject([variable('path'), nylist(gets)])
 
-def struct(variables):
+def struct(variables):  
     return no.NyloObject([variable('struct'), nylist(variables)])
 
 def function(code, args):
     return no.NyloObject([variable('function_code'), code],
+                         [variable('arguments'), args])
+
+def pyfunction(pyfun, args):
+    return no.NyloObject(['python_function', pyfun],
                          [variable('arguments'), args])
 
 def variable(name, motherclass=nynone, condition=nynone, default=nynone):
@@ -38,3 +42,9 @@ def overload(functions):
 
 def nylist(pylist):
     return no.NyloObject(*[[integer(i), value] for i, value in enumerate(pylist)])
+
+def evaluable_obj(elements):
+    return no.NyloObject(['to_evaluate', no.NyloObject(*elements)])
+
+def boolean(value):
+    return no.NyloObject(['python_boolean', value])

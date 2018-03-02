@@ -1,6 +1,6 @@
 import string
 
-symbols = {
+readable_symbols = {
     '=': 'equal',
     'and': 'all',
     '>': 'greater_than',
@@ -20,13 +20,29 @@ symbols = {
     '*': 'mol',
     '+-': 'about',
     '/': 'div',
-    ':': 'set',
     '^': 'pow',
     '->': 'pipe',
     '<-': 'inverse_pipe',
     '%': 'mod',
     ',': 'to_list',
-    }
+    '&': 'join'
+    } 
+
+symbols_priority = [
+    [':'],
+    ['->', '<-'],
+    [','],
+    ['not'],
+    ['and', 'or', 'not', 'xor'],
+    ['=', '>', '<', '>=', '<=', '!='],
+    ['in', '&', '..', '<<', '>>'],
+    ['^'],
+    ['*', '/', '%'],
+    ['+', '-'],
+    ['+-']
+    ] #TODO important var
+
+all_symbols = {':': 'assign', **readable_symbols}
 
 unary_symbols = {'+', '-', 'with', 'as'}
 
