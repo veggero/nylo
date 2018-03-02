@@ -18,7 +18,7 @@ class Reading:
             self.char = 1
         else: self.char += 1
         self.reading_at += 1
-        if self.reading_at == len(self.code):
+        if self.reading_at >= len(self.code):
             raise SyntaxError("EOL while scanning")
     
     def read_and_move(self):
@@ -47,3 +47,7 @@ class Reading:
         self.reading_at = reader.reading_at
         self.line = reader.line
         self.char = reader.char
+
+    def end(self):
+        if self.reading_at < len(self.code)-1:
+            raise SyntaxError('invalid syntax')

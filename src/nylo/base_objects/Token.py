@@ -9,8 +9,11 @@ class Token:
         while reader.read() in ' \t\n': reader.move()
         
     def __repr__(self):
-        try: return self.name
-        except AttributeError: return '<{t} at l{l} c{c}>'.format(
-                                           t=t.__class__.__name__,
-                                           l=self.line,
-                                           c=self.char)
+        if hasattr(self, 'name'): return self.name
+        if hasattr(self, 'line'):
+            return '<{t} at l{l} c{c}>'.format(
+                                    t=self.__class__.__name__,
+                                    l=self.line,
+                                    c=self.char)
+        else:
+            return self.__class__.__name__

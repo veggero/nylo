@@ -14,13 +14,12 @@ if __name__ == '__main__':
     print('to get the same results as here use `obj main: {code}`')
     print()
     while 1:
-        input_value = nylo.Value(
-                nylo.Reading(input('nylo> '), 0)
-            )
         stack = nylo.builtins
-        try:
-            print('<- '+str(
-                input_value.evaluate(stack)
-            ))
+        try: 
+            reader = nylo.Reading(input('nylo> '), 0)
+            input_value = nylo.Value(reader)
+            reader.end()
+            out = input_value.evaluate(stack)
+            if not out is None: print('<- '+str(out))
         except Exception as Ex:
             stack.show_traceback(Ex)

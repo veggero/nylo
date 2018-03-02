@@ -13,4 +13,14 @@ class Stack(list):
         del self[-1]
         
     def show_traceback(self, Ex):
-        print(self.traceback)
+        if len(self.traceback):
+            print('Traceback:')
+            for t in self.traceback[::-1]:
+                if hasattr(t, 'line'):
+                    print('in {n} <@l{l} c{c}>'.format(n=repr(t),
+                                             l=t.line,
+                                             c=t.char))
+                else: print('in '+repr(t))
+        print("{c}: {e}".format(c=Ex.__class__.__name__,
+                                e=str(Ex)))
+        self.traceback = []

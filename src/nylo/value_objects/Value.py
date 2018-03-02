@@ -13,6 +13,7 @@ class Value(Token):
         from nylo.struct_objects.Struct import Struct
         from nylo.value_objects.NumStr import Number, String
         from nylo.derived_objects.syntax_unrelated_objects import Call, Get
+        from nylo.derived_objects.python_linked_objects import ValueLayer
         
         self.condition = []
         

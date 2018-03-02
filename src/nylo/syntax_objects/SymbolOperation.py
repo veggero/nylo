@@ -15,7 +15,8 @@ class SymbolOperation(Token):
             if not isinstance(self.before.value, Keyword):
                 raise SyntaxError("can't assign to literal")
             to_set = self.after.evaluate(stack)
-            to_set.name = self.before.value.value
+            try: to_set.name = self.before.value.value
+            except AttributeError: pass
             stack[-1][self.before.value.value] = to_set
             return
             
