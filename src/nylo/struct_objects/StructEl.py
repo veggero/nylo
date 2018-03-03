@@ -27,15 +27,11 @@ class StructEl(Token):
                     reader.move()
                     val = Value(reader)
                     self.value = Set(TypeDef(kws), val)
-                    self.condition = self.value.condition
                     return
                     
                 elif reader.read() in ',)':
                     self.value = TypeDef(kws)
-                    self.condition = self.value.condition
                     return
-                
-                raise SyntaxError('wtf')
                     
             elif reader.starts_with('->'):
                 reader.move(2)
@@ -45,21 +41,17 @@ class StructEl(Token):
                 else:
                     to_kw = kw
                 self.value = Output(kw, to_kw)
-                self.condition = self.value.condition
             
             else:
                 reader.goto(before_reader)
                 self.value = Value(reader)
-                self.condition = self.value.condition
             
         elif reader.starts_with('<-'):
             reader.move(2)
             kw = Keyword(reader)
             self.value = Set(TypeDef([kw]), kw)
-            self.condition = self.value.condition
             
         else:
             self.value = Value(reader)
-            self.condition = self.value.condition
             
     def evaluate(self, stack): return self.value.evaluate(stack)

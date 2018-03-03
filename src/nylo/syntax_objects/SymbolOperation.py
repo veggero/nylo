@@ -1,3 +1,4 @@
+from nylo.exceptions import cant_assign
 from nylo.base_objects.Token import Token
 from nylo.syntax_objects.Keyword import Keyword
 
@@ -7,13 +8,12 @@ class SymbolOperation(Token):
         self.before = before
         self.symb = symb
         self.after = after
-        self.condition = before.condition + symb.condition + after.condition
         
     def evaluate(self, stack):
         
         if self.symb.value == ':': 
             if not isinstance(self.before.value, Keyword):
-                raise SyntaxError("can't assign to literal")
+                raise cant_assign()
             to_set = self.after.evaluate(stack)
             try: to_set.name = self.before.value.value
             except AttributeError: pass
@@ -41,4 +41,4 @@ class SymbolOperation(Token):
         if self.symb.value == '+=': return (bef + aft, bef - aft)
         if self.symb.value == '/': return bef / aft
         if self.symb.value == '^': return pow(bef, aft)
-        #TODO -> <- % & : .
+        #TODO -> <- % & : . ++ --

@@ -1,5 +1,6 @@
 import copy
 
+from nylo.exceptions import unx_char
 from nylo.base_objects.Token import Token
 
 class Value(Token):
@@ -15,21 +16,16 @@ class Value(Token):
         from nylo.derived_objects.syntax_unrelated_objects import Call, Get
         from nylo.derived_objects.python_linked_objects import ValueLayer
         
-        self.condition = []
-        
         if reader.any_starts_with(Keyword.starts):
             kw = Keyword(reader)
-            self.condition = kw.condition
             if reader.any_starts_with(Struct.starts):
                 struct = Struct(reader)
                 self.value = Call(kw, struct)
-                self.condition = self.value.condition
             else:
                 self.value = kw
         
         elif reader.any_starts_with(Block.starts):
             self.value = Block(reader)
-            self.condition = self.value.condition
         
         elif reader.any_starts_with(Number.starts):
             self.value = Number(reader)
@@ -39,15 +35,12 @@ class Value(Token):
         
         elif reader.any_starts_with(Struct.starts):
             self.value = Struct(reader)
-            self.condition = self.value.condition
             
         elif reader.read() == '\0':
             self.value = ValueLayer(None)
             return
             
-        else:
-            raise SyntaxError('unexpected character {c}'.format(
-                c=reader.read()))
+        else: unx_char(reader.read())
         
         if reader.read() == '[':
             reader.move()
@@ -55,13 +48,11 @@ class Value(Token):
             assert reader.read() == ']'
             reader.move()
             self.value = Get(copy.copy(self), to_get)
-            self.condition = self.value.condition
             
         if reader.any_starts_with(Symbol.starts):
             symb = Symbol(reader, reader.any_starts_with(Symbol.starts))
             after = Value(reader)
             self.value = SymbolOperation(copy.copy(self), symb, after)
-            self.condition = self.value.condition
             
     def evaluate(self, stack):
         return self.value.evaluate(stack)

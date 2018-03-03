@@ -9,6 +9,3 @@ class Symbol(Token):
     def parse(self, reader):
         reader.move(len(self.start_found))
         self.value = self.start_found
-        self.condition = []
-        
-    def evaluate(self, stack): raise Exception('WTF')

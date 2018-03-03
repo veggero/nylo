@@ -5,27 +5,29 @@
 # () -> grouping elementns
 # a-Z -> letters
 # 0-9 -> numbers
-# \) \( -> ) (
-
-# TODO
-# (easy) comments
-# (easy) implicit variables
-# (easy) unary symbols
-# (easy) (a: 3) = (obj a: 3)
+# \( \) -> ( )
+# (.*) -> anything
 
 typedef ::= keyword+
-valuedef ::= typedef: value
+valuedef ::= typedef: value | keyword: value
 structel ::= typedef | valuedef | keyword -> keyword? | <-keyword | value
-struct ::= \(structel(, structel)?\)
-block ::= {value*}
-value ::= keyword struct | block | num | string | expr | value[value] | keyword | struct
+struct ::= \((structel(, structel)*\)?)
+
+block ::= {value[; value]*}
+value ::= keyword struct | block | num | string 
+value ::= expr | value[value] | keyword | struct
+value ::= /* (.*) */ value | // (.*) \n value
+
 keyword ::= (_a-Z)+(_a-Z0-9)*
 num ::= (0-9)(_0-9)* | ((0-9)(_0-9)*)?.(_0-9)+
 string ::= "(.*)" | '(.*)'
-expr ::= value symb value
-symb ::= = | and | > | or | < | not | != | xor | >=
-symb ::= >> | <= | << | \+ | .. | - | in | \* | +-
+expr ::= value symb value | unary_symb value
+expr ::= symb value | value symb | symb | unary_symb
+
+symb ::= = | and | > | or | < | != | xor | >=
+symb ::= >> | <= | << | .. | in | \* | +-
 symb ::= / | ^ | -> | <- | % | , | & | :
+unary_symb ::= \+ | - | not
 
 # symbols priority:
 # :

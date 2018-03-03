@@ -10,12 +10,10 @@ class Block(Token):
         from nylo.value_objects.Value import Value
         
         self.values = []
-        self.condition = []
         reader.move()
         
         while not reader.read() in self.ends:
             self.values.append(Value(reader))
-            self.condition.extend(self.values[-1].condition)
             if reader.read() == '\0': reader.move()
             
         reader.move()

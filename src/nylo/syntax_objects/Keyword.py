@@ -12,10 +12,6 @@ class Keyword(Token):
                self.starts + ['_'] + list(string.digits)): 
             out += reader.read_and_move()
         self.value = out
-        self.condition = [self.value]
         
     def evaluate(self, stack):
-        for vardict in stack[::-1]:
-            if self.value in vardict:
-                return vardict[self.value]
-        raise NameError('name {name} is not defined'.format(name=self.value))
+        return stack.get_variable(self.value)
