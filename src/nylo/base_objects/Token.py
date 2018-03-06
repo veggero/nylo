@@ -17,7 +17,7 @@ class Token:
         "Represent the token"
         if hasattr(self, 'name'): return '<'+self.name+'>'
         elif hasattr(self, 'line'):
-            return '<{t} at l{l} c{c}>'.format(
+            return '<{t} at line {l} char {c}>'.format(
                                     t=self.__class__.__name__,
                                     l=self.line,
                                     c=self.char)

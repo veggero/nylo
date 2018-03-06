@@ -21,8 +21,7 @@ class Block(Token):
     def evaluate(self, stack):
         stack.add_call(self)
         stack[-1]['_self'] = None
-        for val in self.values:
-            val.evaluate(stack)
+        for val in self.values: val.evaluate(stack)
         to_return = stack[-1]['_self']
         stack.close_call()
         return to_return

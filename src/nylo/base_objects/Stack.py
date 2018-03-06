@@ -62,3 +62,4 @@ class Stack(list):
         print("{c}: {e}".format(c=Ex.__class__.__name__,
                                 e=str(Ex)))
         self.traceback = []
+        while len(self) > 1: del self[1]

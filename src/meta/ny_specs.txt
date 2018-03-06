@@ -9,24 +9,26 @@
 # (.*) -> anything
 
 typedef ::= keyword+
-valuedef ::= typedef: value | keyword: value
-structel ::= typedef | valuedef | keyword -> keyword? | <-keyword | value
-struct ::= \((structel(, structel)*\)?)
+valuedef ::= typedef: value
+structel ::= typedef | valuedef | value
+struct ::= (structel(, structel)*)? (-> value)?
 
-block ::= {value[; value]*}
-value ::= keyword struct | block | num | string 
-value ::= expr | value[value] | keyword | struct
+value ::= num | string | keyword | struct | expr
+value ::= value\(call\) | value[value]
 value ::= /* (.*) */ value | // (.*) \n value
+
+callel ::= value | value -> keyword | keyword <- value
+callel ::= keyword -> | <- keyword | : value
+call ::= (callel(, callel)*)?
 
 keyword ::= (_a-Z)+(_a-Z0-9)*
 num ::= (0-9)(_0-9)* | ((0-9)(_0-9)*)?.(_0-9)+
 string ::= "(.*)" | '(.*)'
-expr ::= value symb value | unary_symb value
-expr ::= symb value | value symb | symb | unary_symb
+expr ::= value? symb value? | unary_symb value?
 
 symb ::= = | and | > | or | < | != | xor | >=
 symb ::= >> | <= | << | .. | in | \* | +-
-symb ::= / | ^ | -> | <- | % | , | & | :
+symb ::= / | ^ | \| | % | , | & | :
 unary_symb ::= \+ | - | not
 
 # symbols priority:

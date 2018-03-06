@@ -1,6 +1,5 @@
-from nylo.exceptions import need_comma, cant_return, cant_accept
+from nylo.exceptions import need_comma, cant_return, cant_accept, cant_eval
 from nylo.base_objects.Token import Token
-from nylo.struct_objects.StructEl import StructEl
 from nylo.derived_objects.syntax_unrelated_objects import (Set, Output, 
                                                            TypeDef)
 from nylo.value_objects.Value import Value
@@ -12,6 +11,7 @@ class Struct(Token):
     
     
     def parse(self, reader):
+        from nylo.struct_objects.StructEl import StructEl
         self.values = []
         reader.move()
 
@@ -27,6 +27,11 @@ class Struct(Token):
         
         
     def evaluate(self, stack): 
+        """
+        Se ci sono TypeDef nella struct torna se stessa,
+        se ci sono value torna quelli, 
+        altrimenti torna se stessa.
+        """
         if any(isinstance(v, TypeDef) for v in self.values): return self
         for el in self.values[::-1]:
             if isinstance(el, Value): 
@@ -34,10 +39,30 @@ class Struct(Token):
                 to_return = el.evaluate(stack)
                 stack.close_call()
                 return to_return
-        raise cant_return(repr(self))
+        return self
     
     
-    def get_value(value, stack):
+    def evaluate_values(self, stack):
+        from nylo.derived_objects.python_linked_objects import ValueLayer
+        """
+        Evaluta tutti i valori di Set e i TypeDef.
+        """
+        for i, value in enumerate(self.values):
+            if isinstance(value, Set): 
+                # poetry: evaluation
+                # Evaluate the value of the value, put it in a value layer, 
+                # and set it to the vaule of the value. Clear?
+                value.value = ValueLayer(value.value.evaluate(stack))
+            elif isinstance(value, TypeDef):
+                if len(value.kws)>1: cant_eval(value)
+                self.values[i] = ValueLayer(
+                    stack.get_variable(value.kws[0].value))
+    
+    
+    def get_value(self, value, stack):
+        """
+        Crea la stack call e prende il proprio valore.
+        """
         stack.add_call(self, self)
         to_r = stack.get_variable(value)
         stack.close_call()
@@ -50,22 +75,31 @@ class Struct(Token):
             
     
     def update_element(self, el, stack):
-        if isinstance(el, TypeDef):
-            if not el in self.values: self.values.append(el)
-        elif isinstance(el, Set):
-            if el.value.target in values: 
-                del self.values[values.index(el.target)]
+        """
+        Aggiunge un elemento a se stesso.
+        I value finiscono sui TypeDef con solo il tipo,
+        gli output danno il valore,
+        i Set aggiornano vecchi valori Set oppure 
+        trasformano un Set in un TypeDef
+        """
+        if isinstance(el, Set):
+            for i, value in enumerate(self.values):
+                if ((isinstance(value, TypeDef) and 
+                    value.kws[-1].value == el.target.kws[-1].value) or
+                    (isinstance(value, Set) and
+                     value.target.kws[-1].value == el.target.kws[-1].value)):
+                    del self.values[i]
+                    break
             self.values.append(el)
         elif isinstance(el, Output):
-            stack[-1][el.value.to.value] = self.get_value(
-                el.value.value.value, stack)
-        elif isinstance(el, Value): 
+            stack[-1][el.to.value] = self.get_value(el.value.value, stack)
+        elif isinstance(el, Value):
             for i, value in enumerate(self.values):
                 if isinstance(value, TypeDef):
-                    if not value.kws[0].value == 'code':
-                        el = el.evaluate(stack)
-                    self.values[i] = Set(value, el)
-                    return
+                    if value.kws[-1].value != 'code': el = el.evaluate(stack)
+                    if len(value.kws) == 1: 
+                        self.values[i] = Set(value, el)
+                        return
             cant_accept(el)
 
     

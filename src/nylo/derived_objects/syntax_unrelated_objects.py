@@ -12,7 +12,8 @@ class Call(Token):
     def evaluate(self, stack):
         from nylo.struct_objects.Struct import Struct
         to_call = copy.deepcopy(self.keyword.evaluate(stack))
-        if not isinstance(to_call, Struct): cant_call()
+        if not isinstance(to_call, Struct): cant_call(to_call)
+        self.struct.evaluate_values(stack)
         to_call.update(self.struct, stack)
         return to_call.evaluate(stack)
                 

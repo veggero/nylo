@@ -1,0 +1,96 @@
+Stile di scrittura:
+
+    Procedurale:
+    
+        // Una serie di istruzioni consecutive che modificano i
+        // dati presenti nel contesto
+
+        main: {
+            prev: 1
+            succ: 1
+            repeat{100 | 
+                succsucc: prev + succ
+                prev: succ
+                succ: succsucc
+            }
+            return(succ)
+        }
+
+    Funzionale:
+    
+        // Una serie di funzioni che esprimono una relazione diretta
+        // tra un dato e il suo valore
+
+        main: {
+            good_grades: filter(grades, (>6))
+            nicer_grades: map(nicer_grades, (*1.2))
+            average: (sum/len)(nicer_grades)
+            return(average)
+        }
+
+        fib: (int n, if(n<2, n, fib(n-1)+fib(n-2)))
+
+    Strutturale:
+    
+        // Una serie di relazioni tra dati
+
+        tenth_fact: (int n, int k: _self(n-1)*n, if(n=0, 1, k))(10)
+
+        fib: (
+            int n,
+            int prev_fibs: fib(n-1) + fib(n-2),
+            int value: if(n<2, n, sum_fibs),
+            value
+        )
+        
+        cfib: (int n, int p: cfib(n-1)+cfib(n-2), if(n<2, n, p))
+        
+        main: (
+            int to_guess: random(0, 100),
+            
+            code victory: print('You won!'),
+            code lose: print('You lose :('),
+            code low: print('Too low!'),
+            code high: print('Too high!'),
+            
+            code guess_try: case(input('>> '), <to_guess, low, 
+                                            =to_guess, {victory exit}, 
+                                            >to_guess, high),
+                                        
+            repeat(6, guess_try)
+        )
+        
+Strutture di dati:
+
+    Ad oggetti:
+    
+        // Strutture dati e metodi che li modificano definiti
+        // nelle classi, dati negli oggetti mutabili.
+        
+        class BDPoint:
+        
+            def __init__(self, x, y): self.x, self.y = x, y
+            def move(x, y):
+                self.x += x
+                self.y += y
+                
+    Funzionale:
+    
+        // Dati immutabili e funzioni che le modificano separate
+        
+        bdpoint: (int x, int y)
+        move: (bdpoint k, int dx, int dy, bdpoint(k.x+dx, k.y+dy))
+        move(bdpoint(50, 30), 20, 10)
+        
+    Strutturale:
+    
+        // Relazione tra dati
+        
+        class bdpoint: (int x, int y)
+        code move: (bdpoint k, 
+                    int dx, int dy, 
+                    int nx: dx+k.x, int ny:dy+k.y,
+                    bdpoint new: bdpoint(nx, ny),
+                    new)
+        bdpoint start: bdpoint(50, 30)
+        bdpoint moved: move(bdpoint, 20, 10)

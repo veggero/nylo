@@ -2,7 +2,7 @@ from nylo.base_objects.Token import Token
 from nylo.struct_objects.Struct import Struct
 from nylo.value_objects.Value import Value
 
-class ValueLayer(Token):
+class ValueLayer(Value):
     def __init__(self, value): self.value = value
     def evaluate(self, stack): 
         if hasattr(self.value, 'evaluate'): return self.value.evaluate(stack)
