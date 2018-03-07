@@ -3,6 +3,8 @@ import copy
 from nylo.exceptions import cant_call
 from nylo.base_objects.Token import Token
 
+"""
+TODO: DELETE
 class Call(Token):
     
     def __init__(self, keyword, struct):
@@ -16,6 +18,7 @@ class Call(Token):
         self.struct.evaluate_values(stack)
         to_call.update(self.struct, stack)
         return to_call.evaluate(stack)
+"""
                 
 class Get(Token):
     def __init__(self, source, value): self.source, self.value= source, value

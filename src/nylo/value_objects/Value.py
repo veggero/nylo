@@ -48,7 +48,8 @@ class Value(Token):
             assert reader.read() == ']'
             reader.move()
             self.value = Get(copy.copy(self), to_get)
-            
+        
+        #TODO: ADD IMPLICT VALUES
         if reader.any_starts_with(Symbol.starts):
             symb = Symbol(reader, reader.any_starts_with(Symbol.starts))
             after = Value(reader)

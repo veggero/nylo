@@ -31,7 +31,7 @@
 (
 	int number: 600851475143,
 	number(->divisors),
-	fun is_prime: int -> len(int(:divisors)) = 0,
+	fun is_prime: int -> len(int.divisors) = 0,
 	-> filter(divisors, is_prime)
 )
 

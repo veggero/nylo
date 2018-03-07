@@ -24,6 +24,9 @@ class Struct(Token):
             self.values.append(StructEl(reader).value)
             
         reader.move()
+            
+        if len(self.values) == 1 and isinstance(self.values[0], Value): 
+            return self.values[0]
         
         
     def evaluate(self, stack): 
@@ -32,6 +35,8 @@ class Struct(Token):
         se ci sono value torna quelli, 
         altrimenti torna se stessa.
         """
+        """
+        TODO: CHANGE
         if any(isinstance(v, TypeDef) for v in self.values): return self
         for el in self.values[::-1]:
             if isinstance(el, Value): 
@@ -40,13 +45,16 @@ class Struct(Token):
                 stack.close_call()
                 return to_return
         return self
+        """
     
     
     def evaluate_values(self, stack):
-        from nylo.derived_objects.python_linked_objects import ValueLayer
         """
         Evaluta tutti i valori di Set e i TypeDef.
         """
+        """
+        TODO: DELETE
+        from nylo.derived_objects.python_linked_objects import ValueLayer
         for i, value in enumerate(self.values):
             if isinstance(value, Set): 
                 # poetry: evaluation
@@ -57,6 +65,7 @@ class Struct(Token):
                 if len(value.kws)>1: cant_eval(value)
                 self.values[i] = ValueLayer(
                     stack.get_variable(value.kws[0].value))
+        """
     
     
     def get_value(self, value, stack):
@@ -82,6 +91,7 @@ class Struct(Token):
         i Set aggiornano vecchi valori Set oppure 
         trasformano un Set in un TypeDef
         """
+        #TODO: REVIEW
         if isinstance(el, Set):
             for i, value in enumerate(self.values):
                 if ((isinstance(value, TypeDef) and 

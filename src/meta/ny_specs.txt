@@ -11,7 +11,7 @@
 typedef ::= keyword+
 valuedef ::= typedef: value
 structel ::= typedef | valuedef | value
-struct ::= (structel(, structel)*)? (-> value)?
+struct ::= \((structel(, structel)*)? (-> value)? \)
 
 value ::= num | string | keyword | struct | expr
 value ::= value\(call\) | value[value]

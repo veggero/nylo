@@ -7,6 +7,8 @@ from nylo.syntax_objects.Keyword import Keyword
 
 class StructEl(Token):
 
+    """
+    TODO: CHECK AND REWRITE
     def parse(self, reader):
         if reader.any_starts_with(Keyword.starts): self.parse_keyword(reader)
         elif reader.starts_with('<-'): self.parse_single_set(reader)
@@ -48,3 +50,4 @@ class StructEl(Token):
         self.value = Output(kw, to_kw)
             
     def evaluate(self, stack): return self.value.evaluate(stack)
+    """
