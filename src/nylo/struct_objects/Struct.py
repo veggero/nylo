@@ -7,7 +7,7 @@ from nylo.value_objects.Value import Value
 class Struct(Token):
     
     starts = ['(']
-    ends = [')']
+    ends = [')', '->']
     
     
     def parse(self, reader):
@@ -17,11 +17,17 @@ class Struct(Token):
 
         if reader.read() != ')': self.values.append(StructEl(reader).value)
         
-        while not reader.read() in self.ends:
+        while not reader.any_starts_with(self.ends):
             if not reader.read() == ',': need_comma()
             reader.move()
             if reader.read() == '\0': reader.move()
             self.values.append(StructEl(reader).value)
+            
+        if reader.starts_with('->'):
+            reader.move(2)
+            self.output_value = Value(reader)
+        else:
+            self.output_value = None
             
         reader.move()
             
@@ -30,42 +36,13 @@ class Struct(Token):
         
         
     def evaluate(self, stack): 
-        """
-        Se ci sono TypeDef nella struct torna se stessa,
-        se ci sono value torna quelli, 
-        altrimenti torna se stessa.
-        """
-        """
-        TODO: CHANGE
-        if any(isinstance(v, TypeDef) for v in self.values): return self
-        for el in self.values[::-1]:
-            if isinstance(el, Value): 
-                stack.add_call(self, self)
-                to_return = el.evaluate(stack)
-                stack.close_call()
-                return to_return
-        return self
-        """
-    
-    
-    def evaluate_values(self, stack):
-        """
-        Evaluta tutti i valori di Set e i TypeDef.
-        """
-        """
-        TODO: DELETE
-        from nylo.derived_objects.python_linked_objects import ValueLayer
-        for i, value in enumerate(self.values):
-            if isinstance(value, Set): 
-                # poetry: evaluation
-                # Evaluate the value of the value, put it in a value layer, 
-                # and set it to the vaule of the value. Clear?
-                value.value = ValueLayer(value.value.evaluate(stack))
-            elif isinstance(value, TypeDef):
-                if len(value.kws)>1: cant_eval(value)
-                self.values[i] = ValueLayer(
-                    stack.get_variable(value.kws[0].value))
-        """
+        if self.output_value:
+            stack.add_call(self, self)
+            to_r = self.output_value.evaluate()
+            stack.close_call()
+            return to_r
+        else:
+            return to_r
     
     
     def get_value(self, value, stack):
@@ -92,6 +69,7 @@ class Struct(Token):
         trasformano un Set in un TypeDef
         """
         #TODO: REVIEW
+        """
         if isinstance(el, Set):
             for i, value in enumerate(self.values):
                 if ((isinstance(value, TypeDef) and 
@@ -110,7 +88,7 @@ class Struct(Token):
                     if len(value.kws) == 1: 
                         self.values[i] = Set(value, el)
                         return
-            cant_accept(el)
+            cant_accept(el)"""
 
     
     def __setitem__(self, el, value):

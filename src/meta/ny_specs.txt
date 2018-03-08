@@ -32,6 +32,9 @@ symb ::= / | ^ | \| | % | , | & | :
 unary_symb ::= \+ | - | not
 
 # symbols priority:
+# .
+# value(value)
+# value[value]
 # :
 # -> <-
 # ,
@@ -43,5 +46,3 @@ unary_symb ::= \+ | - | not
 # * / %
 # + -
 # +-
-# value[value]
-# .
