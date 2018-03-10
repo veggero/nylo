@@ -4,6 +4,10 @@
 
 **nylo** (/nylo/) is a **programming language** written in [Python](https://python.org). It is knows due to its **simplicity** and **style**. As you should know: **nylo** is absolutely **user-friendly**, you could write code in few lines, less than what you would think!
 
+```
+fib: (int -> if(int<2, int, fib(int-1)+fib(int-2)))
+```
+
 # Contents
 * [Files](#files)
 * [How to contribute](#how-to-contribute)
