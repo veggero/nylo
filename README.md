@@ -18,7 +18,7 @@ You'll find lots of _not understandable_ **directory** and **files**, so here a 
 * **src/nylo/__init__.py** - _Where the code is imported_
 * **src/nylo/builtins.py** - _Definitions of some Nylo "built inside" function_ (like **print**, etc..)
 * **src/nylo/exceptions.py** - _Definitions of Nylo exceptions_ (like **NameNotDefined**, **NeedComma**, **FileNotOver**, etc..)
-* **src/nylo/base_objects** - _It includes some useful Token & Stack definitions and a "Reading" class where they are used _
+* **src/nylo/base_objects** - _It includes some useful Token & Stack definitions and a "Reading" class where they are used_
 * **src/nylo/base_objects/Reading.py** - _It checks the number of lines, characters, unexpected EOFs, etc.._
 * **src/nylo/base_objects/Stack.py** - _It contains a list of variable dictionaries_
 * **src/nylo/base_objects/Token.py** - _It manages the initialization of parsed tokens and their representations_
@@ -50,4 +50,5 @@ _In primis_ ("firstable"), you **must** be a member of [pyTeens](https://teens.p
 It will be released on the _25th_ of _May 2018!_
 
 **Copyright** (c) 2017, 2018 [@veggero](https://github.com/veggero). All rights reserved.
+
 **Copyright** (c) 2018 [pyTeens](https://teens.python.it). All rights reserved.
