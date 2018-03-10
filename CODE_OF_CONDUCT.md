@@ -1,84 +1,46 @@
-# Code of Conduct
+# CODE OF CONDUCT
 
-## 1. Purpose
+All admins and member of any official pyTeens community or online presence
+are required to comply with the following code of conduct.
+Admins will enforce this code at all times.
 
-A primary goal of Nylo is to be inclusive to the largest number of contributors, with the most varied and diverse backgrounds possible. As such, we are committed to providing a friendly, safe and welcoming environment for all, regardless of gender, sexual orientation, ability, ethnicity, socioeconomic status, and religion (or lack thereof).
+## In short
 
-This code of conduct outlines our expectations for all those who participate in our community, as well as the consequences for unacceptable behavior.
+**pyTeens** aims to foster an inclusive community which invites everyone,
+regardless of gender, sexual orientation, disability, physical appearance,
+body size, race, or religion. We do not tolerate harassment of anyone in any form.
+Sexual language and imagery is not appropriate for any of our online communities.
+People violating these rules may be sanctioned or expelled (banned) from the communities
+at the discretion of the admins of the aforesaid community.
 
-We invite all those who participate in Nylo to help us create safe and positive experiences for everyone.
+## Longer version
 
-## 2. Open Source Citizenship
+Harassment includes offensive verbal comments related to gender, sexual orientation, disability,
+physical appearance, body size, race, religion, sexual images in public spaces, deliberate intimidation,
+stalking, following, harassing photography or recording, sustained disruption of talks or other events,
+inappropriate physical contact, and unwelcome sexual attention.
 
-A supplemental goal of this Code of Conduct is to increase open source citizenship by encouraging participants to recognize and strengthen the relationships between our actions and their effects on our community.
+Blasphemous language is not allowed.
 
-Communities mirror the societies in which they exist and positive action is essential to counteract the many forms of inequality and abuses of power that exist in society.
+Any content or activity featuring, encouraging, or soliciting illegal activity (for example sharing
+pirated content) is prohibited.
 
-If you see someone who is making an extra effort to ensure our community is welcoming, friendly, and encourages all participants to contribute to the fullest extent, we want to know.
+People asked to stop any harassing behavior are expected to comply immediately.
 
-## 3. Expected Behavior
+If someone engages in harassing behavior, the admins may take any action they deem appropriate,
+including warning the offender or expulsion from community.
 
-The following behaviors are expected and requested of all community members:
+If you are being harassed, notice that someone else is being harassed, or have any other concerns,
+please contact an admin immediately.
 
-*   Participate in an authentic and active way. In doing so, you contribute to the health and longevity of this community.
-*   Exercise consideration and respect in your speech and actions.
-*   Attempt collaboration before conflict.
-*   Refrain from demeaning, discriminatory, or harassing behavior and speech.
-*   Be mindful of your surroundings and of your fellow participants. Alert community leaders if you notice a dangerous situation, someone in distress, or violations of this Code of Conduct, even if they seem inconsequential.
-*   Remember that community event venues may be shared with members of the public; please be respectful to all patrons of these locations.
+We expect all the users to follow these rules on any online presence of pyTeens
 
-## 4. Unacceptable Behavior
+Shall you need a personal private conversation with the admin or you can't find the right contacts for a specific online presence of pyTeens, please contact
+one of the following people:
 
-The following behaviors are considered harassment and are unacceptable within our community:
+Written by:
+* Francesca Zerlotti [francesca@python.it](mailto:francesca@python.it)
+* Matteo Benci [matteo@python.it](mailto:matteo@python.it)
 
-*   Violence, threats of violence or violent language directed against another person.
-*   Sexist, racist, homophobic, transphobic, ableist or otherwise discriminatory jokes and language.
-*   Posting or displaying sexually explicit or violent material.
-*   Posting or threatening to post other people’s personally identifying information ("doxing").
-*   Personal insults, particularly those related to gender, sexual orientation, race, religion, or disability.
-*   Inappropriate photography or recording.
-*   Inappropriate physical contact. You should have someone’s consent before touching them.
-*   Unwelcome sexual attention. This includes, sexualized comments or jokes; inappropriate touching, groping, and unwelcomed sexual advances.
-*   Deliberate intimidation, stalking or following (online or in person).
-*   Advocating for, or encouraging, any of the above behavior.
-*   Sustained disruption of community events, including talks and presentations.
-
-## 5. Consequences of Unacceptable Behavior
-
-Unacceptable behavior from any community member, including sponsors and those with decision-making authority, will not be tolerated.
-
-Anyone asked to stop unacceptable behavior is expected to comply immediately.
-
-If a community member engages in unacceptable behavior, the community organizers may take any action they deem appropriate, up to and including a temporary ban or permanent expulsion from the community without warning (and without refund in the case of a paid event).
-
-## 6. Reporting Guidelines
-
-If you are subject to or witness unacceptable behavior, or have any other concerns, please notify a community organizer as soon as possible. gabriel@hearot.it.
-
-
-
-Additionally, community organizers are available to help community members engage with local law enforcement or to otherwise help those experiencing unacceptable behavior feel safe. In the context of in-person events, organizers will also provide escorts as desired by the person experiencing distress.
-
-## 7. Addressing Grievances
-
-If you feel you have been falsely or unfairly accused of violating this Code of Conduct, you should notify PyTeens with a concise description of your grievance. Your grievance will be handled in accordance with our existing governing policies.
-
-
-
-## 8. Scope
-
-We expect all community participants (contributors, paid or otherwise; sponsors; and other guests) to abide by this Code of Conduct in all community venues–online and in-person–as well as in all one-on-one communications pertaining to community business.
-
-This code of conduct and its related procedures also applies to unacceptable behavior occurring outside the scope of community activities when such behavior has the potential to adversely affect the safety and well-being of community members.
-
-## 9. Contact info
-
-gabriel@hearot.it
-
-## 10. License and attribution
-
-This Code of Conduct is distributed under a [Creative Commons Attribution-ShareAlike license](http://creativecommons.org/licenses/by-sa/3.0/).
-
-Portions of text derived from the [Django Code of Conduct](https://www.djangoproject.com/conduct/) and the [Geek Feminism Anti-Harassment Policy](http://geekfeminism.wikia.com/wiki/Conference_anti-harassment/Policy).
-
-Retrieved on November 22, 2016 from [http://citizencodeofconduct.org/](http://citizencodeofconduct.org/)
+Edited by:
+* Gabriel Hearot [gabriel@python.it](mailto:gabriel@python.it)

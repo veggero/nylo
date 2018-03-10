@@ -16,6 +16,7 @@ from .syntax_objects.SymbolOperation import *
 from .value_objects.NumStr import *
 from .value_objects.Value import *
 
+
 def run(code):
     global builtins
     struct = Struct(Reading('({c})'.format(c=code), 0)).evaluate(builtins)
