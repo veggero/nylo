@@ -1,27 +1,23 @@
-![](https://raw.githubusercontent.com/pyTeens/nylo/gh-pages/docs/images/NyloBanner.png) [![](https://travis-ci.org/pyTeens/nylo.svg?branch=master)](https://travis-ci.org/pyTeens/nylo)
+![](https://raw.githubusercontent.com/pyTeens/nylo/gh-pages/docs/images/NyloPyTeensLogo.png) [![](https://travis-ci.org/pyTeens/nylo.svg?branch=master)](https://travis-ci.org/pyTeens/nylo)
 
-## What's Nylo?
+# Welcome to nylo
 
-**Nylo** is a new programming language ideated by [@veggero](https://github.com/veggero) and developed by all the [@pyTeens](https://github.com/pyTeens) team.
-Its __performance__ and its __syntax__ are so awesome that you'll reconsider sex.
+**nylo** (/nylo/) is a **programming language** written in [Python](https://python.org). It is knows due to its **simplicity** and **style**. As you should know: **nylo** is absolutely **user-friendly**, you could write code in few lines, less than what you would think!
 
-```
-fib:
-    with int n
-    if (=0 or =1)
-      1
-    else
-      fib(n-1) + fib(n-2)
-```
-## How Nylo will help me?
+* [**Main Repository**](https://github.com/pyTeens/nylo)
 
-**Nylo** has got a lot of **libraries** that can do **everything** and it also supports __Python modules!__ Isn't that so awesome?
-It's going to change how we code, that's it.
+# Contents
+* [How to contribute](#how-to-contribute)
+* [Release](#release)
 
-## Release day
+## How to contribute
 
-**Nylo** is going to be released on the **25th of May 2018**.
-Support and watch the development on [its repository](https://github.com/pyTeens/nylo).
-You can also take a look of the [Quick Deep Documentation](https://github.com/pyTeens/nylo/wiki/Quick-Deep-Documentation) and [its docs (for now, in Italian)](https://pyteens.github.io/nylo/docs/Nylo.odt).
+_In primis_ ("firstable"), you **must** be a member of [pyTeens](https://teens.python.it), then **ask** [@veggero](https://github.com/veggero)!
 
-Take a look at the [latest available changelog!](https://github.com/pyTeens/nylo/blob/master/CHANGELOG.md)!
+## Release
+
+It will be released on the _25th_ of _May 2018!_
+
+**Copyright** (c) 2017, 2018 [@veggero](https://github.com/veggero). All rights reserved.
+
+**Copyright** (c) 2018 [pyTeens](https://teens.python.it). All rights reserved.
