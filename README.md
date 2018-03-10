@@ -25,3 +25,5 @@ It will be released on the _25th_ of _May 2018!_
 **Copyright** (c) 2017, 2018 [@veggero](https://github.com/veggero). All rights reserved.
 
 **Copyright** (c) 2018 [pyTeens](https://teens.python.it). All rights reserved.
+
+**Copyright** (c) 2018 [@AmerigoGuadagno](https://github.com/AmerigoGuadagno). All rights reserved.
