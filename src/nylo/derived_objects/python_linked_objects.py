@@ -5,7 +5,8 @@ from nylo.value_objects.Value import Value
 
 class ValueLayer(Value):
 
-    def __init__(self, value): self.value = value
+    def __init__(self, value):
+        self.value = value
 
     def evaluate(self, stack):
         if hasattr(self.value, 'evaluate'):
