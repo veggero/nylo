@@ -26,7 +26,8 @@ class Number(Token):
         else:
             self.value = int(out)
 
-    def evaluate(self, stack): return self.value
+    def evaluate(self, stack):
+        return self.value
 
 
 class String(Token):
@@ -41,4 +42,5 @@ class String(Token):
         reader.move()
         self.value = out
 
-    def evaluate(self, stack): return self.value
+    def evaluate(self, stack):
+        return self.value

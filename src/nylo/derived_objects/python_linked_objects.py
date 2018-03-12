@@ -5,7 +5,8 @@ from nylo.value_objects.Value import Value
 
 class ValueLayer(Value):
 
-    def __init__(self, value): self.value = value
+    def __init__(self, value):
+        self.value = value
 
     def evaluate(self, stack):
         if hasattr(self.value, 'evaluate'):
@@ -23,6 +24,8 @@ class PyStruct(Struct):
 
 class PyFun(Value):
 
-    def __init__(self, fun, c): self.fun = fun
+    def __init__(self, fun, c):
+        self.fun = fun
 
-    def evaluate(self, stack): return self.fun(stack)
+    def evaluate(self, stack):
+        return self.fun(stack)
