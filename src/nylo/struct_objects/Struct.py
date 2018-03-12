@@ -15,7 +15,7 @@ class Struct(Token):
         self.values = []
         reader.move()
 
-        if reader.read() != ')':
+        if not reader.any_starts_with(self.ends):
             self.values.append(StructEl(reader).value)
 
         while not reader.any_starts_with(self.ends):
@@ -33,9 +33,6 @@ class Struct(Token):
             self.output_value = None
 
         reader.move()
-
-        if len(self.values) == 1 and isinstance(self.values[0], Value):
-            return self.values[0]
 
     def evaluate(self, stack):
         if self.output_value:
