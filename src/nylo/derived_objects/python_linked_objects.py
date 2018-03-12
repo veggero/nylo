@@ -23,6 +23,8 @@ class PyStruct(Struct):
 
 class PyFun(Value):
 
-    def __init__(self, fun, c): self.fun = fun
+    def __init__(self, fun, c):
+        self.fun = fun
 
-    def evaluate(self, stack): return self.fun(stack)
+    def evaluate(self, stack):
+        return self.fun(stack)

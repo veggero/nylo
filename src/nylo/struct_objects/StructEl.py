@@ -24,4 +24,5 @@ class StructEl(Token):
         else:
             self.value = Value(reader)
 
-    def evaluate(self, stack): return self.value.evaluate(stack)
+    def evaluate(self, stack):
+        return self.value.evaluate(stack)
