@@ -15,6 +15,8 @@ class Caller(Token):
             self.values.append(CallerEl(reader).value)
             
         while not reader.any_starts_with(self.ends):
+        # hearot ti voglio bene ma se mi togli pure
+        # questi inline mi arrabbio
             if not reader.read() == ',': need_comma()
             reader.move()
             if reader.read() == '\0': reader.move()
