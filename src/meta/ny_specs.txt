@@ -7,11 +7,14 @@
 # 0-9 -> numbers
 # \( \) -> ( )
 # (.*) -> anything
+# \t -> indent
+# \dt -> deindent
 
 typedef ::= keyword+
 valuedef ::= typedef: value
 structel ::= typedef | valuedef | value
 struct ::= \((structel(, structel)*)? (-> value)? \)
+struct ::= \n\t (structel \n)* (-> value)? \dt
 
 value ::= num | string | keyword | struct | expr
 value ::= value\(call\) | value[value]

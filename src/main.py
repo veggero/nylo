@@ -9,8 +9,7 @@ import nylo
 if __name__ == '__main__':
     print("Nylo Command Line!\n\n")
     print('You can now write code in Value Mode, aka everything is a value.')
-    print('Remember tho, .ny files will be executed in Struct Mode,')
-    print('to get the same results as here use `obj main: {code}`')
+    print('Remember tho, .ny files will be executed in Struct Mode.')
     print()
     while True:
         stack = nylo.builtins
