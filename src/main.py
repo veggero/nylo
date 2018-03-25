@@ -1,24 +1,5 @@
 import nylo
 
-# TODO:
-# Features:
-# (easy) Informative Errors with line and character
-# (easy) Fix facultative comma in structures
-# (hard) Right symbols priority
-
-if __name__ == '__main__':
-    print("Nylo Command Line!\n\n")
-    print('You can now write code in Value Mode, aka everything is a value.')
-    print('Remember tho, .ny files will be executed in Struct Mode.')
-    print()
-    while True:
-        stack = nylo.builtins
-        try:
-            reader = nylo.Reading(input('nylo> '), 0)
-            input_value = nylo.Value(reader)
-            reader.end()
-            out = input_value.evaluate(stack)
-            if out is not None:
-                print('<- ' + str(out))
-        except Exception as Ex:
-            stack.show_traceback(Ex)
+r = nylo.Reader('ciao(k, a: 15, 15: k, a -> 42) ')
+k = nylo.Symbol(r)
+print(k.value)

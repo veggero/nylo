@@ -3,7 +3,7 @@
 
 // n. 1
 
-(
+main: (
 	list int num_range: 0..1001,
 	list int multiple_3: filter(num_range, %3=0),
 	list int multiple_5: filter(num_range, %5=0),
@@ -13,7 +13,7 @@
 
 // n. 2
 
-(
+main: (
 	list int num_range: 0..4000001,
 	fun fib: (
 		int, 
@@ -28,7 +28,7 @@
 
 // n. 3
 
-(
+main: (
 	int number: 600851475143,
 	number(->divisors),
 	fun is_prime: int -> len(int.divisors) = 0,
@@ -37,7 +37,7 @@
 
 // n. 4
 
-(
+main: (
 	fun char_is_pal: (str, int -> str[int] = str[len(str), int]),
 	fun is_pal: (
 		int pal
