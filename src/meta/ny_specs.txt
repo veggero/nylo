@@ -1,50 +1,22 @@
-# regex elements used
-# ? -> one or zero times
-# + -> at least one time
-# * -> any number of times
-# () -> grouping elementns
-# a-Z -> letters
-# 0-9 -> numbers
-# \( \) -> ( )
-# (.*) -> anything
-# \t -> indent
-# \dt -> deindent
-
 typedef ::= keyword+
-valuedef ::= typedef: value
-structel ::= typedef | valuedef | value
-struct ::= \((structel(, structel)*)? (-> value)? \)
-struct ::= \n\t (structel \n)* (-> value)? \dt
+valuedef ::= value: value
+struct ::= (\( | \n\t) (typedef | valuedef)* (-> value)? (\) | \dt)
 
-value ::= num | string | keyword | struct | expr
-value ::= value\(call\) | value[value]
-value ::= /* (.*) */ value | // (.*) \n value
-
-callel ::= value: value
-call ::= (callel(,? callel)*)?
+value ::= aval? symb? aval
+aval ::= num | string | keyword | struct
+aval ::= keyword struct
 
 keyword ::= (_a-Z)+(_a-Z0-9)*
 num ::= (0-9)(_0-9)* | ((0-9)(_0-9)*)?.(_0-9)+
 string ::= "(.*)" | '(.*)'
-expr ::= value? symb value? | unary_symb value?
 
 symb ::= = | and | > | or | < | != | xor | >=
 symb ::= >> | <= | << | .. | in | \* | +-
 symb ::= / | ^ | \| | % | , | & | :
 unary_symb ::= \+ | - | not
 
-# symbols priority:
-# .
-# value(value)
-# value[value]
-# :
-# -> <-
-# ,
-# not
-# and or not xor
-# = > < >= <= !=
-# in & .. << >>
-# ^
-# * / %
-# + -
-# +-
+# ? -> one or zero times;   + -> at least one time
+# * -> any number of times; () -> grouping elementns
+# a-Z -> letters;           0-9 -> numbers
+# \( \) -> ( );             (.*) -> anything
+# \t -> indent;             \dt -> deindent

@@ -9,8 +9,8 @@ from nylo.objects.call.Call import Call as CallObj
 class Value(Lexer):
     
     def able(reader): 
-        return (Number.able(reader) or 
-                String.able(reader) or Keyword.able(reader))
+        return (Number.able(reader) or String.able(reader) 
+                or Keyword.able(reader) or Call.able(reader))
                 #String.able(reader) or Symbol.able(reader))
     
     def lexe(self, reader):
@@ -20,5 +20,6 @@ class Value(Lexer):
             else: return kw
         elif Number.able(reader): return Number(reader).value
         elif String.able(reader): return String(reader).value
+        elif Call.able(reader): return Call(reader).value
         
     def parse(self, reader): return self.lexe(reader)

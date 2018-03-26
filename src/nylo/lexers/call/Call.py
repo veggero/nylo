@@ -1,11 +1,10 @@
 from nylo.lexers.Lexer import Lexer
 from nylo.lexers.call.CallEl import CallEl
+from nylo.objects.call.CallEl import Set
 
 class Call(Lexer):
     
-    starts = ['(']
-    
-    def able(reader): return reader.read() == '(' #TODO
+    def able(reader): return reader.read() in '('
     
     def lexe(self, reader):
         from nylo.lexers.values.Value import Value
@@ -20,4 +19,7 @@ class Call(Lexer):
         reader.move()
         
     def parse(self, reader):
-        return list(self.lexe(reader))
+        elements = list(self.lexe(reader))
+        if len(elements) == 2 and not isinstance(elements[0], Set):
+            return elements[0]
+        else: return elements
