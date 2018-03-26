@@ -7,11 +7,11 @@ class CallEl(Lexer):
     def able(reader): return True #TODO
     
     def lexe(self, reader):
-        from nylo.lexers.values.Value import Value
-        vl = Value(reader).value
+        from nylo.lexers.values.Symbol import Symbol
+        vl = Symbol(reader).value
         if reader.read() == ':':
             reader.move()
-            yield Set(vl, Value(reader).value)
+            yield Set(vl, Symbol(reader).value)
         else: yield vl
         
     def parse(self, reader): return list(self.lexe(reader))[0]

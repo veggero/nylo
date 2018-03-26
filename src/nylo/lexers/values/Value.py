@@ -16,7 +16,10 @@ class Value(Lexer):
     def lexe(self, reader):
         if Keyword.able(reader): 
             kw = Keyword(reader).value
-            if reader.read() in '(': return CallObj(kw, Call(reader).value)
+            if reader.read() in '(': 
+                cl = Call(reader).value
+                print(cl)
+                return CallObj(kw, cl)
             else: return kw
         elif Number.able(reader): return Number(reader).value
         elif String.able(reader): return String(reader).value

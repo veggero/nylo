@@ -31,7 +31,7 @@ class Reader:
     def move(self, char_num=1):
         "Move the pointer on the next characters."
         for i in range(char_num): last = self.move_char()
-        while self.read() in ' \t\n': self.move_char()
+        self.avoid_whitespace()
         return last
 
     def move_char(self):

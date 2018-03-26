@@ -8,7 +8,7 @@ class Symbol(Lexer):
     unary_symbols = '+', '-', 'not'
     symbols = ('=', 'and', '>', 'or', '<', '!=', 'xor', '>=',
                '<=', '..', 'in', '*', '+-', '/', '^', '|', '%',
-               ',', '&', ':') + unary_symbols
+               ',', '&') + unary_symbols
     
     def able(reader): 
         from nylo.lexers.values.Value import Value

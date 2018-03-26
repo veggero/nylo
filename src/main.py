@@ -14,6 +14,4 @@ r = nylo.Reader("""(main:
             15
         -> result)""")
 
-#r = nylo.Reader('''
-#    3''')
 print(nylo.Call(r).value)
