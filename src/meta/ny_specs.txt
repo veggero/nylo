@@ -1,6 +1,5 @@
-typedef ::= keyword+
 valuedef ::= value: value
-struct ::= (\( | \n\t) (typedef | valuedef)* (-> value)? (\) | \dt)
+struct ::= (\( | \n\t) (value | valuedef)* (-> value)? (\) | \dt)
 
 value ::= aval? symb? aval
 aval ::= num | string | keyword | struct

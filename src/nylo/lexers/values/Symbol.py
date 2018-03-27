@@ -8,7 +8,8 @@ class Symbol(Lexer):
     unary_symbols = '+', '-', 'not'
     symbols = ('=', 'and', '>', 'or', '<', '!=', 'xor', '>=',
                '<=', '..', 'in', '*', '+-', '/', '^', '|', '%',
-               ',', '&') + unary_symbols
+               '&') + unary_symbols
+    to_avoid = ('->',)
     
     def able(reader): 
         from nylo.lexers.values.Value import Value
@@ -24,7 +25,8 @@ class Symbol(Lexer):
         from nylo.lexers.values.Value import Value
         if not reader.any_starts_with(self.unary_symbols):
             yield Value(reader).value
-        if not reader.any_starts_with(self.symbols): return
+        if (not reader.any_starts_with(self.symbols)
+            or reader.any_starts_with(self.to_avoid)): return
         self.symbol = reader.any_starts_with(self.symbols)
         reader.move(len(self.symbol))
         yield Symbol(reader).value
