@@ -1,6 +1,6 @@
 from nylo.lexers.Lexer import Lexer
 from nylo.lexers.struct.StructEl import StructEl
-from nylo.objects.struct.StructEl import Set
+from nylo.objects.struct.StructEl import Set, TypeDef
 from nylo.objects.struct.Struct import Struct as StructObj
 
 class Struct(Lexer):
@@ -21,11 +21,11 @@ class Struct(Lexer):
             yield Symbol(reader).value
         else: yield False
         reader.avoid_whitespace()
-        print(reader.read())
         reader.move()
         
     def parse(self, reader):
         elements = list(self.lexe(reader))
-        if len(elements) == 2 and not isinstance(elements[0], Set):
+        if (len(elements) == 2 and not isinstance(elements[0], Set)
+            and not elements[-1] and not isinstance(elements[0], TypeDef)):
             return elements[0]
         else: return StructObj(elements)

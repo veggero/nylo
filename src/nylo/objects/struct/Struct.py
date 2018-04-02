@@ -10,6 +10,9 @@ class Struct(NyObject):
     def __str__(self): return '(%s -> %s)' % (', '.join(map(str, self.value)), str(self.toreturn))
 
     def evaluate(self, stack): 
+        return self
+    
+    def calculate(self, stack):
         stack.append(self)
         if not self.toreturn is False: 
             value = self.toreturn.evaluate(stack)
@@ -55,9 +58,9 @@ class Call(NyObject):
     def __str__(self): return '%s%s' % (self.kw, self.struct)
 
     def evaluate(self, stack):
-        self.caller = deepcopy(self.struct)
-        self.called = stack[self.kw]
+        self.caller = self.struct
+        self.called = deepcopy(stack[self.kw])
         self.called.update(self.caller, stack)
         if self.caller.toreturn:
             self.called.toreturn = self.caller.toreturn
-        return self.called.evaluate(stack)
+        return self.called.calculate(stack)
