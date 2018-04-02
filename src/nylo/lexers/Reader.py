@@ -10,17 +10,18 @@ class Reader:
 
     def __init__(self, code, reading_at=0):
         "Initizialize Reader instance."
-        prev_indent, endlines = 0, []
-        for line in (code+'\n\0').split('\n'):
+        prev_indent, endlines = 0, ['']
+        for line in ('('+code+'\n)\0').split('\n'):
             indent = 0
             while len(line)>indent and line[indent] in ' \t': indent += 1
             if len(line) == indent: continue
             line = line[indent:]
-            if indent > prev_indent: line = '('*(indent-prev_indent)+line
-            elif indent < prev_indent: line = ')'*(prev_indent-indent)+line
+            if indent > prev_indent: line = '('*((indent-prev_indent)//4)+line
+            elif indent < prev_indent: endlines[-1] += ')'*((prev_indent-indent)//4)
+            if not indent > prev_indent: endlines[-1] += ','
             prev_indent = indent
             endlines.append(line)
-        self.code = '\n'.join(endlines)
+        self.code = '\n'.join(endlines[1:])
         self.reading_at = reading_at
         self.line, self.char = 1, 1
 

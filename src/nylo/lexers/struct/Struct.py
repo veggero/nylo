@@ -8,8 +8,9 @@ class Struct(Lexer):
     def able(reader): return reader.read() in '('
     
     def lexe(self, reader):
-        from nylo.lexers.values.Value import Value
+        from nylo.lexers.values.Symbol import Symbol
         reader.move()
+        reader.avoid_whitespace()
         while not reader.any_starts_with([')', '->']):
             yield StructEl(reader).value
             if reader.read() == ',': 
@@ -17,8 +18,10 @@ class Struct(Lexer):
                 reader.avoid_whitespace()
         if reader.starts_with('->'): 
             reader.move(2)
-            yield Value(reader).value
+            yield Symbol(reader).value
         else: yield False
+        reader.avoid_whitespace()
+        print(reader.read())
         reader.move()
         
     def parse(self, reader):

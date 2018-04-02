@@ -5,9 +5,9 @@ from nylo.objects.values.Value import Value as ValObj
 
 class Symbol(Lexer):
     
-    unary_symbols = '+', '-', 'not'
-    symbols = ('=', 'and', '>', 'or', '<', '!=', 'xor', '>=',
-               '<=', '..', 'in', '*', '+-', '/', '^', '|', '%',
+    unary_symbols = '+', '-', 'not '
+    symbols = ('=', 'and ', '>', 'or ', '<', '!=', 'xor ', '>=',
+               '<=', '..', 'in ', '*', '+-', '/', '^', '|', '%',
                '&') + unary_symbols
     to_avoid = ('->',)
     

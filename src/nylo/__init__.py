@@ -4,3 +4,4 @@ from nylo.lexers.values.Keyword import Keyword
 from nylo.lexers.values.Symbol import Symbol
 from nylo.lexers.values.NumStr import Number, String
 from nylo.lexers.struct.Struct import Struct
+from nylo.objects.Stack import Stack
