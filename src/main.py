@@ -1,19 +1,20 @@
 import nylo
 
 r = nylo.Reader('''
-
-double: 
-    int n
-    int result: n * 2
-    -> result
     
-testcase:
-    int a
-    int b: double(n: a)
-    int c: double(n: b)
-    int d: double(n: c)
+fib:
+    int n
+    int prevs: 
+        fib(n-1) + fib(n-2)
+    int result: 
+        if
+            n<2
+            n
+            prevs
+    -> result
+   
+-> fib(16)
 
--> testcase(a: 3 -> d)
 ''')
 
 
@@ -21,5 +22,5 @@ out = nylo.Symbol(r).value
 
 print(out)
 
-print(out.calculate(nylo.Stack()))
+print(out.calculate(nylo.nyglobals))
 

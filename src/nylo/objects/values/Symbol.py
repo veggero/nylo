@@ -29,6 +29,6 @@ class Symbol(NyObject):
     def __str__(self): return (' %s ' % self.value).join(str(k) for k in self.args)
     
     def evaluate(self, stack):
-        self.args = [k.evaluate(stack) for k in self.args]
-        return Value(getattr(self.args[0].value, 
-                self.map_to_py[self.value])(self.args[1].value))
+        args = [k.evaluate(stack) for k in self.args]
+        return Value(getattr(args[0].value, 
+                self.map_to_py[self.value])(args[1].value))

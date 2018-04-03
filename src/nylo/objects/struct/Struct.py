@@ -1,7 +1,7 @@
 from nylo.objects.NyObject import NyObject
 from nylo.objects.struct.StructEl import Set, TypeDef
 from nylo.objects.values.Keyword import Keyword
-from copy import deepcopy
+from time import sleep
 
 class Struct(NyObject):
     
@@ -23,7 +23,6 @@ class Struct(NyObject):
     def update(self, other, stack):
         for element in other.value:
             if isinstance(element, Set):
-                # example(locals: globals)
                 if isinstance(element.by, Keyword) or element.to in stack[-1]:
                     element.to = element.to.evaluate(stack)
                     self.value.append(element)
@@ -33,6 +32,14 @@ class Struct(NyObject):
                             element.by.evaluate(stack)))
                     stack.pop()
                 else: raise TypeError(self, other)
+            for i in range(len(self.value)):
+                el = self.value[i]
+                if  isinstance(el, Keyword) or isinstance(el, TypeDef):
+                    if isinstance(el, TypeDef) and el.ttype[0] != Keyword('obj'): 
+                        element = element.evaluate(stack)
+                    self.value[i] = None
+                    self.value.append(Set(el, element))
+                    break
         
     def getitem(self, value, stack):
         stack.append(self)
@@ -40,9 +47,9 @@ class Struct(NyObject):
         for element in self.value:
             if isinstance(element, Set) and element.by == value:
                 out = element.to.evaluate(stack)
-        stack.pop()
-        if not out: raise NameError(value)
-        return out
+                stack.pop()
+                return out
+        raise NameError(value)
         
     def __contains__(self, value):
         for element in self.value:
@@ -54,12 +61,15 @@ class Call(NyObject):
     
     def __init__(self, kw, struct): 
         self.kw, self.struct, self.value = kw, struct, (kw, struct)
+        if not isinstance(self.struct, Struct):
+            self.struct = Struct([self.struct, False])
 
     def __str__(self): return '%s%s' % (self.kw, self.struct)
 
     def evaluate(self, stack):
         self.caller = self.struct
-        self.called = deepcopy(stack[self.kw])
+        self.acalled = stack[self.kw]
+        self.called = Struct(self.acalled.value + [self.acalled.toreturn])
         self.called.update(self.caller, stack)
         if self.caller.toreturn:
             self.called.toreturn = self.caller.toreturn

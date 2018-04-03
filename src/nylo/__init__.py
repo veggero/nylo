@@ -5,3 +5,6 @@ from nylo.lexers.values.Symbol import Symbol
 from nylo.lexers.values.NumStr import Number, String
 from nylo.lexers.struct.Struct import Struct
 from nylo.objects.Stack import Stack
+from nylo.objects.interfaces.builtins import builtins
+
+nyglobals = Stack([builtins])
