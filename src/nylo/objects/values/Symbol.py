@@ -16,7 +16,7 @@ class Symbol(NyObject):
         '>=': '__ge__',
         '<=': '__le__',
         '*': '__mul__',
-        '/': '__div__',
+        '/': '__truediv__',
         '^': '__pow__',
         '%': '__mod__',
         '&': '__sum__'
@@ -30,5 +30,9 @@ class Symbol(NyObject):
     
     def evaluate(self, stack):
         args = [k.evaluate(stack) for k in self.args]
-        return Value(getattr(args[0].value, 
-                self.map_to_py[self.value])(args[1].value))
+        op = self.map_to_py[self.value]
+        value = Value(getattr(args[0].value, op)(args[1].value))
+        if value.value == NotImplemented: 
+            op = op[:2]+'r'+op[2:]
+            return Value(getattr(args[1].value, op)(args[0].value))
+        return value

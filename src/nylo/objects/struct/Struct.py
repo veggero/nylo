@@ -32,19 +32,17 @@ class Struct(NyObject):
                             element.by.evaluate(stack)))
                     stack.pop()
                 else: raise TypeError(self, other)
-            for i in range(len(self.value)):
-                el = self.value[i]
+            for i, el in enumerate(self.value):
                 if  isinstance(el, Keyword) or isinstance(el, TypeDef):
                     if isinstance(el, TypeDef) and el.ttype[0] != Keyword('obj'): 
                         element = element.evaluate(stack)
-                    self.value[i] = None
-                    self.value.append(Set(el, element))
+                    self.value[i] = Set(el, element)
                     break
         
     def getitem(self, value, stack):
         stack.append(self)
         out = None
-        for element in self.value:
+        for element in reversed(self.value):
             if isinstance(element, Set) and element.by == value:
                 out = element.to.evaluate(stack)
                 stack.pop()

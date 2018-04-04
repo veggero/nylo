@@ -13,7 +13,7 @@ class Struct(Lexer):
         reader.avoid_whitespace()
         while not reader.any_starts_with([')', '->']):
             yield StructEl(reader).value
-            if reader.read() == ',': 
+            if reader.read() in ',': 
                 reader.move()
                 reader.avoid_whitespace()
         if reader.starts_with('->'): 
