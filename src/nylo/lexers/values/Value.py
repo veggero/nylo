@@ -3,7 +3,7 @@ from nylo.lexers.values.Keyword import Keyword
 from nylo.lexers.values.NumStr import Number, String
 from nylo.lexers.values.Symbol import Symbol
 from nylo.lexers.struct.Struct import Struct
-from nylo.objects.struct.Struct import Call as CallObj
+from nylo.objects.struct.Call import Call as CallObj
 from nylo.objects.struct.StructEl import TypeDef
 
 

@@ -8,7 +8,7 @@ class Set(NyObject):
 
     def __contains__(self, value): return self.by == value
 
-    def __getitem__(self, value): return self.to
+    def getitem(self, value, stack): return self.to
 
 class TypeDef(NyObject):
     

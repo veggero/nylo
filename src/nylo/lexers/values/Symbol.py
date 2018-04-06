@@ -1,7 +1,8 @@
 from nylo.lexers.Lexer import Lexer
 from nylo.objects.values.Keyword import Keyword as KeyObj
 from nylo.objects.values.Value import Value as ValObj
-from nylo.objects.struct.Struct import Call, Struct
+from nylo.objects.struct.Struct import Struct
+from nylo.objects.struct.Call import Call
 
 
 class Symbol(Lexer):
