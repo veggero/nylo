@@ -39,7 +39,8 @@ moto_rettilineo_uniformemente_accelerato:
     delta_tempo: tempo - tempo_iniziale
     
     spazio_iniziale: 0
-    spazio: (spazio_iniziale) + (velocita_iniziale * delta_tempo) + (accelerazione * delta_tempo * delta_tempo / 2)
+    spazio: 
+        (spazio_iniziale) + (velocita_iniziale * delta_tempo) + (accelerazione * delta_tempo * delta_tempo / 2)
     delta_spazio: spazio - delta_spazio
     
     velocita_iniziale: 0
