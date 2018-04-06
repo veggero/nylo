@@ -3,9 +3,8 @@ class NyObject:
     def __init__(self, value): self.value = value
     
     def evaluate(self, stack):
-        if hasattr(self.value, 'evaluate'):
-            return self.value.evaluate(stack)
-        else: return self
+        return (self.value.evaluate(stack)
+        if hasattr(self.value, 'evaluate') else self)
 
     def __repr__(self): return '%s:{%s}' % (type(self).__name__, repr(self.value))
     

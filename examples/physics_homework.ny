@@ -2,7 +2,7 @@
 "Sono presi direttamente dal mio libro di fisica."
 
 "Per avviare:"
-"[veggero@yara nylo]$ py src/runfile.py examples/physics_homework.nylo"
+"[veggero@yara nylo]$ py src/main.py examples/physics_homework.ny"
 
 g: 9.81
 

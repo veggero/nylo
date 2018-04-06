@@ -59,11 +59,9 @@ class Reader:
         """
         return self.code.startswith(string, self.reading_at)
 
-    def get_line(self):
-        return self.line
+    def get_line(self): return self.line
 
-    def get_char(self):
-        return self.char
+    def get_char(self): return self.char
 
     def goto(self, reader):
         "Go to the character of another reader."

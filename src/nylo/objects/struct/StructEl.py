@@ -6,6 +6,10 @@ class Set(NyObject):
     
     def __str__(self): return '%s: %s' % (self.by, self.to)
 
+    def __contains__(self, value): return self.by == value
+
+    def __getitem__(self, value): return self.to
+
 class TypeDef(NyObject):
     
     def __init__(self, kws): *self.ttype, self.value = kws

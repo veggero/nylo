@@ -6,3 +6,5 @@ class PyValue(NyObject):
     
     def evaluate(self, stack): 
         return Value(self.value(stack))
+
+    def __str__(self): return '<lambda>'
