@@ -1,42 +1,45 @@
 from nylo.objects.NyObject import NyObject
-from nylo.objects.struct.StructEl import Set, TypeDef
+from nylo.objects.struct.StructEl import TypeDef
 from nylo.objects.values.Keyword import Keyword
 
 class Struct(NyObject):
     
-    def __init__(self, elements): *self.value, self.toreturn = elements
+    def __init__(self, value):
+        self.value = value
+        self.names = set()
     
-    def __str__(self): return '(%s -> %s)' % (', '.join(map(str, self.value)), str(self.toreturn))
+    def __str__(self): return '(%s)' % ', '.join('%s: %s' % (key, ' | '.join(map(str, val))) 
+                                                 for key, val in self.value.items())
         
-    def __contains__(self, value):
-        from nylo.objects.struct.Call import Call
-        return any(value in element for element in self.value 
-                   if isinstance(element, (Set, Call)) )
+    def __contains__(self, value): return len(self.value[value.value]) > 0
+
+    def __getitem__(self, value): return self.value[value]
     
     def evaluate(self, stack): return self
     
     def calculate(self, stack):
         with stack(self):
-            if self.toreturn: return self.toreturn.evaluate(stack)
+            if 'self' in self.value: 
+                return self.value['self'][0].evaluate(stack)
             else: return self
         
     def update(self, other, stack):
-        for element in other.value:
-            if isinstance(element, Set):
-                if isinstance(element.by, Keyword):
-                    element.to = element.to.evaluate(stack)
-                    self.value.append(element)
-                else: continue 
-            for i, el in enumerate(self.value):
-                if  isinstance(el, Keyword) or isinstance(el, TypeDef):
-                    if isinstance(el, TypeDef) and el.ttype[0] != Keyword('obj'): 
-                        element = element.evaluate(stack)
-                    self.value[i] = Set(el, element)
-                    break
-        return self
+        for key, value in other.value.items():
+            if key in ('atoms', 'self'): continue
+            self[key] = self[key] + value
+        for element in other.value['atoms']:
+            self.drop(element, stack)
+            
+    def drop(self, element, stack):
+        for key, value in self.value.items():
+            if value == []:
+                if not (isinstance(key, TypeDef) and key.ttype[-1] == 'obj'):
+                    element = element.evaluate(stack)
+                self.value[key] = self.value[key] + [element]
+                return
+        raise TypeError('Structure %s cannot accept value "%s"' % (self, element))
         
     def getitem(self, value, stack):
-        from nylo.objects.struct.Call import Call
-        return next(element.getitem(value, stack).evaluate(stack)
-            for element in reversed(self.value)
-            if isinstance(element, (Set, Call)) and value in element)
+        for element in self[value]:
+            return element.evaluate(stack)
+        raise TypeError("Couldn't get '%s' in any way." % value)

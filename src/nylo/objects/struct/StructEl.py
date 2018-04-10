@@ -1,19 +1,15 @@
 from nylo.objects.NyObject import NyObject
 
-class Set(NyObject):
-    
-    def __init__(self, by, to): self.by, self.to, self.value = by, to, (by, to)
-    
-    def __str__(self): return '%s: %s' % (self.by, self.to)
-
-    def __contains__(self, value): return self.by == value
-
-    def getitem(self, value, stack): return self.to
-
 class TypeDef(NyObject):
     
-    def __init__(self, kws): *self.ttype, self.value = kws
+    def __init__(self, kws): 
+        self.names = {kws[-1].value}
+        self.avaiable = {kws[-1].value}
+        *self.ttype, self.value = kws
+        self.value = self.value.value
     
     def __str__(self): return ' '.join(str(k) for k in self.ttype + [self.value])
 
     def __eq__(self, other): return other == self.value
+
+    def __hash__(self): return hash(self.value)

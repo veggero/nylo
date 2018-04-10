@@ -4,4 +4,4 @@ class Lexer:
         reader.avoid_whitespace()
         self.reader = reader
         self.value = self.parse(reader)
-        reader.avoid_whitespace()
+        reader.avoid_whitespace() 

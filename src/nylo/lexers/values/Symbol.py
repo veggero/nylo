@@ -1,5 +1,5 @@
 from nylo.lexers.Lexer import Lexer
-from nylo.objects.values.Keyword import Keyword as KeyObj
+from nylo.objects.values.Symbol import Symbol as SymObj
 from nylo.objects.values.Value import Value as ValObj
 from nylo.objects.struct.Struct import Struct
 from nylo.objects.struct.Call import Call
@@ -12,25 +12,6 @@ class Symbol(Lexer):
                '<=', '..', 'in ', '*', '+-', '/', '^', '|', '%',
                '&') + unary_symbols
     to_avoid = ('->',)
-    
-    
-    map_to_function_name = {
-        '+': 'sum',
-        '-': 'sub',
-        '=': 'equal',
-        'and ': 'all',
-        '>': 'greater',
-        '<': 'less_than',
-        '!=': 'inequal',
-        'xor ': 'single',
-        '>=': 'greater_or_equal',
-        '<=': 'less_than_or_equal',
-        '*': 'mul',
-        '/': 'div',
-        '^': 'pow',
-        '%': 'mod',
-        '&': 'sum'
-    }
     
     def able(reader): 
         from nylo.lexers.values.Value import Value
@@ -57,6 +38,4 @@ class Symbol(Lexer):
     def parse(self, reader): 
         *values, symbol = list(self.lexe(reader))
         if len(values) == 0: return symbol
-        else: 
-            return Call(KeyObj(self.map_to_function_name[symbol]), 
-                        Struct(values + [False]))
+        else: return SymObj(symbol, values)

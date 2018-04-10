@@ -8,6 +8,9 @@ class Stack(list):
             if value in element: 
                 return element.getitem(value, self)
         raise NameError("Name '%s' is not defined" % value)
+    
+    def __contains__(self, value):
+        return any(value in struct for struct in self)
 
     def __enter__(*args): pass
     

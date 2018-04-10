@@ -3,8 +3,10 @@ moto:
 
 test:
 
-    moto asse_x
-    moto asse_y
+    moto asse_x:
+        velocita_iniziale: gittata / asse_y(->velocita_iniziale)
+    moto asse_y:
+        velocita_iniziale: gittata / asse_x(->velocita_iniziale)
     
     gittata: asse_x(->velocita_iniziale) * asse_y(->velocita_iniziale)
     
