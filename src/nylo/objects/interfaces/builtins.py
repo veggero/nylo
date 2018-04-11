@@ -17,4 +17,3 @@ builtins = Struct(defaultdict(list, {
                 else stack[Keyword('second')].value)]
         }))]
     }))
-

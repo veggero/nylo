@@ -1,7 +1,3 @@
-a: b
-b: 1
-b: a
-
 units:
     mm: m*1000
     cm: m*100
@@ -16,4 +12,6 @@ units:
     hm: m/100
     km: m/1000
 
--> b
+-> units
+    mm: 5
+    -> m

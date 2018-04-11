@@ -1,6 +1,7 @@
 from nylo.objects.NyObject import NyObject
 from nylo.objects.struct.StructEl import TypeDef
 from nylo.objects.values.Keyword import Keyword
+from collections import defaultdict
 
 class Struct(NyObject):
     
@@ -25,8 +26,8 @@ class Struct(NyObject):
         
     def update(self, other, stack):
         for key, value in other.value.items():
-            if key in ('atoms', 'self'): continue
-            self[key] = self[key] + value
+            if key == 'atoms': continue
+            self.value[key] = self[key] + value
         for element in other.value['atoms']:
             self.drop(element, stack)
             
@@ -37,9 +38,8 @@ class Struct(NyObject):
                     element = element.evaluate(stack)
                 self.value[key] = self.value[key] + [element]
                 return
-        raise TypeError('Structure %s cannot accept value "%s"' % (self, element))
         
     def getitem(self, value, stack):
-        for element in self[value]:
+        for element in reversed(self[value]):
             return element.evaluate(stack)
         raise TypeError("Couldn't get '%s' in any way." % value)
