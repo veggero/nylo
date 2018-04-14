@@ -5,21 +5,31 @@
 **Nylo** is a new programming language. It uses a declarative paradigm, but it's not function nor logical. In fact, its paradigm is a new one, that aims to be clear, easy and very logical. Nylo has a very few construct, without losing power.
 
 ```
-// Namespace:
+// Namespaces:
 main:
 
-    // New types
+    // New types:
     point:
         int x, int y
         
-    // Function definition
+    // Function definitions:
     fib:
         int n
         int prev_fibs: fib(n-1) + fib(n-2)
         -> if(n<2, n, prev_fibs)
+        
+    // List and dict declarations:
+    todo:
+        "Put a star to this project."
+        "Follow the project."
+        "Contribute"
+    food_quality:
+        "Nougat": 50
+        "Chocolate": 25
+        "Honey": 35
 
 
-// Function call
+// Function calls:
 draw
     on: screen
     at: point
