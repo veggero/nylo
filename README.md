@@ -94,7 +94,7 @@ Yes, that's rig-NO! Nylo is about data, data should always be nested!
 
 ### Sparse is better than dense
 
-Nylo flawlessy supports modulation into multiple files
+Nylo flawless supports modulation into multiple files
 
 | File        | Code             |
 | ----------- |:----------------:|
