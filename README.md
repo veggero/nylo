@@ -41,10 +41,10 @@ It will be released on the _25th_ of _May 2018!_
 ```
 fib:
     int n
-    -> if
-       n<2
-       n
-       fib(n-1)+fib(n-2)
+    int prev_fibs: fib(n-1)+fib(n-2)
+    int result: if(n<2, n, prev_fibs)
+    -> result
+       
 ```
 
 *Feel the chapeau?*

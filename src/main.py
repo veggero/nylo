@@ -13,7 +13,7 @@ parser.add_argument('-v', '--version',
                      help='print current version',
                      action='version',
                      version='nylo 0.1')
-args = parser.parse_args(sys.argv)
+
 
 with open(args.file, 'r') as codefile:
     code = codefile.read()
