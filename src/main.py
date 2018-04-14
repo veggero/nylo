@@ -25,7 +25,7 @@ if args.inline is not None:
     while True:
         try:
             if not statement:
-                code = input('>>> ')
+                code = input('-> ')
             else:
                 code = input('... ')
 
@@ -55,5 +55,6 @@ if args.file is not None:
 
     reader = nylo.Reader(code)
     struct = nylo.Struct(reader).value
+    struct.settypes(['obj'], nylo.builtins)
 
     print(struct.calculate(nylo.nyglobals))

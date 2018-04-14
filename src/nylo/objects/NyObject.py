@@ -15,7 +15,7 @@ class NyObject:
     def __repr__(self): return '%s:{%s}' % (
         type(self).__name__, repr(self.value))
 
-    def __str__(self): return '(%s)' % self.value
+    def __str__(self): return '%s' % self.value
 
     def __hash__(self): return hash(self.value)
 
