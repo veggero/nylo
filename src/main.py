@@ -19,7 +19,7 @@ parser.add_argument('-i', '--inline',
                     action='store_true')
 args = parser.parse_args(sys.argv)
 
-if args.inline is not None:
+if args.inline:
     previous_code = ''
     statement = False
     while True:
