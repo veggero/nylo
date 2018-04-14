@@ -14,6 +14,9 @@ builtins = Struct(defaultdict(list, {
             lambda stack: 
                 stack[Keyword('first')].value 
                 if  stack[Keyword('cond')].value
-                else stack[Keyword('second')].value)]
-        }))]
+                else stack[Keyword('second')].value,
+            lambda stack:
+                stack[-1].typesof('first', stack) +
+                stack[-1].typesof('second', stack) )]
+        }))],
     }))

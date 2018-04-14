@@ -12,6 +12,15 @@ class Symbol(Lexer):
                '<=', '..', 'in ', '*', '+-', '/', '^', '|', '%',
                '&') + unary_symbols
     to_avoid = ('->',)
+    symbols_priority = (
+        ('|',),
+        ('and', 'or'),
+        ('=', '!=', '>=', '<=', 'in'),
+        ('..', '%'),
+        ('+', '-', '&'),
+        ('*', '/'),
+        ('^', '+-'),
+        )
     
     def able(reader): 
         from nylo.lexers.values.Value import Value
@@ -38,4 +47,14 @@ class Symbol(Lexer):
     def parse(self, reader): 
         *values, symbol = list(self.lexe(reader))
         if len(values) == 0: return symbol
-        else: return SymObj(symbol, values)
+        newobj = SymObj(symbol, values)
+        if isinstance(values[1], SymObj):
+            if self.priority(symbol) > self.priority(values[1].value):
+                otherobj = newobj.args[1]
+                otherobj.args[0], newobj.args[1] = newobj, otherobj.args[0]
+                newobj = otherobj
+        return newobj
+    
+    def priority(self, symbol):
+        for index, value in enumerate(self.symbols_priority):
+            if symbol in value: return index

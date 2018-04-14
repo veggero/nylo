@@ -7,4 +7,5 @@ from nylo.lexers.struct.Struct import Struct
 from nylo.objects.Stack import Stack
 from nylo.objects.interfaces.builtins import builtins
 
+builtins.settype(['obj'], Stack())
 nyglobals = Stack([builtins])

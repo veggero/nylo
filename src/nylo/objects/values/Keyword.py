@@ -14,3 +14,7 @@ class Keyword(NyObject):
         elif isinstance(other, str): return self.value == other
     
     def __hash__(self): return hash(self.value)
+
+    def settype(self, types, stack):
+        self.types = types + stack[-1].typesof(self, stack)
+        return self.types

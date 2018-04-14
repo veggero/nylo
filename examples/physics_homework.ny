@@ -58,12 +58,12 @@ moto_rettilineo_uniformemente_accelerato:
             -> velocita
             
 corpo:
-    massa
+    int massa
     forza_peso: massa * g
     forza_normale: 0 - massa * g
     
-    mu_s
-    mu_d
+    int mu_s
+    int mu_d
     forza_attrito_statico: forza_peso * mu_s
     forza_attrito_dinamico: forza_peso * mu_d
     

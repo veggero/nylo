@@ -1,7 +1,7 @@
 import string
 
 from nylo.lexers.Lexer import Lexer
-from nylo.objects.values.NumStr import Number as NumObj, String as StrObj
+from nylo.objects.values.Value import Value as ValueObj
 
 
 class Number(Lexer):
@@ -16,8 +16,8 @@ class Number(Lexer):
         
     def parse(self, reader):
         lexed = ''.join(self.lexe(reader))
-        if '.' in lexed: return NumObj(float(lexed))
-        else: return NumObj(int(lexed))
+        if '.' in lexed: return ValueObj(float(lexed))
+        else: return ValueObj(int(lexed))
     
     
 class String(Lexer):
@@ -30,4 +30,4 @@ class String(Lexer):
             reader.move()
 
         def parse(self, reader):
-            return StrObj(''.join(self.lexe(reader)))
+            return ValueObj(''.join(self.lexe(reader)))

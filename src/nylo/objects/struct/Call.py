@@ -15,9 +15,19 @@ class Call(NyObject):
     def __str__(self): return '%s%s' % (self.kw, self.struct)
 
     def evaluate(self, stack):
-        self.called = stack[self.kw]
-        self.called = Struct(self.called.value.copy())
+        self.tobdcalled = stack[self.kw]
+        self.called = Struct(self.tobdcalled.value.copy())
         if 'self' in self.struct.value:
             self.called.value['self'] = self.struct.value['self']
         self.called.update(self.struct, stack)
         return self.called.calculate(stack)
+
+    def settype(self, types, stack):
+        self.called = stack[self.kw]
+        self.called = Struct(self.called.value.copy())
+        if 'self' in self.struct.value:
+            self.called.value['self'] = self.struct.value['self']
+        self.called.update(self.struct, stack, evaluate=False)
+        with stack(self.called):
+            self.types = self.called.value['self'][0].settype(types, stack)
+        return self.types

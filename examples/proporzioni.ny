@@ -11,9 +11,9 @@ proporzione:
     
     esempio:
         proporzione
-            ext_sx: ((((7/12) + (2/5)) / (59/6)) + ((1/2) * (3/5)))
-            int_dx: (((9 + (1/2)) * (1/2)) + (1/4))
-            ext_dx: ((1/2) + (1/2) * (1 - (1/3)))
+            ext_sx: ((7/12 + 2/5) / (59/6)) + (1/2) * (3/5)
+            int_dx: ((9 + 1/2) * (1/2)) + 1/4
+            ext_dx: 1/2 + (1/2) * (1 - 1/3)
             -> int_sx  
     
 misure:
@@ -25,5 +25,5 @@ misure:
             metri: 6
             -> chilometri
             
--> misure
+-> proporzione
     -> esempio

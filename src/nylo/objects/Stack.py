@@ -2,6 +2,9 @@ from nylo.objects.struct.Struct import Struct
 
 class Stack(list):
     
+    def __init__(self, elements=[Struct()]):
+        list.__init__(self, elements)
+    
     def __getitem__(self, value):
         if isinstance(value, (int, slice)): 
             return list.__getitem__(self, value)
