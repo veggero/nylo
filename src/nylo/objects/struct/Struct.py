@@ -28,8 +28,7 @@ class Struct(NyObject):
 
     def update(self, other, stack, evaluate=True):
         for key, value in other.value.items():
-            if key == 'atoms':
-                continue
+            if key == 'atoms': continue
             self.value[key] = self[key] + value
         for element in other.value['atoms']:
             self.drop(element, stack, evaluate)
@@ -51,8 +50,6 @@ class Struct(NyObject):
         self.types = types
         with stack(self):
             for key, value in self.value.items():
-                if key in ('atoms', 'self'):
-                    continue
                 for element in value:
                     element.settype(types + [key], stack)
         return self.types
@@ -60,9 +57,7 @@ class Struct(NyObject):
     def typesof(self, element, stack):
         for key in self.value:
             if key == element:
-                if isinstance(key, Keyword):
-                    return ['obj']
-                elif isinstance(key, TypeDef):
-                    return key.ttype
-        print(list(map(str, stack)))
+                if isinstance(key, Keyword): return ['obj']
+                elif isinstance(key, TypeDef): return key.ttype
+        print(self)
         raise TypeError("Couldn't get '%s' in any way." % element)

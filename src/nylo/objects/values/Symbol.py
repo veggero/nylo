@@ -31,7 +31,10 @@ class Symbol(NyObject):
     def evaluate(self, stack):
         args = [k.evaluate(stack) for k in self.args]
         op = self.map_to_py[self.value]
-        return Value(op(args[0].value, args[1].value))
+        tor = Value(op(args[0].value, args[1].value))
+        try: tor.types = self.types
+        except: print(self)
+        return tor
 
     def settype(self, types, stack):
         self.types = self.args[0].settype(types, stack)

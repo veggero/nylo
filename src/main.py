@@ -21,7 +21,7 @@ with open(args.file, 'r') as codefile:
 reader = nylo.Reader(code)
 struct = nylo.Struct(reader).value
 
-# struct.settype(['obj'], nylo.nyglobals)
+struct.settype(['obj'], nylo.nyglobals)
 
 print(struct.calculate(nylo.nyglobals))
 
