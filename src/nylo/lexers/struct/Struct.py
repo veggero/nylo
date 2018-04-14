@@ -4,8 +4,9 @@ from nylo.lexers.Lexer import Lexer
 from nylo.objects.struct.StructEl import TypeDef
 from nylo.objects.struct.Struct import Struct as StructObj
 
+
 class Struct(Lexer):
-    
+
     def able(reader): return reader.read() in '('
 
     def parse(self, reader):
@@ -21,7 +22,8 @@ class Struct(Lexer):
                 atoms[key].append(value)
             elif isinstance(value, TypeDef):
                 atoms[value] = []
-            else: atoms['atoms'].append(value)
+            else:
+                atoms['atoms'].append(value)
             if reader.read() in ',':
                 reader.move()
                 reader.avoid_whitespace()

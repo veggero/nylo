@@ -4,9 +4,10 @@ from copy import deepcopy
 from nylo.objects.struct.Struct import Struct
 from nylo.objects.NyObject import NyObject
 
+
 class Call(NyObject):
-    
-    def __init__(self, kw, struct): 
+
+    def __init__(self, kw, struct):
         if not isinstance(struct, Struct):
             struct = Struct(defaultdict(list, {'atoms': [struct]}))
         self.kw, self.struct, self.value = kw, struct, (kw, struct)

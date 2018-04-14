@@ -11,12 +11,12 @@ builtins = Struct(defaultdict(list, {
         TypeDef(('obj', Keyword('first'))): [],
         TypeDef(('obj', Keyword('second'))): [],
         'self': [PyValue(
-            lambda stack: 
-                stack[Keyword('first')].value 
-                if  stack[Keyword('cond')].value
+            lambda stack:
+                stack[Keyword('first')].value
+                if stack[Keyword('cond')].value
                 else stack[Keyword('second')].value,
             lambda stack:
                 stack[-1].typesof('first', stack) +
-                stack[-1].typesof('second', stack) )]
-        }))],
-    }))
+                stack[-1].typesof('second', stack))]
+    }))],
+}))

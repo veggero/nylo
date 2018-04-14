@@ -1,5 +1,6 @@
 from copy import copy
 
+
 class Reader:
 
     """
@@ -11,14 +12,19 @@ class Reader:
     def __init__(self, code, reading_at=0):
         "Initizialize Reader instance."
         prev_indent, endlines = 0, ['']
-        for line in ('('+code+'\n)\0').split('\n'):
+        for line in ('(' + code + '\n)\0').split('\n'):
             indent = 0
-            while len(line)>indent and line[indent] in ' \t': indent += 1
-            if len(line) == indent: continue
+            while len(line) > indent and line[indent] in ' \t':
+                indent += 1
+            if len(line) == indent:
+                continue
             line = line[indent:]
-            if indent > prev_indent: line = '('*((indent-prev_indent)//4)+line
-            elif indent < prev_indent: endlines[-1] += ')'*((prev_indent-indent)//4)
-            if not indent > prev_indent: endlines[-1] += ','
+            if indent > prev_indent:
+                line = '(' * ((indent - prev_indent) // 4) + line
+            elif indent < prev_indent:
+                endlines[-1] += ')' * ((prev_indent - indent) // 4)
+            if not indent > prev_indent:
+                endlines[-1] += ','
             prev_indent = indent
             endlines.append(line)
         self.code = '\n'.join(endlines[1:])
@@ -31,7 +37,8 @@ class Reader:
 
     def move(self, char_num=1):
         "Move the pointer on the next characters."
-        for i in range(char_num): last = self.move_char()
+        for i in range(char_num):
+            last = self.move_char()
         return last
 
     def move_char(self):
@@ -39,10 +46,12 @@ class Reader:
         if self.read() == '\n':
             self.line += 1
             self.char = 1
-        else: self.char += 1
+        else:
+            self.char += 1
         self.reading_at += 1
-        if self.reading_at >= len(self.code): eof_on_scan()
-        return self.code[self.reading_at-1]
+        if self.reading_at >= len(self.code):
+            eof_on_scan()
+        return self.code[self.reading_at - 1]
 
     def any_starts_with(self, starts):
         """
@@ -50,7 +59,8 @@ class Reader:
         and if so returns it.
         """
         for start in starts:
-            if self.starts_with(start): return start
+            if self.starts_with(start):
+                return start
         return False
 
     def starts_with(self, string):
@@ -73,8 +83,9 @@ class Reader:
         "Raise error if file is not over."
         if self.reading_at < len(self.code) - 1:
             file_not_over()
-            
+
     def avoid_whitespace(self):
-        while self.read() in '\n \t': self.move()
-        
+        while self.read() in '\n \t':
+            self.move()
+
     def test(self): return copy(self)
