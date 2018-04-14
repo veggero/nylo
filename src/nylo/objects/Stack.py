@@ -20,6 +20,6 @@ class Stack(list):
 
     def __call__(self, value):
         newvalue = Struct(self[-1].value.copy())
-        newvalue.update(value, self)
+        newvalue.update(value, self, evaluate=False)
         self.append(newvalue)
         return self
