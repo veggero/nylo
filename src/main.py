@@ -53,8 +53,11 @@ if args.file is not None:
     with open(args.file, 'r') as codefile:
         code = codefile.read()
 
+    #print('[START PARSE]')
     reader = nylo.Reader(code)
     struct = nylo.Struct(reader).value
-    struct.settypes(['obj'], nylo.builtins)
+    #print('[START STATIC]')
+    struct.settype(['obj'], nylo.nyglobals)
+    #print('[START DYNAMIC]')
 
     print(struct.calculate(nylo.nyglobals))

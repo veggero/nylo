@@ -25,15 +25,12 @@ class Call(NyObject):
         return self.called.calculate(stack)
 
     def settype(self, types, stack):
-        self.struct.settype(types, stack)
         self.called = stack[self.kw]
         self.called = Struct(self.called.value.copy())
         if 'self' in self.struct.value:
             self.called.value['self'] = self.struct.value['self']
         self.called.update(self.struct, stack, evaluate=False)
-        print('thisis', self.struct.value)
         with stack(self.called):
-            print('with', self.called)
+            self.struct.settype(types, stack)
             self.types = self.called.value['self'][0].settype(types, stack)
-            print('endwith', self.called)
         return self.types

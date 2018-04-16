@@ -19,4 +19,5 @@ fib:
             
     -> result
    
--> fib(->example)
+-> fib
+    ->example

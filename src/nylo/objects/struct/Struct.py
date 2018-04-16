@@ -51,7 +51,10 @@ class Struct(NyObject):
         with stack(self):
             for key, value in self.value.items():
                 for element in value:
-                    element.settype(types + [key], stack)
+                    eltype = element.settype(types + [key], stack)
+                    if isinstance(key, TypeDef):
+                        if not any(t in key.ttype for t in eltype):
+                            print('WARNING: unclear types.')
         return self.types
 
     def typesof(self, element, stack):
@@ -59,5 +62,4 @@ class Struct(NyObject):
             if key == element:
                 if isinstance(key, Keyword): return ['obj']
                 elif isinstance(key, TypeDef): return key.ttype
-        print(self)
         raise TypeError("Couldn't get '%s' in any way." % element)
