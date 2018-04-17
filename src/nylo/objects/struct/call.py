@@ -22,8 +22,6 @@
 # SOFTWARE.
 
 from collections import defaultdict
-from copy import deepcopy
-
 from nylo.objects.struct.struct import Struct
 from nylo.objects.nyobject import NyObject
 

@@ -2,6 +2,7 @@ import nylo
 import sys
 import argparse
 
+
 def main():
     if len(sys.argv) <= 1:
         sys.argv.append('-h')
@@ -30,6 +31,10 @@ def main():
                 else:
                     code = input('... ')
 
+                if code in ['exit', 'exit()']:
+                    print('Bye!')
+                    sys.exit(0)
+
                 if not code:
                     code = previous_code
                     statement = False
@@ -47,8 +52,7 @@ def main():
                     print(struct.calculate(nylo.nyglobals))
                 del code
             except Exception as e:
-                print(e)
-
+                print(e0)
 
     if args.file is not None:
         with open(args.file, 'r') as codefile:
@@ -56,7 +60,11 @@ def main():
 
         reader = nylo.Reader(code)
         struct = nylo.Struct(reader).value
-        print(struct.calculate(nylo.nyglobals))
+        try:
+            print(struct.calculate(nylo.nyglobals))
+        except Exception as e:
+            print(e, struct)
+
 
 if __name__ == '__main__':
     main()
