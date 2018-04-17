@@ -21,25 +21,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import defaultdict
-
-from nylo.objects.interfaces.pyvalue import PyValue
-from nylo.objects.struct.struct import Struct
-from nylo.objects.struct.structel import TypeDef
-from nylo.objects.values.keyword import Keyword
-
-builtins = Struct(defaultdict(list, {
-    'if': [Struct(defaultdict(list, {
-        'cond': [],
-        TypeDef(('obj', Keyword('first'))): [],
-        TypeDef(('obj', Keyword('second'))): [],
-        'self': [PyValue(
-            lambda stack:
-                stack[Keyword('first')].value
-                if stack[Keyword('cond')].value
-                else stack[Keyword('second')].value,
-            lambda stack:
-                stack[-1].typesof('first', stack) +
-                stack[-1].typesof('second', stack))]
-    }))],
-}))
+from .nyobject import NyObject
+from .stack import Stack
