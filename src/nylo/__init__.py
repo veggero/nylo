@@ -41,7 +41,7 @@ from nylo.objects.interfaces.builtins import builtins
 builtins.settype(['obj'], Stack())
 nyglobals = Stack([builtins])
 
-__author__ = 'pyTeens'
+__author__ = 'veggero'
 __license__ = 'GNU GENERAL PUBLIC LICENSE'
 __url__ = 'https://github.com/pyTeens/nylo'
 __version__ = '0.1.0'
