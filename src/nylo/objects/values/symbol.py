@@ -57,7 +57,7 @@ class Symbol(NyObject):
         tor.types = self.types
         return tor
 
-    def settype(self, types, stack):
-        self.types = self.args[0].settype(types, stack)
-        self.args[1].settype(types, stack)
-        return self.types
+    #def settype(self, types, stack):
+    #    self.types = self.args[0].settype(types, stack)
+    #    self.args[1].settype(types, stack)
+    #    return self.types

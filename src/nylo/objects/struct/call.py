@@ -39,19 +39,19 @@ class Call(NyObject):
     def evaluate(self, stack):
         self.tobdcalled = stack[self.kw]
         self.called = Struct(self.tobdcalled.value.copy())
-        self.called.types = self.tobdcalled.types
+        #self.called.types = self.tobdcalled.types
         if 'self' in self.struct.value:
             self.called.value['self'] = self.struct.value['self']
         self.called.update(self.struct, stack)
         return self.called.calculate(stack)
 
-    def settype(self, types, stack):
-        self.called = stack[self.kw]
-        self.called = Struct(self.called.value.copy())
-        if 'self' in self.struct.value:
-            self.called.value['self'] = self.struct.value['self']
-        self.called.update(self.struct, stack, evaluate=False)
-        with stack(self.called):
-            self.struct.settype(types, stack)
-            self.types = self.called.value['self'][0].settype(types, stack)
-        return self.types
+    #def settype(self, types, stack):
+    #    self.called = stack[self.kw]
+    #    self.called = Struct(self.called.value.copy())
+    #    if 'self' in self.struct.value:
+    #        self.called.value['self'] = self.struct.value['self']
+    #    self.called.update(self.struct, stack, evaluate=False)
+    #    with stack(self.called):
+    #        self.struct.settype(types, stack)
+    #        self.types = self.called.value['self'][0].settype(types, stack)
+    #    return self.types

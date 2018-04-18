@@ -47,20 +47,20 @@ class Struct(NyObject):
             return element.evaluate(stack)
         raise TypeError("Couldn't get '%s' in any way." % value)
 
-    def settype(self, types, stack):
-        self.types = types
-        with stack(self):
-            for key, value in self.value.items():
-                for element in value:
-                    element.settype(types + [key], stack)
-        return self.types
+    #def settype(self, types, stack):
+    #    self.types = types
+    #    with stack(self):
+    #        for key, value in self.value.items():
+    #            for element in value:
+    #                element.settype(types + [key], stack)
+    #    return self.types
 
-    def typesof(self, element, stack):
-        for key in self.value:
-            if key == element:
-                if isinstance(key, Keyword):
-                    return ['obj']
-                elif isinstance(key, TypeDef):
-                    return key.ttype
-        print(self)
-        raise TypeError("Couldn't get '%s' in any way." % element)
+    #def typesof(self, element, stack):
+    #    for key in self.value:
+    #        if key == element:
+    #            if isinstance(key, Keyword):
+    #                return ['obj']
+    #            elif isinstance(key, TypeDef):
+    #                return key.ttype
+    #    print(self)
+    #    raise TypeError("Couldn't get '%s' in any way." % element)

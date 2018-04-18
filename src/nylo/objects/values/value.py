@@ -32,6 +32,6 @@ class Value(NyObject):
         str: ('obj', 'value', 'num', 'str'),
     }
 
-    def settype(self, types, stack):
-        self.types = self.obj_types[type(self.value)]
-        return self.types
+    #def settype(self, types, stack):
+    #    self.types = self.obj_types[type(self.value)]
+    #    return self.types

@@ -38,7 +38,7 @@ from nylo.objects.stack import Stack
 # noinspection PyUnresolvedReferences
 from nylo.objects.interfaces.builtins import builtins
 
-builtins.settype(['obj'], Stack())
+#builtins.settype(['obj'], Stack())
 nyglobals = Stack([builtins])
 
 __author__ = 'veggero'
