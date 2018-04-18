@@ -1,4 +1,2 @@
-test:
-    int n
-    
--> test(3)
+a: ('tau', 'mondo')
+-> a[0] + a[1]

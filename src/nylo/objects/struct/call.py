@@ -32,12 +32,12 @@ class Call(NyObject):
         if not isinstance(struct, Struct):
             struct = Struct(defaultdict(list, {'atoms': [struct]}))
         self.kw, self.struct, self.value = kw, struct, (kw, struct)
-        self.names = {self.kw.value}
+        self.names = self.kw.names
 
     def __str__(self): return '%s%s' % (self.kw, self.struct)
 
     def evaluate(self, stack):
-        self.tobdcalled = stack[self.kw]
+        self.tobdcalled = self.kw.evaluate(stack)
         self.called = Struct(self.tobdcalled.value.copy())
         #self.called.types = self.tobdcalled.types
         if 'self' in self.struct.value:

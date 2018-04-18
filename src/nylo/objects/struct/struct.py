@@ -10,8 +10,14 @@ class Struct(NyObject):
         self.value = value
         self.names = set()
 
-    def __str__(self): return '(%s)' % ', '.join('%s: ...' % (key)
-                                                 for key, val in self.value.items())
+    def __str__(self):
+        dictlike = ', '.join('%s: %s' % (key, ' | '.join(map(str, val))
+                                         if not isinstance(val, Struct) 
+                                         else '...')
+                             for key, val in self.value.items()
+                             if not key == 'atoms')
+        listlike = ', '.join(map(str, self['atoms']))
+        return '(%s, %s)' % (dictlike, listlike)
 
     def __contains__(self, value): return len(self.value[value.value]) > 0
 
