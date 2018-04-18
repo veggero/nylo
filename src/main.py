@@ -49,7 +49,10 @@ def main():
                 if not statement:
                     reader = nylo.Reader(code + '\n')
                     struct = nylo.Struct(reader).value
-                    print(struct.calculate(nylo.nyglobals))
+                    if hasattr(struct, 'calculate'):
+                        print(struct.calculate(nylo.nyglobals))
+                    else:
+                        print(struct.evaluate(nylo.nyglobals))
                 del code
             except Exception as e:
                 print(e)
