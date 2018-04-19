@@ -13,11 +13,11 @@ class Struct(NyObject):
     def __str__(self):
         dictlike = ', '.join('%s: %s' % (key, ' | '.join(map(str, val))
                                          if not isinstance(val, Struct) 
-                                         else '...')
+                                         else '...') if not key == 'atoms'
+                                        else ', '.join(map(str, val))
                              for key, val in self.value.items()
-                             if not key == 'atoms')
-        listlike = ', '.join(map(str, self['atoms']))
-        return '(%s, %s)' % (dictlike, listlike)
+                             )
+        return '(%s)' % dictlike
 
     def __contains__(self, value): return len(self.value[value.value]) > 0
 
