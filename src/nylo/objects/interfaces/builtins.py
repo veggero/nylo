@@ -27,8 +27,10 @@ from nylo.objects.interfaces.pyvalue import PyValue
 from nylo.objects.struct.struct import Struct
 from nylo.objects.struct.structel import TypeDef
 from nylo.objects.values.keyword import Keyword
+from nylo.objects.struct.call import Call
 
 builtins = Struct(defaultdict(list, {
+    
     'if': [Struct(defaultdict(list, {
         'cond': [],
         TypeDef(('obj', Keyword('first'))): [],
@@ -41,5 +43,15 @@ builtins = Struct(defaultdict(list, {
             lambda stack:
                 stack[-1].typesof('first', stack) +
                 stack[-1].typesof('second', stack))]
+    }))],
+        
+    'for': [Struct(defaultdict(list, {
+        TypeDef(('list', 'obj', Keyword('tomap'))): [],
+        TypeDef(('obj', Keyword('mapfun'))): [],
+        'self': [PyValue(
+            lambda stack: Struct(defaultdict(list, {
+                'atoms': [Call(stack[-1][Keyword('mapfun')][0], el).evaluate(stack)
+                for el in stack[Keyword('tomap')]['atoms']] })),
+            lambda stack: {'obj', 'list'})]
     }))],
 }))

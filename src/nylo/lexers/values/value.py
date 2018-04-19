@@ -29,6 +29,7 @@ from nylo.lexers.struct.struct import Struct
 from nylo.objects.struct.call import Call as CallObj
 from nylo.objects.values.value import GetObj
 from nylo.objects.struct.structel import TypeDef
+from nylo.objects.values.keyword import Keyword as KeyObj
 
 
 class Value(Lexer):
@@ -39,6 +40,7 @@ class Value(Lexer):
                 # String.able(reader) or Symbol.able(reader))
 
     def lexe(self, reader):
+        v = KeyObj('_implicit')
         if Keyword.able(reader):
             kw = Keyword(reader).value
             if Keyword.able(reader):

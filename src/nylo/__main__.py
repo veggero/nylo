@@ -1,5 +1,6 @@
 import nylo
 import sys
+import readline
 import argparse
 
 

@@ -1,6 +1,7 @@
 import nylo
 import sys
 import argparse
+import readline
 
 
 def main():
@@ -64,10 +65,7 @@ def main():
         reader = nylo.Reader(code)
         struct = nylo.Struct(reader).value
         #struct.settype(['obj'], nylo.nyglobals)
-        try:
-            print(struct.calculate(nylo.nyglobals))
-        except Exception as e:
-            print(e, struct)
+        print(struct.calculate(nylo.nyglobals))
 
 
 if __name__ == '__main__':
