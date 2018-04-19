@@ -1,7 +1,6 @@
 import nylo
 import sys
 import argparse
-import readline
 
 
 def main():
@@ -54,7 +53,8 @@ def main():
                         out = struct.calculate(nylo.nyglobals)
                     else:
                         out = struct.evaluate(nylo.nyglobals)
-                    if out.value: print(out)
+                    if out.value and str(out) != '()':
+                        print(out)
                 del code
             except Exception as e:
                 print(e)
@@ -62,10 +62,9 @@ def main():
     if args.file is not None:
         with open(args.file, 'r') as codefile:
             code = codefile.read()
-
         reader = nylo.Reader(code)
         struct = nylo.Struct(reader).value
-        #struct.settype(['obj'], nylo.nyglobals)
+        # struct.settype(['obj'], nylo.nyglobals)
         print(struct.calculate(nylo.nyglobals))
 
 
