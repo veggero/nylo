@@ -54,4 +54,15 @@ builtins = Struct(defaultdict(list, {
                 for el in stack[Keyword('tomap')]['atoms']] })),
             lambda stack: {'obj', 'list'})]
     }))],
+        
+    'repeat': [Struct(defaultdict(list, {
+        TypeDef(('int', Keyword('times'))): [],
+        TypeDef(('obj', Keyword('todo'))): [],
+        'self': [PyValue(
+            lambda stack: Struct(defaultdict(list, {
+                'atoms': [stack[Keyword('todo')].value
+                for el in range(stack[Keyword('times')].value)] })),
+            lambda stack: {'obj', 'list'})]
+    }))],
+                
 }))
