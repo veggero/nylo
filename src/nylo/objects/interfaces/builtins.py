@@ -30,7 +30,7 @@ from nylo.objects.values.keyword import Keyword
 from nylo.objects.struct.call import Call
 
 builtins = Struct(defaultdict(list, {
-    
+
     'if': [Struct(defaultdict(list, {
         'cond': [],
         TypeDef(('obj', Keyword('first'))): [],
@@ -44,32 +44,32 @@ builtins = Struct(defaultdict(list, {
                 stack[-1].typesof('first', stack) +
                 stack[-1].typesof('second', stack))]
     }))],
-        
+
     'for': [Struct(defaultdict(list, {
         TypeDef(('list', 'obj', Keyword('tomap'))): [],
         TypeDef(('obj', Keyword('mapfun'))): [],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [Call(stack[-1][Keyword('mapfun')][0], el).evaluate(stack)
-                for el in stack[Keyword('tomap')]['atoms']] })),
+                 for el in stack[Keyword('tomap')]['atoms']]})),
             lambda stack: {'obj', 'list'})]
     }))],
-        
+
     'repeat': [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('times'))): [],
         TypeDef(('obj', Keyword('todo'))): [],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [stack[Keyword('todo')].value
-                for el in range(stack[Keyword('times')].value)] })),
+                 for el in range(stack[Keyword('times')].value)]})),
             lambda stack: {'todo'})]
     }))],
-        
+
     'print': [Struct(defaultdict(list, {
         Keyword('toprint'): [],
         'self': [PyValue(
             lambda stack: print(stack[Keyword('toprint')]),
             lambda stack: {'obj', 'list'})]
     }))],
-                
+
 }))

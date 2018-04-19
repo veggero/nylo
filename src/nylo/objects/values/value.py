@@ -32,16 +32,17 @@ class Value(NyObject):
         str: ('obj', 'value', 'num', 'str'),
     }
 
-    #def settype(self, types, stack):
+    # def settype(self, types, stack):
     #    self.types = self.obj_types[type(self.value)]
     #    return self.types
 
-class GetObj(NyObject): 
-    
+
+class GetObj(NyObject):
+
     def __init__(self, value, index):
         self.value, self.index = value, index
         self.names = value.names.union(index.names)
-        
+
     def evaluate(self, stack):
         i = self.index.evaluate(stack).value
         l = self.value.evaluate(stack)['atoms']
