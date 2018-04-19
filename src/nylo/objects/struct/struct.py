@@ -14,9 +14,8 @@ class Struct(NyObject):
         dictlike = ', '.join('%s: %s' % (key, ' | '.join(map(str, val))
                                          if not isinstance(val, Struct) 
                                          else '...') if not key == 'atoms'
-                                        else ', '.join(map(str, val))
-                             for key, val in self.value.items()
-                             )
+                                         else ', '.join(map(str, val))
+                             for key, val in self.value.items())
         return '(%s)' % dictlike
 
     def __contains__(self, value): return len(self.value[value.value]) > 0

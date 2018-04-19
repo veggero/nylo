@@ -62,6 +62,13 @@ builtins = Struct(defaultdict(list, {
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [stack[Keyword('todo')].value
                 for el in range(stack[Keyword('times')].value)] })),
+            lambda stack: {'todo'})]
+    }))],
+        
+    'print': [Struct(defaultdict(list, {
+        Keyword('toprint'): [],
+        'self': [PyValue(
+            lambda stack: print(stack[Keyword('toprint')]),
             lambda stack: {'obj', 'list'})]
     }))],
                 

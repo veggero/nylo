@@ -28,7 +28,7 @@ def main():
         while True:
             try:
                 if not statement:
-                    code = input('>>> ')
+                    code = input(' -> ')
                 else:
                     code = input('... ')
 
@@ -51,9 +51,10 @@ def main():
                     reader = nylo.Reader(code + '\n')
                     struct = nylo.Struct(reader).value
                     if hasattr(struct, 'calculate'):
-                        print(struct.calculate(nylo.nyglobals))
+                        out = struct.calculate(nylo.nyglobals)
                     else:
-                        print(struct.evaluate(nylo.nyglobals))
+                        out = struct.evaluate(nylo.nyglobals)
+                    if out.value and str(out) != '()': print(out)
                 del code
             except Exception as e:
                 print(e)
@@ -61,7 +62,6 @@ def main():
     if args.file is not None:
         with open(args.file, 'r') as codefile:
             code = codefile.read()
-
         reader = nylo.Reader(code)
         struct = nylo.Struct(reader).value
         #struct.settype(['obj'], nylo.nyglobals)

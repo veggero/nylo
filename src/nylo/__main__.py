@@ -1,7 +1,7 @@
 import nylo
 import sys
-import readline
 import argparse
+import readline
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
         while True:
             try:
                 if not statement:
-                    code = input('>>> ')
+                    code = input(' -> ')
                 else:
                     code = input('... ')
 
@@ -50,7 +50,11 @@ def main():
                 if not statement:
                     reader = nylo.Reader(code + '\n')
                     struct = nylo.Struct(reader).value
-                    print(struct.calculate(nylo.nyglobals))
+                    if hasattr(struct, 'calculate'):
+                        out = struct.calculate(nylo.nyglobals)
+                    else:
+                        out = struct.evaluate(nylo.nyglobals)
+                    if out.value: print(out)
                 del code
             except Exception as e:
                 print(e)
@@ -62,10 +66,7 @@ def main():
         reader = nylo.Reader(code)
         struct = nylo.Struct(reader).value
         #struct.settype(['obj'], nylo.nyglobals)
-        try:
-            print(struct.calculate(nylo.nyglobals))
-        except Exception as e:
-            print(e, struct)
+        print(struct.calculate(nylo.nyglobals))
 
 
 if __name__ == '__main__':

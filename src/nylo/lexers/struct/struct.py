@@ -38,6 +38,10 @@ class Struct(Lexer):
         reader.move()
         reader.avoid_whitespace()
         while not reader.any_starts_with([')', '->']):
+            if reader.read() in ',':
+                reader.move()
+                reader.avoid_whitespace()
+                continue
             value = Symbol(reader).value
             if reader.read() in ':':
                 reader.move()
@@ -47,9 +51,6 @@ class Struct(Lexer):
                 atoms[value] = []
             else:
                 atoms['atoms'].append(value)
-            if reader.read() in ',':
-                reader.move()
-                reader.avoid_whitespace()
         if reader.starts_with('->'):
             reader.move(2)
             atoms['self'].append(Symbol(reader).value)

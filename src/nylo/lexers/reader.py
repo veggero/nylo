@@ -51,6 +51,7 @@ class Reader:
             prev_indent = indent
             endlines.append(line)
         self.code = '\n'.join(endlines[1:])
+        #print(self.code)
         self.reading_at = reading_at
         self.line, self.char = 1, 1
 
