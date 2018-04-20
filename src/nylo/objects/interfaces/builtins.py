@@ -28,9 +28,24 @@ from nylo.objects.struct.struct import Struct
 from nylo.objects.struct.structel import TypeDef
 from nylo.objects.values.keyword import Keyword
 from nylo.objects.struct.call import Call
+import sys
+
+
+def nylo_exit(code=0, message=None):
+    if not message is None:
+        print(message)
+    sys.exit(code)
+
+
+def stack_keyword(stack, keyword, default_value=None):
+    try:
+        return stack[Keyword(keyword)]
+    except:
+        return default_value
+
 
 builtins = Struct(defaultdict(list, {
-    
+
     'if': [Struct(defaultdict(list, {
         'cond': [],
         TypeDef(('obj', Keyword('first'))): [],
@@ -44,14 +59,14 @@ builtins = Struct(defaultdict(list, {
                 stack[-1].typesof('first', stack) +
                 stack[-1].typesof('second', stack))]
     }))],
-        
+
     'for': [Struct(defaultdict(list, {
         TypeDef(('list', 'obj', Keyword('tomap'))): [],
         TypeDef(('obj', Keyword('mapfun'))): [],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [Call(stack[-1][Keyword('mapfun')][0], el).evaluate(stack)
-                for el in stack[Keyword('tomap')]['atoms']] })),
+                 for el in stack[Keyword('tomap')]['atoms']]})),
             lambda stack: {'obj', 'list'})]
     }))],
         
@@ -65,7 +80,7 @@ builtins = Struct(defaultdict(list, {
                 if Call(stack[-1][Keyword('mapfun')][0], el).evaluate(stack).value] })),
             lambda stack: {'obj', 'list'})]
     }))],
-        
+    
     'repeat': [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('times'))): [],
         TypeDef(('obj', Keyword('todo'))): [],
@@ -75,12 +90,21 @@ builtins = Struct(defaultdict(list, {
                 for el in range(stack[Keyword('times')].value)] })),
             lambda stack: {'todo'})]
     }))],
-        
+
     'print': [Struct(defaultdict(list, {
         Keyword('toprint'): [],
         'self': [PyValue(
             lambda stack: print(stack[Keyword('toprint')]),
             lambda stack: {'obj', 'list'})]
     }))],
-                
+
+    'exit': [Struct(defaultdict(list, {
+        TypeDef(('int', Keyword('code'))): [],
+        Keyword('message'): [],
+        'self': [PyValue(
+            lambda stack: nylo_exit(stack_keyword(stack, 'code', 0), 
+                                    stack_keyword(stack, 'message', None)),
+            lambda stack: {'obj', 'list'})]
+    }))],
+
 }))

@@ -64,10 +64,10 @@ class Symbol(NyObject):
         op = self.map_to_py[self.value]
         tor = op(args[0].value, args[1].value)
         if not isinstance(tor, NyObject): tor = Value(tor)
-        #tor.types = self.types
+        # tor.types = self.types
         return tor
 
-    #def settype(self, types, stack):
+    # def settype(self, types, stack):
     #    self.types = self.args[0].settype(types, stack)
     #    self.args[1].settype(types, stack)
     #    return self.types

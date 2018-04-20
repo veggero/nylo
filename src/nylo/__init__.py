@@ -38,10 +38,11 @@ from nylo.objects.stack import Stack
 # noinspection PyUnresolvedReferences
 from nylo.objects.interfaces.builtins import builtins
 
-#builtins.settype(['obj'], Stack())
+# builtins.settype(['obj'], Stack())
 nyglobals = Stack([builtins])
 
 __author__ = 'veggero'
+__team__ = 'pyTeens'
 __license__ = 'GNU GENERAL PUBLIC LICENSE'
 __url__ = 'https://github.com/pyTeens/nylo'
 __version__ = '0.1.0'

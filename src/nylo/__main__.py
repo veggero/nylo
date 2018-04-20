@@ -1,7 +1,29 @@
+# This file is a part of nylo
+#
+# Copyright (c) 2018 The nylo Authors (see AUTHORS)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice
+# shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 import nylo
 import sys
 import argparse
-import readline
 
 
 def main():
@@ -32,10 +54,6 @@ def main():
                 else:
                     code = input('... ')
 
-                if code in ['exit', 'exit()']:
-                    print('Bye!')
-                    sys.exit(0)
-
                 if not code:
                     code = previous_code
                     statement = False
@@ -54,7 +72,8 @@ def main():
                         out = struct.calculate(nylo.nyglobals)
                     else:
                         out = struct.evaluate(nylo.nyglobals)
-                    if out.value: print(out)
+                    if out.value and str(out) != '()':
+                        print(out)
                 del code
             except Exception as e:
                 print(e)
@@ -62,10 +81,9 @@ def main():
     if args.file is not None:
         with open(args.file, 'r') as codefile:
             code = codefile.read()
-
         reader = nylo.Reader(code)
         struct = nylo.Struct(reader).value
-        #struct.settype(['obj'], nylo.nyglobals)
+        # struct.settype(['obj'], nylo.nyglobals)
         print(struct.calculate(nylo.nyglobals))
 
 

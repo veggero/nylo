@@ -12,9 +12,9 @@ class Struct(NyObject):
 
     def __str__(self):
         dictlike = ', '.join('%s: %s' % (key, ' | '.join(map(str, val))
-                                         if not isinstance(val, Struct) 
+                                         if not isinstance(val, Struct)
                                          else '...') if not key == 'atoms'
-                                         else ', '.join(map(str, val))
+                             else ', '.join(map(str, val))
                              for key, val in self.value.items())
         return '(%s)' % dictlike
 
@@ -50,7 +50,7 @@ class Struct(NyObject):
             return element.evaluate(stack)
         raise TypeError("Couldn't get '%s' in any way." % value)
 
-    #def settype(self, types, stack):
+    # def settype(self, types, stack):
     #    self.types = types
     #    with stack(self):
     #        for key, value in self.value.items():
@@ -58,7 +58,7 @@ class Struct(NyObject):
     #                element.settype(types + [key], stack)
     #    return self.types
 
-    #def typesof(self, element, stack):
+    # def typesof(self, element, stack):
     #    for key in self.value:
     #        if key == element:
     #            if isinstance(key, Keyword):

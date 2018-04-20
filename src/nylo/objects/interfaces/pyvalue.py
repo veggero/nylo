@@ -37,7 +37,7 @@ class PyValue(NyObject):
             output = Value(output)
         return output
 
-    #def settype(self, types, stack):
+    # def settype(self, types, stack):
     #    self.types = self.typefun(stack)
     #    return self.types
 

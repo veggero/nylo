@@ -49,7 +49,8 @@ class Value(Lexer):
                 while Keyword.able(reader):
                     kws.append(Keyword(reader).value)
                 v = TypeDef(kws)
-            else: v = kw
+            else:
+                v = kw
         elif Number.able(reader):
             v = Number(reader).value
         elif String.able(reader):
@@ -60,12 +61,14 @@ class Value(Lexer):
             return CallObj(v, Struct(reader).value)
         elif reader.read() in '[':
             return GetObj(v, Get(reader).value)
-        else: return v
+        else:
+            return v
 
     def parse(self, reader): return self.lexe(reader)
 
+
 class Get(Lexer):
-    
+
     def able(reader): return '[' == reader.read()
 
     def lexe(self, reader):

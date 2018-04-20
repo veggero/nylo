@@ -1,7 +1,7 @@
 "Fibonacci in Nylo"
 
 "To execute:"
-"[veggero@yara nylo]$ py src/main.py examples/fib.ny"
+"[veggero@yara nylo]$ python3 src/main.py -f examples/fib.ny"
 
 fib:
     int n
