@@ -2,7 +2,7 @@
 "Sono presi direttamente dal mio libro di fisica."
 
 "Per avviare:"
-"$ python3 src/main.py -f examples/physics_homework.ny"
+"$ python3 src/main.py f examples/physics_homework.ny"
 
 g: 9.81
 
