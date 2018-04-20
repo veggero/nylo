@@ -54,10 +54,6 @@ def main():
                 else:
                     code = input('... ')
 
-                if code in ['exit', 'exit()']:
-                    print('Bye!')
-                    sys.exit(0)
-
                 if not code:
                     code = previous_code
                     statement = False
