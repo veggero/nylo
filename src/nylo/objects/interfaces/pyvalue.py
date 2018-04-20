@@ -32,7 +32,10 @@ class PyValue(NyObject):
         super().__init__(value)
 
     def evaluate(self, stack):
-        return Value(self.value(stack))
+        output = self.value(stack)
+        if not isinstance(output, NyObject): 
+            output = Value(output)
+        return output
 
     #def settype(self, types, stack):
     #    self.types = self.typefun(stack)

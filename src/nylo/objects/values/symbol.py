@@ -22,10 +22,18 @@
 # SOFTWARE.
 
 import operator
+from collections import defaultdict
 
 from nylo.objects.nyobject import NyObject
 from nylo.objects.values.value import Value
 
+def nyrange(*args):
+    from nylo.objects.struct.struct import Struct
+    return Struct(defaultdict(list, {'atoms': 
+                list( map(lambda x: Value(x), range(*args)) )}))
+
+def nyin(value, nylist):
+    return value in nylist['atoms']
 
 class Symbol(NyObject):
 
@@ -37,7 +45,8 @@ class Symbol(NyObject):
         '>=': operator.ge, '<=': operator.le,
         '*': operator.mul, '/': operator.truediv,
         '^': operator.pow, '%': operator.mod,
-        '&': operator.add
+        '&': operator.add, '..': nyrange,
+        'in ': nyin,
     }
 
     def __init__(self, value, args):
@@ -53,7 +62,8 @@ class Symbol(NyObject):
     def evaluate(self, stack):
         args = [k.evaluate(stack) for k in self.args]
         op = self.map_to_py[self.value]
-        tor = Value(op(args[0].value, args[1].value))
+        tor = op(args[0].value, args[1].value)
+        if not isinstance(tor, NyObject): tor = Value(tor)
         #tor.types = self.types
         return tor
 

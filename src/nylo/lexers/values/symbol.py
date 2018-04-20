@@ -33,7 +33,7 @@ class Symbol(Lexer):
     unary_symbols = '+', '-', 'not '
     symbols = ('=', 'and ', '>', 'or ', '<', '!=', 'xor ', '>=',
                '<=', '..', 'in ', '*', '+-', '/', '^', '|', '%',
-               '&') + unary_symbols
+               '&', '.') + unary_symbols
     to_avoid = ('->',)
     symbols_priority = (
         ('|',),
@@ -43,6 +43,7 @@ class Symbol(Lexer):
         ('+', '-', '&'),
         ('*', '/'),
         ('^', '+-'),
+        ('.',)
     )
 
     def able(reader):

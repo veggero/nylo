@@ -35,9 +35,10 @@ class Number(Lexer):
         while reader.read() in string.digits + '_':
             yield reader.move()
         if reader.read() == '.':
-            yield reader.move()
-            while reader.read() in string.digits + '_':
+            if reader.code[reader.reading_at+1] in string.digits:
                 yield reader.move()
+                while reader.read() in string.digits + '_':
+                    yield reader.move()
 
     def parse(self, reader):
         lexed = ''.join(self.lexe(reader))

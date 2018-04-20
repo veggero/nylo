@@ -55,12 +55,23 @@ builtins = Struct(defaultdict(list, {
             lambda stack: {'obj', 'list'})]
     }))],
         
+    'filter': [Struct(defaultdict(list, {
+        TypeDef(('list', 'obj', Keyword('tomap'))): [],
+        TypeDef(('obj', Keyword('mapfun'))): [],
+        'self': [PyValue(
+            lambda stack: Struct(defaultdict(list, {
+                'atoms': [el
+                for el in stack[Keyword('tomap')]['atoms']
+                if Call(stack[-1][Keyword('mapfun')][0], el).evaluate(stack).value] })),
+            lambda stack: {'obj', 'list'})]
+    }))],
+        
     'repeat': [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('times'))): [],
         TypeDef(('obj', Keyword('todo'))): [],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
-                'atoms': [stack[Keyword('todo')].value
+                'atoms': [stack[Keyword('todo')]
                 for el in range(stack[Keyword('times')].value)] })),
             lambda stack: {'todo'})]
     }))],

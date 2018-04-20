@@ -2,7 +2,7 @@ import nylo
 import sys
 import argparse
 import readline
-
+from collections import defaultdict
 
 def main():
     if len(sys.argv) <= 1:
@@ -54,8 +54,10 @@ def main():
                         out = struct.calculate(nylo.nyglobals)
                     else:
                         out = struct.evaluate(nylo.nyglobals)
-                    if out.value and str(out) != '()': print(out)
-                del code
+                    if isinstance(out, nylo.objects.struct.struct.Struct):
+                        nylo.nyglobals = nylo.nyglobals(out)
+                    if out.value != None and str(out) != '()': print(out)
+                del code 
             except Exception as e:
                 print(e)
 

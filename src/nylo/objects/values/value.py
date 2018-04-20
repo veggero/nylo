@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from collections import defaultdict
 from nylo.objects.nyobject import NyObject
 
 
@@ -43,6 +44,10 @@ class GetObj(NyObject):
         self.names = value.names.union(index.names)
         
     def evaluate(self, stack):
+        from nylo.objects.struct.struct import Struct
         i = self.index.evaluate(stack).value
         l = self.value.evaluate(stack)['atoms']
-        return l[i].evaluate(stack)
+        o = l[i]
+        if isinstance(o, list): return Struct(defaultdict(list, 
+            {'atoms': o}))
+        else: return o.evaluate(stack)

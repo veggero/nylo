@@ -35,7 +35,7 @@ class Reader:
     def __init__(self, code, reading_at=0):
         "Initizialize Reader instance."
         prev_indent, endlines = 0, ['']
-        for line in ('(' + code + '\n)\0').split('\n'):
+        for line in ('(' + code + '\n)\n\0').split('\n'):
             indent = 0
             while len(line) > indent and line[indent] in ' \t':
                 indent += 1
@@ -51,7 +51,6 @@ class Reader:
             prev_indent = indent
             endlines.append(line)
         self.code = '\n'.join(endlines[1:])
-        #print(self.code)
         self.reading_at = reading_at
         self.line, self.char = 1, 1
 
@@ -73,8 +72,8 @@ class Reader:
         else:
             self.char += 1
         self.reading_at += 1
-        if self.reading_at >= len(self.code):
-            eof_on_scan()
+        if self.read() == '\0':
+            raise SyntaxError('EOF while scanning.')
         return self.code[self.reading_at - 1]
 
     def any_starts_with(self, starts):

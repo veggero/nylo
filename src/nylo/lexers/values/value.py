@@ -30,6 +30,7 @@ from nylo.objects.struct.call import Call as CallObj
 from nylo.objects.values.value import GetObj
 from nylo.objects.struct.structel import TypeDef
 from nylo.objects.values.keyword import Keyword as KeyObj
+from nylo.objects.values.value import Value as ValueObj
 
 
 class Value(Lexer):
@@ -70,6 +71,12 @@ class Get(Lexer):
     def lexe(self, reader):
         reader.move()
         yield Symbol(reader).value
+        while reader.read() == ':':
+            reader.move()
+            yield Symbol(reader).value
         reader.move()
         
-    def parse(self, reader): return list(self.lexe(reader))[0]
+    def parse(self, reader): 
+        out = list(self.lexe(reader))
+        if len(out) == 1: return out[0]
+        else: return ValueObj(slice(*[o.value for o in out]))
