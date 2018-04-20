@@ -1,7 +1,7 @@
 "Compiti di Amerigo Guagagno."
 
 "Per avviare:"
-"[veggero@yara nylo]$ py src/main.py examples/proporzioni.ny"
+"[veggero@yara nylo]$ python3 src/main.py -f examples/proporzioni.ny"
 
 proporzione:
     int ext_sx: int_dx*int_sx/ext_dx
