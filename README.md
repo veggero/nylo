@@ -81,7 +81,9 @@ pygame.draw.rect(
     screen,
     (255, 0, 0),
     (5, 15, 10, 10)
-)```
+)
+```
+
 The hell this means!?
 
 ### Curried function and classes
