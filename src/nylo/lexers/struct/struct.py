@@ -56,7 +56,7 @@ class Struct(Lexer):
             atoms['self'].append(Symbol(reader).value)
         reader.avoid_whitespace()
         reader.move()
-        if (len(atoms) == 1 and 'atoms' in atoms and 
-            len(atoms['atoms']) == 1):
+        if (len(atoms) == 1 and 'atoms' in atoms and
+                len(atoms['atoms']) == 1):
             return atoms['atoms'][0]
         return StructObj(atoms)

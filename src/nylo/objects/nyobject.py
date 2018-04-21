@@ -28,7 +28,8 @@ class NyObject:
         self.value = value
         if hasattr(value, 'names'):
             self.names = value.names
-        else: self.names = set()
+        else:
+            self.names = set()
         self.avaiable = set()
 
     def evaluate(self, stack):

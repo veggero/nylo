@@ -33,7 +33,7 @@ class PyValue(NyObject):
 
     def evaluate(self, stack):
         output = self.value(stack)
-        if not isinstance(output, NyObject): 
+        if not isinstance(output, NyObject):
             output = Value(output)
         return output
 

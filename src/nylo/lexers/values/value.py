@@ -78,8 +78,10 @@ class Get(Lexer):
             reader.move()
             yield Symbol(reader).value
         reader.move()
-        
-    def parse(self, reader): 
+
+    def parse(self, reader):
         out = list(self.lexe(reader))
-        if len(out) == 1: return out[0]
-        else: return ValueObj(slice(*[o.value for o in out]))
+        if len(out) == 1:
+            return out[0]
+        else:
+            return ValueObj(slice(*[o.value for o in out]))

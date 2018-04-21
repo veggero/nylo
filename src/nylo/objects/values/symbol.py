@@ -27,13 +27,16 @@ from collections import defaultdict
 from nylo.objects.nyobject import NyObject
 from nylo.objects.values.value import Value
 
+
 def nyrange(*args):
     from nylo.objects.struct.struct import Struct
-    return Struct(defaultdict(list, {'atoms': 
-                list( map(lambda x: Value(x), range(*args)) )}))
+    return Struct(defaultdict(list, {'atoms':
+                                     list(map(lambda x: Value(x), range(*args)))}))
+
 
 def nyin(value, nylist):
     return value in nylist['atoms']
+
 
 class Symbol(NyObject):
 
@@ -63,7 +66,8 @@ class Symbol(NyObject):
         args = [k.evaluate(stack) for k in self.args]
         op = self.map_to_py[self.value]
         tor = op(args[0].value, args[1].value)
-        if not isinstance(tor, NyObject): tor = Value(tor)
+        if not isinstance(tor, NyObject):
+            tor = Value(tor)
         # tor.types = self.types
         return tor
 

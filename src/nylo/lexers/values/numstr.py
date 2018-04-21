@@ -35,7 +35,7 @@ class Number(Lexer):
         while reader.read() in string.digits + '_':
             yield reader.move()
         if reader.read() == '.':
-            if reader.code[reader.reading_at+1] in string.digits:
+            if reader.code[reader.reading_at + 1] in string.digits:
                 yield reader.move()
                 while reader.read() in string.digits + '_':
                     yield reader.move()

@@ -28,11 +28,13 @@ class Struct(NyObject):
         with stack(self):
             if 'self' in self.value:
                 return self.value['self'][0].evaluate(stack)
-            else: return self
+            else:
+                return self
 
     def update(self, other, stack, evaluate=True):
         for key, value in other.value.items():
-            if key == 'atoms': continue
+            if key == 'atoms':
+                continue
             self.value[key] = self[key] + value
         for element in other.value['atoms']:
             self.drop(element, stack, evaluate)

@@ -49,6 +49,8 @@ class GetObj(NyObject):
         i = self.index.evaluate(stack).value
         l = self.value.evaluate(stack)['atoms']
         o = l[i]
-        if isinstance(o, list): return Struct(defaultdict(list, 
-            {'atoms': o}))
-        else: return o.evaluate(stack)
+        if isinstance(o, list):
+            return Struct(defaultdict(list,
+                                      {'atoms': o}))
+        else:
+            return o.evaluate(stack)

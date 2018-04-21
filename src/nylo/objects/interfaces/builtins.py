@@ -33,7 +33,7 @@ import sys
 
 
 def nylo_exit(code=0, message=None):
-    if not message is None:
+    if message is not None:
         print(message)
     sys.exit(code)
 
@@ -41,7 +41,7 @@ def nylo_exit(code=0, message=None):
 def stack_keyword(stack, keyword, default_value=None):
     try:
         return stack[Keyword(keyword)]
-    except:
+    except Exception:
         return default_value
 
 
@@ -70,25 +70,27 @@ builtins = Struct(defaultdict(list, {
                  for el in stack[Keyword('tomap')]['atoms']]})),
             lambda stack: {'obj', 'list'})]
     }))],
-        
+
     'filter': [Struct(defaultdict(list, {
         TypeDef(('list', 'obj', Keyword('tomap'))): [],
         TypeDef(('obj', Keyword('mapfun'))): [],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [el
-                for el in stack[Keyword('tomap')]['atoms']
-                if Call(stack[-1][Keyword('mapfun')][0], el).evaluate(stack).value] })),
+                          for el in stack[Keyword('tomap')]['atoms']
+                          if Call(
+                              stack[-1][Keyword(
+                                  'mapfun')][0], el).evaluate(stack).value]})),
             lambda stack: {'obj', 'list'})]
     }))],
-    
+
     'repeat': [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('times'))): [],
         TypeDef(('obj', Keyword('todo'))): [],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [stack[Keyword('todo')]
-                for el in range(stack[Keyword('times')].value)] })),
+                 for _ in range(stack[Keyword('times')].value)]})),
             lambda stack: {'todo'})]
     }))],
 
