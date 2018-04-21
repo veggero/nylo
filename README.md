@@ -7,22 +7,21 @@
 ```
 fib:
     int n
-    -> if
-       n<2
-       n
-       fib(n-1)+fib(n-2)
+    int sum_prev_fibs: fib(n-1) + fib(n-2)
+    int result: if(n<2 n sum_prev_fibs)
+    -> result
 ```
 
 # Contents
 * [How to contribute](#how-to-contribute)
 * [Release](#release)
-* The 6 commandments_
-    1. [Beautiful is better than ugly](#beautiful-is-better-than-ugly)
-    2. [Explicit is better than implicit](#explicit-is-better-than-implicit)
-    3. [Simple is better than complex](#simple-is-better-than-complex)
-    4. [Complex is better than complicated](#complex-is-better-than-complicated)
-    5. [Flat is better than nested](#flat-is-better-than-nested)
-    6. [Sparse is better than dense](#sparse-is-better-than-dense)
+* Features
+    1. [It's simple and orthogonal](#it's-simple-and-orthogonal)
+    2. [It's explicit and clear](#it's-explicit-and-clear)
+    3. [Curried function and classes](#curried-function-and-classes)
+    4. [Inverse function and classes](#inverse-function-and-classes)
+    5. [Functional costructs and more](#functional-costructs-and-more)
+    6. [Check if you are screwing up](#check-if-you-are-screwing-up)
 
 ## How to contribute
 
@@ -32,77 +31,146 @@ _In primis_ ("firstable"), you **must** be a member of [pyTeens](https://teens.p
 
 It will be released on the _25th_ of _May 2018!_
 
-## The 6 commandments
+## Features
 
-### Beautiful is better than ugly
+### It's simple and orthogonal
 
-**Indentation**, **colons** and **few symbols** makes nylo beautiful.
+Nylo has very few constructs. In fact, dictionaries, lists, objects, function and classes are all the same thing:
 
 ```
-fib:
+// List
+to_review:
+    "Milk"
+    "Sugar"
+    "Salt"
+    
+// Dict
+reviewed:
+    "Nougat": 10
+    "Honey": 9
+    "Chocolate": 7
+    
+// Class
+point:
+    int x
+    int y
+    
+// Function
+double:
     int n
-    int prev_fibs: fib(n-1)+fib(n-2)
-    int result: if(n<2, n, prev_fibs)
-    -> result
-       
+    r: n * 2
+    -> r
 ```
 
-*Feel the chapeau?*
-
-### Explicit is better than implicit
+### It's explicit and clear
 
 Nylo makes everything explicit, even function calls!
 
 ```
 draw:
-    rectangle:
-        center: point
-            x: 0
-            y: 0
-        size: point
-            x: 10
-            y: 10
-        color: color
-            r: 0
-            g: 255
-            b: 255
     on: screen
+    color: color(r: 0 g: 255 b: 255)
+    rectangle:
+        center: point(x: 5 y: 15)
+        size: point(x: 10 y: 10)
 ```
 
-*Nylo is similar to English, isn't it?*
-
-### Simple is better than complex
-
-Nylo has few constructs - it's intrinsically simple!
-
+The same thing with pygame is:
 ```
-struct ::= "("(value ":" value)*("->"value)?")"
-value ::= valueel | valueel ? (symb valueel?)+
-valueel ::= number | string | keyword | call
-call ::= keyword struct
+pygame.draw.rect(
+    screen,
+    (255, 0, 0),
+    (5, 15, 10, 10)
+)
 ```
 
-### Complex is better than complicated
+The hell this means!?
 
-Complicated means rule-exceptions. We have nothing like that.
+### Curried function and classes
 
-### Flat is better than nested
-
-Yes, that's rig-NO! Nylo is about data, data should always be nested!
-
-### Sparse is better than dense
-
-Nylo flawless supports modulation into multiple files
-
-| File        | Code             |
-| ----------- |:----------------:|
-| double.py   | `int -> int * 2` |
-| test.ny     | `-> double(30)`  |
-
-And then..
+Not all arguments has to be passed in the first call.
 ```
->>> nylo test.ny
-60
+add:
+    int a
+    int b
+    -> a + b
+
+add(1 2) = 3
+add_three: add(3)
+add_four: add(4)
+add_three(5) = 8
+```
+
+Also, not all class proprieties has to be passed in the first call.
+```
+point:
+    int x
+    int y
+    
+A: point(x: 5, y: 10)
+
+x_axis: point(y: 0)
+y_axis: point(x: 0)
+
+B: x_axis(x: 5)
+C: y_axis(y: 10)
+```
+
+### Inverse function and classes
+
+You can make function that also works backward:
+
+```
+double:
+    int n: result / 2
+    int result: n * 2
+    -> result
+
+double(10) = 20
+double(result: 18 -> n) = 9
+```
+
+And you can also have multiple ways to define classes:
+
+```
+color:
+    int r: hex[1:3].base_10
+    int g: hex[3:5].base_10
+    int b: hex[5:7].base_10
+
+    str hex: '#' & r.base_16 & g.base_16 & b.base_16
+    
+color(r: 255 g: 0 b: 0)
+color(hex: "#ff0000")
+
+color(r: 0 g: 122 b: 54 -> hex)
+color(hex: "#c8ec8e" -> r)
+```
+
+### Functional costructs and more
+
+Nylo has most of the functional costructs, such as map (it's called "for" in nylo), filter, and so on.
+```
+testlist: (1, 15, 7, 25, 4, 6)
+
+for(testlist, *2)
+filter(testlist, <10)
+
+for
+    testlist
+    (int n -> if(n < 0, "LOW", "HIGH"))
+```
+
+### Check if you are screwing up
+
+In Nylo, you can explicit say what you expect a variable to be like. An exception will be raised if the condition does not apply.
+
+```
+int[<10] low_number
+list[len=10] ten_elements_list
+
+list char[="0" or ="1"] binary_string
+list[len=3] list[len=3] int tictactoe_board
 ```
 
 **Copyright** (c) 2017, 2018 [@veggero](https://github.com/veggero). All rights reserved.

@@ -28,6 +28,7 @@ from nylo.objects.struct.struct import Struct
 from nylo.objects.struct.structel import TypeDef
 from nylo.objects.values.keyword import Keyword
 from nylo.objects.struct.call import Call
+from nylo.objects.values.value import Value
 import sys
 
 
@@ -99,7 +100,7 @@ builtins = Struct(defaultdict(list, {
     }))],
 
     'exit': [Struct(defaultdict(list, {
-        TypeDef(('int', Keyword('code'))): [],
+        TypeDef(('int', Keyword('code'))): [Value(0)],
         Keyword('message'): [],
         'self': [PyValue(
             lambda stack: nylo_exit(stack_keyword(stack, 'code', 0), 
