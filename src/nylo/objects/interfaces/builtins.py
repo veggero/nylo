@@ -103,7 +103,7 @@ builtins = Struct(defaultdict(list, {
         TypeDef(('int', Keyword('code'))): [Value(0)],
         Keyword('message'): [],
         'self': [PyValue(
-            lambda stack: nylo_exit(stack_keyword(stack, 'code', 0), 
+            lambda stack: nylo_exit(stack[Keyword('code')],
                                     stack_keyword(stack, 'message', None)),
             lambda stack: {'obj', 'list'})]
     }))],
