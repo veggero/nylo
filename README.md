@@ -114,6 +114,7 @@ y_axis: point(x: 0)
 
 B: x_axis(x: 5)
 C: y_axis(y: 10)
+```
 
 ### Inverse function and classes
 
