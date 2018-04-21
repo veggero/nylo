@@ -16,12 +16,12 @@ fib:
 * [How to contribute](#how-to-contribute)
 * [Release](#release)
 * Features
-    1. [It's simple and orthogonal](#It's-simple-and-orthogonal)
-    2. [It's explicit and clear](#It's-explicit-and-clear)
-    3. [Curried function and classes](#Curried-function-and-classes)
-    4. [Inverse function and classes](#Inverse-function-and-classes)
-    5. [Functional costructs and more](#Functional-costructs-and-more)
-    6. [Check if you are screwing up](#Check-if-you-are-screwing-up)
+    1. [It's simple and orthogonal](#it's-simple-and-orthogonal)
+    2. [It's explicit and clear](#it's-explicit-and-clear)
+    3. [Curried function and classes](#curried-function-and-classes)
+    4. [Inverse function and classes](#inverse-function-and-classes)
+    5. [Functional costructs and more](#functional-costructs-and-more)
+    6. [Check if you are screwing up](#check-if-you-are-screwing-up)
 
 ## How to contribute
 
