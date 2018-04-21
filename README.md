@@ -60,6 +60,7 @@ double:
     int n
     r: n * 2
     -> r
+```
 
 ### It's explicit and clear
 
