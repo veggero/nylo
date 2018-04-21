@@ -84,7 +84,7 @@ pygame.draw.rect(
 )
 ```
 
-And that's why **nylo** will change your life.
+As you can see, Nylo is way clearer.
 
 ### Curried function and classes
 
