@@ -51,6 +51,11 @@ class Struct(NyObject):
         for element in reversed(self[value]):
             return element.evaluate(stack)
         raise TypeError("Couldn't get '%s' in any way." % value)
+    
+    def c(self):
+        if len(self.value['atoms']) > 0 and len(self.value) == 1:
+            return '(%s,)' % ', '.join(map(str, self.value['atoms']))
+        elif 
 
     # def settype(self, types, stack):
     #    self.types = types

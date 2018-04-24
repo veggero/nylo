@@ -6,7 +6,7 @@
 print("Tau World! :D")
 ```
 
-**nylo** (/nylo/) is a **programming language** written in [Python](https://python.org). It is knows due to its **simplicity** and **style**. As you should know: **nylo** is absolutely **user-friendly**, you could write code in few lines, less than what you would think!
+**Nylo** is a declarative programming language. It takes some constructs from functional and logic paradigms, but it's really a new paradigm itself. It aims to be simple and clear, but powerful. It provides an easy way to make assertions on the data a function is working on. It also gives you the possibility to define standard behaviour if asserts fail.
 
 ```
 fib:
@@ -18,8 +18,8 @@ fib:
 
 # Contents
 * [How to contribute](#how-to-contribute)
-* [Release](#release)
-* Features
+* [Present and future of project](present-and-future-of-project)
+* [Features](#features)
     1. [It's simple and orthogonal](#its-simple-and-orthogonal)
     2. [It's explicit and clear](#its-explicit-and-clear)
     3. [Curried function and classes](#curried-function-and-classes)
@@ -31,9 +31,11 @@ fib:
 
 _In primis_ ("firstable"), you **must** be a member of [pyTeens](https://teens.python.it), then **ask** [@veggero](https://github.com/veggero)!
 
-## Release
+## Present and future of project
 
-It will be released on the _25th_ of _May 2018!_
+This repo contains the development version of the proof-of-concept of the programming language. The poc should be finished on the 25th of May, but due to complications in the type and overloading systems, it might slip further.
+
+As soon as the proof-of-concept is finished and refined, the work on the actual interpreter will start. It will be written in C++.
 
 ## Features
 
@@ -177,6 +179,16 @@ list[len=10] ten_elements_list
 
 list char[="0" or ="1"] binary_string
 list[len=3] list[len=3] int tictactoe_board
+```
+
+You can also define a standard value to return or a standard behaviour to follow if a condition is not followed. Warning will be anyway raised.
+
+```
+int[-> 0] k: "Hello"
+
+list [len=5 -> print("Wrong lenght!")       // Lenght should be 5
+] [list[0] == 0 -> print("Wrong header!")   // First element should be 0
+] t: 0..5
 ```
 
 **Copyright** (c) 2017, 2018 [@veggero](https://github.com/veggero). All rights reserved.

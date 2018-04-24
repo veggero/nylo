@@ -49,6 +49,9 @@ class Call(NyObject):
             self.called.value['self'] = self.struct.value['self']
         self.called.update(self.struct, stack)
         return self.called.calculate(stack)
+    
+    def c(self):
+        return self.kw.c() + self.struct.c() 
 
     # def settype(self, types, stack):
     #    self.called = stack[self.kw]
