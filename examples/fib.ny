@@ -9,6 +9,6 @@ fib:
     int result: if(n<2, n, prevs)
     example: fib(16)
     -> result
-   
+    
 -> fib
-    ->example
+    16

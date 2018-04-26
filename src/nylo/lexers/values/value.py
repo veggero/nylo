@@ -38,7 +38,6 @@ class Value(Lexer):
     def able(reader):
         return (Number.able(reader) or String.able(reader)
                 or Keyword.able(reader) or Struct.able(reader))
-                # String.able(reader) or Symbol.able(reader))
 
     def lexe(self, reader):
         v = KeyObj('_implicit')
@@ -57,6 +56,7 @@ class Value(Lexer):
             v = String(reader).value
         elif Struct.able(reader):
             v = Struct(reader).value
+        reader.avoid_whitespace()
         if reader.read() in '(':
             return CallObj(v, Struct(reader).value)
         elif reader.read() in '[':

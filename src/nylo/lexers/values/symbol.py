@@ -46,17 +46,6 @@ class Symbol(Lexer):
         ('.',)
     )
 
-    def able(reader):
-        from nylo.lexers.values.value import Value
-        reader = reader.test()
-        if reader.any_starts_with(Symbol.unary_symbols):
-            reader.move(len(reader.any_starts_with(Symbol.unary_symbols)))
-            return Value.able(reader)
-        if not Value.able(reader):
-            return False
-        Value.lexe(None, reader)
-        return True
-
     def lexe(self, reader):
         from nylo.lexers.values.value import Value
         if not reader.any_starts_with(self.unary_symbols):

@@ -59,7 +59,6 @@ builtins = Struct(defaultdict(list, {
             lambda stack:
                 stack[-1].typesof('first', stack) +
                 stack[-1].typesof('second', stack),
-            "(lambda cond, first, second: first if cond else second)"
                 )]
     }))],
 
@@ -70,8 +69,7 @@ builtins = Struct(defaultdict(list, {
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [Call(stack[-1][Keyword('mapfun')][0], el).evaluate(stack)
                  for el in stack[Keyword('tomap')]['atoms']]})),
-            lambda stack: {'obj', 'list'},
-            "(lambda tomap, mapfun: list(map(mapfun, tomap)))")]
+            lambda stack: {'obj', 'list'},)]
     }))],
 
     'filter': [Struct(defaultdict(list, {
@@ -84,8 +82,7 @@ builtins = Struct(defaultdict(list, {
                           if Call(
                               stack[-1][Keyword(
                                   'mapfun')][0], el).evaluate(stack).value]})),
-            lambda stack: {'obj', 'list'},
-            "(lambda tomap, mapfun: list(filter(mapfun, tomap)))")]
+            lambda stack: {'obj', 'list'},)]
     }))],
 
     'repeat': [Struct(defaultdict(list, {
@@ -95,16 +92,14 @@ builtins = Struct(defaultdict(list, {
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [stack[Keyword('todo')]
                  for _ in range(stack[Keyword('times')].value)]})),
-            lambda stack: {'todo'},
-            "(lambda times, todo: [todo for i in range(times)])")]
+            lambda stack: {'todo'},)]
     }))],
 
     'print': [Struct(defaultdict(list, {
         Keyword('toprint'): [],
         'self': [PyValue(
             lambda stack: print(stack[Keyword('toprint')]),
-            lambda stack: {'obj', 'list'},
-            "print")]
+            lambda stack: {'obj', 'list'})]
     }))],
 
     'exit': [Struct(defaultdict(list, {
@@ -113,8 +108,7 @@ builtins = Struct(defaultdict(list, {
         'self': [PyValue(
             lambda stack: nylo_exit(stack[Keyword('code')],
                                     stack_keyword(stack, 'message', None)),
-            lambda stack: {'obj', 'list'},
-            "exit")]
+            lambda stack: {'obj', 'list'})]
     }))],
 
 }))
