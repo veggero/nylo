@@ -22,4 +22,3 @@
 # SOFTWARE.
 
 from .struct import Struct
-from .structel import StructEl

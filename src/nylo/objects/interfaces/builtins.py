@@ -67,7 +67,7 @@ builtins = Struct(defaultdict(list, {
         TypeDef(('obj', Keyword('mapfun'))): [],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
-                'atoms': [Call(stack[-1][Keyword('mapfun')][0], el).evaluate(stack)
+                'atoms': [Call(stack[-1][Keyword('mapfun')][-1], el).evaluate(stack)
                  for el in stack[Keyword('tomap')]['atoms']]})),
             lambda stack: {'obj', 'list'},)]
     }))],
@@ -81,7 +81,7 @@ builtins = Struct(defaultdict(list, {
                           for el in stack[Keyword('tomap')]['atoms']
                           if Call(
                               stack[-1][Keyword(
-                                  'mapfun')][0], el).evaluate(stack).value]})),
+                                  'mapfun')][-1], el).evaluate(stack).value]})),
             lambda stack: {'obj', 'list'},)]
     }))],
 
