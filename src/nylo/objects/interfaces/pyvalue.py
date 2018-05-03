@@ -26,6 +26,13 @@ from nylo.objects.values.value import Value
 
 
 class PyValue(NyObject):
+    """
+    This class is used to define a value
+    and it's derived from NyObject.
+
+    It could be used to store a value and
+    evaluate it using a stack.
+    """
 
     def __init__(self, value, types):
         self.typefun = types
@@ -37,9 +44,13 @@ class PyValue(NyObject):
             output = Value(output)
         return output
 
-    # def settype(self, types, stack):
-    #    self.types = self.typefun(stack)
-    #    return self.types
+    def __str__(self) -> str:
+        """
+        It returns a string that
+        could represent the object.
 
-    def __str__(self): return '<lambda>'
+        :return: The representation
+        :rtype: str
+        """
+        return '<lambda>'
         

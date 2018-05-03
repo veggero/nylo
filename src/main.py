@@ -24,15 +24,20 @@
 import nylo
 import sys
 import argparse
-import readline
-from collections import defaultdict
+
 
 def main():
+    """
+    It starts the NyloCMD that could
+    be managed using command line parameters.
+
+    See `nylo -h` for that.
+    """
     if len(sys.argv) <= 1:
         sys.argv.append('-h')
-    sys.argv = sys.argv[1:]
+    sys.argv: list = sys.argv[1:]
 
-    parser = argparse.ArgumentParser(
+    parser: object = argparse.ArgumentParser(
         description='A cool programming language')
     parser.add_argument('-f', '--file',
                         help='the file you want to evaluate')
@@ -43,49 +48,47 @@ def main():
     parser.add_argument('-i', '--inline',
                         help='inline command line',
                         action='store_true')
-    args = parser.parse_args(sys.argv)
+    args: object = parser.parse_args(sys.argv)
 
     if args.inline:
-        previous_code = ''
-        statement = False
+        previous_code: str = ''
+        statement: bool = False
         while True:
             try:
                 if not statement:
-                    code = input(' -> ')
+                    code: str = input(' -> ')
                 else:
-                    code = input('... ')
+                    code: str = input('... ')
 
                 if not code:
-                    code = previous_code
-                    statement = False
-                    previous_code = ''
+                    code: str = previous_code
+                    statement: bool = False
+                    previous_code: str = ''
                 elif code[-1] == ':':
                     previous_code += code + '\n'
-                    statement = True
+                    statement: bool = True
                     continue
                 elif statement:
                     previous_code += code + '\n'
 
                 if not statement:
-                    reader = nylo.Reader(code + '\n')
-                    struct = nylo.Struct(reader).value
+                    reader: object = nylo.Reader(code + '\n')
+                    struct: object = nylo.Struct(reader).value
                     if hasattr(struct, 'calculate'):
-                        out = struct.calculate(nylo.nyglobals)
+                        out: object = struct.calculate(nylo.nyglobals)
                     else:
-                        out = struct.evaluate(nylo.nyglobals)
-                    if isinstance(out, nylo.objects.struct.struct.Struct):
-                        nylo.nyglobals = nylo.nyglobals(out)
-                    if out.value != None and str(out) != '()': print(out)
-                del code 
+                        out: object = struct.evaluate(nylo.nyglobals)
+                    if out.value and str(out) != '()':
+                        print(out)
+                del code
             except Exception as e:
                 print(e)
 
     if args.file is not None:
         with open(args.file, 'r') as codefile:
-            code = codefile.read()
-        reader = nylo.Reader(code)
-        struct = nylo.Struct(reader).value
-        # struct.settype(['obj'], nylo.nyglobals)
+            code: object = codefile.read()
+        reader: object = nylo.Reader(code)
+        struct: object = nylo.Struct(reader).value
         print(struct.calculate(nylo.nyglobals))
 
 
