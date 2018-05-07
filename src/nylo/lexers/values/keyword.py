@@ -28,6 +28,8 @@ from nylo.objects.values.keyword import Keyword as KwObj
 
 
 class Keyword(Lexer):
+    """Keyword is used to store variables
+    and it returns their values when it's evaluated."""
 
     def able(reader): return reader.read() in string.ascii_letters + '_'
 

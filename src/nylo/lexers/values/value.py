@@ -34,6 +34,9 @@ from nylo.objects.values.value import Value as ValueObj
 
 
 class Value(Lexer):
+    """Value class is similar to PyValue, but it calls a
+    Python object, not a function. It could be used to create an
+    interface between a Nylo and a Python object."""
 
     def able(reader):
         return (Number.able(reader) or String.able(reader)
@@ -68,6 +71,10 @@ class Value(Lexer):
 
 
 class Get(Lexer):
+    """Get is used to return
+    an element from a list or a similar
+    object - it returns an element associated to
+    an index"""
 
     def able(reader): return '[' == reader.read()
 

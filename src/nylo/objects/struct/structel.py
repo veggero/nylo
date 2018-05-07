@@ -2,6 +2,8 @@ from nylo.objects.nyobject import NyObject
 
 
 class TypeDef(NyObject):
+    """TypeDef is used when calling multiple
+    variables (ex. ``list int k``)."""
 
     def __init__(self, kws):
         self.names = {kws[-1].value}

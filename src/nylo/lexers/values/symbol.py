@@ -29,6 +29,9 @@ from nylo.objects.struct.call import Call
 
 
 class Symbol(Lexer):
+    """Symbol class is used to
+    define all keywords (e.g. ``+``, ``-``, etc..) and to
+    evaluate all their uses (ex. `'1 + 1``)."""
 
     unary_symbols = '+', '-', 'not '
     symbols = ('=', 'and ', '>', 'or ', '<', '!=', 'xor ', '>=',

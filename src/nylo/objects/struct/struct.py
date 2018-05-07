@@ -5,6 +5,11 @@ from collections import defaultdict
 
 
 class Struct(NyObject):
+    """Struct is the main
+    type that you could find using
+    Nylo. It could be a function, a dictionary: all
+    objects that you can find between parenthesis or an
+    indented object."""
 
     def __init__(self, value=defaultdict(list)):
         self.value = value
