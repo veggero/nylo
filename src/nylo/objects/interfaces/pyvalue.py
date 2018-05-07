@@ -28,7 +28,7 @@ from nylo.objects.values.value import Value
 class PyValue(NyObject):
     """This class is used to define a value
     and it's derived from NyObject.
-    
+
     It could be used to store a value and
     evaluate it using a stack.
 
@@ -55,4 +55,3 @@ class PyValue(NyObject):
             str: The representation
         """
         return '<lambda>'
-        

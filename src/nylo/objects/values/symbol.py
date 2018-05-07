@@ -30,8 +30,8 @@ from nylo.objects.values.value import Value
 
 def nyrange(*args):
     from nylo.objects.struct.struct import Struct
-    return Struct(defaultdict(list, {'atoms':
-                                     list(map(lambda x: Value(x), range(*args)))}))
+    return Struct(defaultdict(
+        list, {'atoms': list(map(lambda x: Value(x), range(*args)))}))
 
 
 def nyin(value, nylist):

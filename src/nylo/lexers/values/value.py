@@ -76,7 +76,8 @@ class Get(Lexer):
     object - it returns an element associated to
     an index"""
 
-    def able(reader): return '[' == reader.read()
+    def able(reader):
+        return '[' == reader.read()
 
     def lexe(self, reader):
         reader.move()

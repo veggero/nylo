@@ -29,7 +29,7 @@ import argparse
 def main():
     """It starts the NyloCMD that could
     be managed using command line parameters.
-    
+
     See `nylo -h` for that.
     """
     if len(sys.argv) <= 1:

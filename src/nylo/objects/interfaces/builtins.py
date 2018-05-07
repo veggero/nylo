@@ -62,8 +62,8 @@ def stack_keyword(stack: dict, keyword: str, default_value=None):
       stack(Stack): The stack you're going to use
       keyword(str): The keyword you want to get
       default_value: The default value you get if the Keyword doesn't exist
-      stack: dict: 
-      keyword: str: 
+      stack: dict:
+      keyword: str:
 
     Returns:
       The got keyword from the stack, the default value on fails
@@ -87,7 +87,7 @@ builtins: object = Struct(defaultdict(list, {
             lambda stack:
                 stack[-1].typesof('first', stack) +
                 stack[-1].typesof('second', stack),
-                )]
+        )]
     }))],
 
     'for': [Struct(defaultdict(list, {
@@ -96,7 +96,7 @@ builtins: object = Struct(defaultdict(list, {
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [Call(stack[-1][Keyword('mapfun')][-1], el).evaluate(stack)
-                 for el in stack[Keyword('tomap')]['atoms']]})),
+                          for el in stack[Keyword('tomap')]['atoms']]})),
             lambda stack: {'obj', 'list'},)]
     }))],
 
@@ -119,7 +119,7 @@ builtins: object = Struct(defaultdict(list, {
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [stack[Keyword('todo')]
-                 for _ in range(stack[Keyword('times')].value)]})),
+                          for _ in range(stack[Keyword('times')].value)]})),
             lambda stack: {'todo'},)]
     }))],
 

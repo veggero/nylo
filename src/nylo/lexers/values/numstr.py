@@ -50,13 +50,13 @@ class Number(Lexer):
 
 class String(Lexer):
 
-        def able(reader): return reader.read() in '\'"'
+    def able(reader): return reader.read() in '\'"'
 
-        def lexe(self, reader):
-            start = reader.move()
-            while reader.read() != start:
-                yield reader.move()
-            reader.move()
+    def lexe(self, reader):
+        start = reader.move()
+        while reader.read() != start:
+            yield reader.move()
+        reader.move()
 
-        def parse(self, reader):
-            return ValueObj(''.join(self.lexe(reader)))
+    def parse(self, reader):
+        return ValueObj(''.join(self.lexe(reader)))
