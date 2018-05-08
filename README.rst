@@ -218,13 +218,12 @@ to follow if a condition is not followed. Warning will be anyway raised.
    ] [list[0] == 0 -> print("Wrong header!")   // First element should be 0
    ] t: 0..5
 
-**Copyright** (c) 2017, 2018 [@veggero](https://github.com/veggero). All
+**Copyright** (c) 2017, 2018 `veggero`_. All
 rights reserved.
 
 **Copyright** (c) 2018 `pyTeens`_. All rights reserved.
 
-**Copyright** (c) 2018
-[@AmerigoGuadagno](https://github.com/AmerigoGuadagno). All rights
+**Copyright** (c) 2018 `Amerigo Guadagno`_. All rights
 reserved.
 
 .. _How to contribute: #how-to-contribute
@@ -237,5 +236,7 @@ reserved.
 .. _Functional costructs and more: #functional-costructs-and-more
 .. _Check if you are screwing up: #check-if-you-are-screwing-up
 .. _pyTeens: https://teens.python.it
+.. _veggero: https://github.com/veggero
+.. _Amerigo Guadagno: https://github.com/AmerigoGuadagno
 
 .. |image0| image:: https://raw.githubusercontent.com/pyTeens/nylo/gh-pages/docs/images/new_big_nylo_banner.png
