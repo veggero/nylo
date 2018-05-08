@@ -8,8 +8,11 @@ Welcome to nylo's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Package:
 
+   modules
+
+.. include:: ../../README.rst
 
 
 Indices and tables
