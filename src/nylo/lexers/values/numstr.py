@@ -29,9 +29,25 @@ from nylo.objects.values.value import Value as ValueObj
 
 class Number(Lexer):
 
-    def able(reader): return reader.read() in string.digits + '_'
+    def able(reader):
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
+        return reader.read() in string.digits + '_'
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         while reader.read() in string.digits + '_':
             yield reader.move()
         if reader.read() == '.':
@@ -41,6 +57,15 @@ class Number(Lexer):
                     yield reader.move()
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         lexed = ''.join(self.lexe(reader))
         if '.' in lexed:
             return ValueObj(float(lexed))
@@ -50,13 +75,38 @@ class Number(Lexer):
 
 class String(Lexer):
 
-    def able(reader): return reader.read() in '\'"'
+    def able(reader):
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
+        return reader.read() in '\'"'
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         start = reader.move()
         while reader.read() != start:
             yield reader.move()
         reader.move()
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         return ValueObj(''.join(self.lexe(reader)))

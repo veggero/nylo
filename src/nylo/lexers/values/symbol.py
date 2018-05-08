@@ -50,6 +50,15 @@ class Symbol(Lexer):
     )
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         from nylo.lexers.values.value import Value
         if not reader.any_starts_with(self.unary_symbols):
             yield Value(reader).value
@@ -62,6 +71,15 @@ class Symbol(Lexer):
         yield self.symbol
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         *values, symbol = list(self.lexe(reader))
         if len(values) == 0:
             return symbol

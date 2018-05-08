@@ -30,9 +30,25 @@ from nylo.objects.struct.struct import Struct as StructObj
 
 class Struct(Lexer):
 
-    def able(reader): return reader.read() in '('
+    def able(reader):
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
+        return reader.read() in '('
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         from nylo.lexers.values.symbol import Symbol
         atoms = defaultdict(list)
         reader.move()

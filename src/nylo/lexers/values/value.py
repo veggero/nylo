@@ -39,10 +39,25 @@ class Value(Lexer):
     interface between a Nylo and a Python object."""
 
     def able(reader):
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
         return (Number.able(reader) or String.able(reader)
                 or Keyword.able(reader) or Struct.able(reader))
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         v = KeyObj('_implicit')
         if Keyword.able(reader):
             kw = Keyword(reader).value
@@ -67,7 +82,17 @@ class Value(Lexer):
         else:
             return v
 
-    def parse(self, reader): return self.lexe(reader)
+    def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
+        return self.lexe(reader)
 
 
 class Get(Lexer):
@@ -77,9 +102,24 @@ class Get(Lexer):
     an index"""
 
     def able(reader):
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
         return '[' == reader.read()
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         reader.move()
         yield Symbol(reader).value
         while reader.read() == ':':
@@ -88,6 +128,15 @@ class Get(Lexer):
         reader.move()
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         out = list(self.lexe(reader))
         if len(out) == 1:
             return out[0]
