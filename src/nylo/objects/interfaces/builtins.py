@@ -32,21 +32,46 @@ from nylo.objects.values.value import Value
 import sys
 
 
-def nylo_exit(code=0, message=None):
-    if message is not None:
-        print(message)
-    sys.exit(code)
+def nylo_exit(code: int = 0, message: str = None) -> bool:
+    """
+    It defines an exit function for
+    nylo.
+
+    :param code: The exit code
+    :type code: int
+    :param message: The exit message
+    :type message: str
+    :return: True if all succeeded, False on fails
+    :rtype: bool
+    """
+    try:
+        if message is not None:
+            print(message)
+        sys.exit(code)
+        return True
+    except BaseException:
+        return False
 
 
-def stack_keyword(stack, keyword, default_value=None):
+def stack_keyword(stack: dict, keyword: str, default_value=None):
+    """
+    This function is used
+    to get a keyword from a stack.
+
+    :param stack: The stack you're going to use
+    :type stack: Stack
+    :param keyword: The keyword you want to get
+    :type keyword: str
+    :param default_value: The default value you get if the Keyword doesn't exist
+    :return: The got keyword from the stack, the default value on fails
+    """
     try:
         return stack[Keyword(keyword)]
-    except Exception:
+    except BaseException:
         return default_value
 
 
-builtins = Struct(defaultdict(list, {
-
+builtins: object = Struct(defaultdict(list, {
     'if': [Struct(defaultdict(list, {
         'cond': [],
         TypeDef(('obj', Keyword('first'))): [Keyword('_arg')],
@@ -113,3 +138,8 @@ builtins = Struct(defaultdict(list, {
     }))],
 
 }))
+
+"""
+The builtins struct defines all the builtins
+methods and keywords
+"""

@@ -21,17 +21,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import nylo
 import sys
 import argparse
-import nylo
+
 
 
 def main():
-    if not sys.argv:
-        sys.argv.append('-h')
-    sys.argv = sys.argv[1:]
+    """
+    It starts the NyloCMD that could
+    be managed using command line parameters.
 
-    parser = argparse.ArgumentParser(
+    See `nylo -h` for that.
+    """
+    if len(sys.argv) <= 1:
+        sys.argv.append('-h')
+    sys.argv: list = sys.argv[1:]
+
+    parser: object = argparse.ArgumentParser(
         description='A cool programming language')
     parser.add_argument('-f', '--file',
                         help='the file you want to evaluate')
@@ -42,54 +49,49 @@ def main():
     parser.add_argument('-i', '--inline',
                         help='inline command line',
                         action='store_true')
-    args = parser.parse_args(sys.argv)
+    args: object = parser.parse_args(sys.argv)
 
     if args.inline:
-        inline_command()
+        previous_code: str = ''
+        statement: bool = False
+        while True:
+            try:
+                if not statement:
+                    code: str = input(' -> ')
+                else:
+                    code: str = input('... ')
+
+                if not code:
+                    code: str = previous_code
+                    statement: bool = False
+                    previous_code: str = ''
+                elif code[-1] == ':':
+                    previous_code += code + '\n'
+                    statement: bool = True
+                    continue
+                elif statement:
+                    previous_code += code + '\n'
+
+                if not statement:
+                    reader: object = nylo.Reader(code + '\n')
+                    struct: object = nylo.Struct(reader).value
+                    if hasattr(struct, 'calculate'):
+                        out: object = struct.calculate(nylo.nyglobals)
+                    else:
+                        out: object = struct.evaluate(nylo.nyglobals)
+                    if out.value and str(out) != '()':
+                        print(out)
+                del code
+            except Exception as e:
+                print(e)
 
     if args.file is not None:
-        file_command(args.file)
-
-
-def file_command(filename):
-    with open(filename, 'r') as codefile:
-        code = codefile.read()
-    reader = nylo.Reader(code)
-    struct = nylo.Struct(reader).value
-    # struct.settype(['obj'], nylo.nyglobals)
-    return print(struct.calculate(nylo.nyglobals))
-
-
-def inline_command():
-    previous_code = ''
-    statement = False
-    while True:
-        try:
-            if not statement:
-                code = input(' -> ')
-            else:
-                code = input('... ')
-
-            if not code:
-                code = previous_code
-                statement = False
-                previous_code = ''
-            elif code[-1] in ':(':
-                previous_code += code + '\n'
-                statement = True
-                continue
-            elif statement:
-                previous_code += code + '\n'
-
-            if not statement:
-                reader = nylo.Reader(code + '\n')
-                struct = nylo.Struct(reader).value
-                out = struct.evaluate(nylo.nyglobals)
-                if out.value and str(out) != '()':
-                    print(out)
-            del code
-        except BaseException as exception:
-            print(exception)
+        with open(args.file, 'r') as codefile:
+            code: object = codefile.read()
+        reader: object = nylo.Reader(code)
+        struct: object = nylo.Struct(reader).value
+        #struct.settype(['obj'], nylo.nyglobals)
+        print(struct.calculate(nylo.nyglobals))
 
 
 if __name__ == '__main__':
