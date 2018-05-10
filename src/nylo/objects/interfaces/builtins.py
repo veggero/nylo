@@ -73,7 +73,7 @@ def stack_keyword(stack: dict, keyword: str, default_value=None):
 
 builtins: object = Struct(defaultdict(list, {
     'if': [Struct(defaultdict(list, {
-        'cond': [],
+        'cond': [Keyword('_arg')],
         TypeDef(('obj', Keyword('first'))): [Keyword('_arg')],
         TypeDef(('obj', Keyword('second'))): [Keyword('_arg')],
         'self': [PyValue(

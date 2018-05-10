@@ -75,10 +75,7 @@ def main():
                 if not statement:
                     reader: object = nylo.Reader(code + '\n')
                     struct: object = nylo.Struct(reader).value
-                    if hasattr(struct, 'calculate'):
-                        out: object = struct.calculate(nylo.nyglobals)
-                    else:
-                        out: object = struct.evaluate(nylo.nyglobals)
+                    out: object = struct.evaluate(nylo.nyglobals)
                     if out.value and str(out) != '()':
                         print(out)
                 del code
@@ -91,7 +88,7 @@ def main():
         reader: object = nylo.Reader(code)
         struct: object = nylo.Struct(reader).value
         #struct.settype(['obj'], nylo.nyglobals)
-        print(struct.calculate(nylo.nyglobals))
+        print(struct.evaluate(nylo.nyglobals))
 
 
 if __name__ == '__main__':

@@ -33,9 +33,6 @@ class Call(NyObject):
     def __init__(self, kw, struct):
         if not isinstance(struct, Struct):
             struct = Struct(defaultdict(list, {'atoms': [struct]}))
-        if isinstance(kw, Symbol):
-            kw = Struct(defaultdict(list, {Keyword('_implicit'): [Keyword('_arg')],
-                                           Keyword('self'): [kw]}))
         self.kw, self.struct, self.value = kw, struct, (kw, struct)
         self.names = self.kw.names.union(self.struct.names)
 

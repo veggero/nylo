@@ -20,8 +20,6 @@ class Struct(NyObject):
     def __contains__(self, value):
         if isinstance(value, str):
             value = Keyword(value)
-        if value.value == '_implicit':
-            return True
         return (len(self.value[value.value]) > 0 and
                 all(n in self for el in self[value.value]
                     for n in el.names))

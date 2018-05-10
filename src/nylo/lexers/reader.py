@@ -56,22 +56,22 @@ class Reader:
         return ''.join(self.code).startswith(string, self.reading_at)
 
     def avoid_whitespace(self):
-        while self.read() in ' \t':
+        while self.read() in ' \t': 
             self.move()
         if self.read() == '\n':
             i = self.reading_at + 1
-            while self.code[i] in '\t ':
+            while self.code[i] in '\t ': 
                 i += 1
             if self.code[i] == '\n':
                 self.reading_at = i
                 return self.avoid_whitespace()
             newindent = i - (self.reading_at + 1)
-            if newindent <= self.indent:
+            if newindent <= self.indent: 
                 self.code.insert(i, ',')
-            for i in range(abs(self.indent - newindent)):
-                if newindent > self.indent:
+            for time in range(abs(self.indent - newindent)):
+                if newindent > self.indent: 
                     self.code.insert(i, '(')
-                elif newindent < self.indent:
+                elif newindent < self.indent: 
                     self.code.insert(i, ')')
             self.move()
             self.indent = newindent
