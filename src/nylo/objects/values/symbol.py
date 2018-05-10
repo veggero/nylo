@@ -54,7 +54,7 @@ class Symbol(NyObject):
 
     def __init__(self, value, args):
         self.value, self.args = value, args
-        self.names = self.args[0].names.union(self.args[1].names)
+        self.names = set.union(self.args[0].names, self.args[1].names)
 
     def __repr__(self): return str(self)
 

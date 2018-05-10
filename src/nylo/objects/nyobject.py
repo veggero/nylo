@@ -42,5 +42,3 @@ class NyObject:
     def __str__(self): return '%s' % self.value
 
     def __hash__(self): return hash(self.value)
-
-    def __eq__(self, other): return hash(self) == hash(other)

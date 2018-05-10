@@ -27,9 +27,12 @@ from nylo.objects.values.value import Value
 
 class PyValue(NyObject):
 
-    def __init__(self, value, types):
+    def __init__(self, value, types, names):
         self.typefun = types
         super().__init__(value)
+        self.names = names
+
+    def __str__(self): return '<lambda>'
 
     def evaluate(self, stack):
         output = self.value(stack)
@@ -40,6 +43,3 @@ class PyValue(NyObject):
     # def settype(self, types, stack):
     #    self.types = self.typefun(stack)
     #    return self.types
-
-    def __str__(self): return '<lambda>'
-        

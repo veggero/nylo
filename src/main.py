@@ -27,6 +27,7 @@ import argparse
 import readline
 from collections import defaultdict
 
+
 def main():
     if len(sys.argv) <= 1:
         sys.argv.append('-h')
@@ -69,14 +70,12 @@ def main():
                 if not statement:
                     reader = nylo.Reader(code + '\n')
                     struct = nylo.Struct(reader).value
-                    if hasattr(struct, 'calculate'):
-                        out = struct.calculate(nylo.nyglobals)
-                    else:
-                        out = struct.evaluate(nylo.nyglobals)
+                    out = struct.evaluate(nylo.nyglobals)
                     if isinstance(out, nylo.objects.struct.struct.Struct):
                         nylo.nyglobals = nylo.nyglobals(out)
-                    if out.value != None and str(out) != '()': print(out)
-                del code 
+                    if out.value != None and str(out) != '()':
+                        print(out)
+                del code
             except Exception as e:
                 print(e)
 
@@ -85,8 +84,8 @@ def main():
             code = codefile.read()
         reader = nylo.Reader(code)
         struct = nylo.Struct(reader).value
-        # struct.settype(['obj'], nylo.nyglobals)
-        print(struct.calculate(nylo.nyglobals))
+        #struct.settype(['obj'], nylo.nyglobals)
+        print(struct.evaluate(nylo.nyglobals))
 
 
 if __name__ == '__main__':

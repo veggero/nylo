@@ -8,42 +8,48 @@ class Struct(NyObject):
 
     def __init__(self, value=defaultdict(list)):
         self.value = value
-        self.names = set()
+        self.names = set().union(*[n.names for n in value['atoms']])
 
     def __str__(self):
-        dictlike = ', '.join('%s: %s' % (key, ' | '.join(map(str, val))
-                                         if not isinstance(val, Struct)
-                                         else '...') if not key == 'atoms'
-                             else ', '.join(map(str, val))
-                             for key, val in self.value.items())
+        dictlike = ', '.join(
+            '%s: %s' % (key, ' | '.join(map(str, val))
+                        if not isinstance(val, Struct) else '...') if not key == 'atoms'
+            else ', '.join(map(str, val)) for key, val in self.value.items())
         return '(%s)' % dictlike
 
-    def __contains__(self, value): return len(self.value[value.value]) > 0
+    def __contains__(self, value):
+        if isinstance(value, str):
+            value = Keyword(value)
+        if value.value == '_implicit':
+            return True
+        return (len(self.value[value.value]) > 0 and
+                all(n in self for el in self[value.value]
+                    for n in el.names))
 
     def __getitem__(self, value): return self.value[value]
 
-    def evaluate(self, stack): return self
+    def __setitem__(self, key, value): self.value[key] = value
 
-    def calculate(self, stack):
-        with stack(self):
-            if 'self' in self.value:
-                return self.value['self'][0].evaluate(stack)
-            else: return self
+    def evaluate(self, stack):
+        if 'self' in self.value:
+            with stack(self):
+                if all(Keyword(v) in stack for v in self['self'][0].names):
+                    return self['self'][0].evaluate(stack)
+        return self
 
     def update(self, other, stack, evaluate=True):
-        for key, value in other.value.items():
-            if key in ('atoms', 'self'): continue
-            self.value[key] = self[key] + value
+        self.value.update(other.value)
         for element in other.value['atoms']:
             self.drop(element, stack, evaluate)
 
     def drop(self, element, stack, evaluate=True):
-        for key, value in self.value.items():
-            if value == []:
-                if evaluate and not (isinstance(key, TypeDef) and key.ttype[-1] == 'obj'):
-                    element = element.evaluate(stack)
-                self.value[key] = self.value[key] + [element]
-                return
+        for key in self.value:
+            if self.value[key] != [Keyword('_arg')]:
+                continue
+            if evaluate and not (isinstance(key, TypeDef) and key.ttype[-1] == 'obj'):
+                element = element.evaluate(stack)
+            self[key] = [element]
+            return
 
     def getitem(self, value, stack):
         for element in reversed(self[value]):

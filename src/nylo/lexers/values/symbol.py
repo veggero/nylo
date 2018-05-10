@@ -52,7 +52,7 @@ class Symbol(Lexer):
             yield Value(reader).value
         if (not reader.any_starts_with(self.symbols)
                 or reader.any_starts_with(self.to_avoid)):
-                return
+            return
         self.symbol = reader.any_starts_with(self.symbols)
         reader.move(len(self.symbol))
         yield Symbol(reader).value

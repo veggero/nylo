@@ -34,10 +34,10 @@ class Call(NyObject):
         if not isinstance(struct, Struct):
             struct = Struct(defaultdict(list, {'atoms': [struct]}))
         if isinstance(kw, Symbol):
-            kw = Struct(defaultdict(list, {Keyword('_implicit'): [],
+            kw = Struct(defaultdict(list, {Keyword('_implicit'): [Keyword('_arg')],
                                            Keyword('self'): [kw]}))
         self.kw, self.struct, self.value = kw, struct, (kw, struct)
-        self.names = self.kw.names
+        self.names = self.kw.names.union(self.struct.names)
 
     def __str__(self): return '%s%s' % (self.kw, self.struct)
 
@@ -48,7 +48,7 @@ class Call(NyObject):
         if 'self' in self.struct.value:
             self.called.value['self'] = self.struct.value['self']
         self.called.update(self.struct, stack)
-        return self.called.calculate(stack)
+        return self.called.evaluate(stack)
 
     # def settype(self, types, stack):
     #    self.called = stack[self.kw]

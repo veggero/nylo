@@ -37,11 +37,9 @@ class Stack(list):
     def __contains__(self, value):
         return value in self[-1]
 
-    def __enter__(*args):
-        pass
+    def __enter__(*args): pass
 
-    def __exit__(self, *args):
-        self.pop()
+    def __exit__(self, *args): self.pop()
 
     def __call__(self, value):
         newvalue = Struct(self[-1].value.copy())

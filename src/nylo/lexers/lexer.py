@@ -29,3 +29,7 @@ class Lexer:
         self.reader = reader
         self.value = self.parse(reader)
         reader.avoid_whitespace()
+
+    def parse(self): NotImplemented
+    
+    def lexe(self): NotImplemented

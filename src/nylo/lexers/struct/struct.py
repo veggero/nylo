@@ -26,11 +26,14 @@ from collections import defaultdict
 from nylo.lexers.lexer import Lexer
 from nylo.objects.struct.structel import TypeDef
 from nylo.objects.struct.struct import Struct as StructObj
+from nylo.objects.values.keyword import Keyword as KwObj
 
 
 class Struct(Lexer):
 
-    def able(reader): return reader.read() in '('
+    @staticmethod
+    def able(reader): 
+        return reader.read() in '('
 
     def parse(self, reader):
         from nylo.lexers.values.symbol import Symbol
@@ -48,7 +51,7 @@ class Struct(Lexer):
                 key, value = value, Symbol(reader).value
                 atoms[key].append(value)
             elif isinstance(value, TypeDef):
-                atoms[value] = []
+                atoms[value] = [KwObj('_arg')]
             else:
                 atoms['atoms'].append(value)
         if reader.starts_with('->'):
