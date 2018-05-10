@@ -20,7 +20,7 @@ class Struct(NyObject):
     def __contains__(self, value):
         if isinstance(value, str):
             value = Keyword(value)
-        return (len(self.value[value.value]) > 0 and
+        return (self.value[value.value] and
                 all(n in self for el in self[value.value]
                     for n in el.names))
 
@@ -31,14 +31,16 @@ class Struct(NyObject):
     def evaluate(self, stack):
         if 'self' in self.value:
             with stack(self):
+                if 'ciao' in stack: print(stack['ciao'])
                 if all(Keyword(v) in stack for v in self['self'][0].names):
                     return self['self'][0].evaluate(stack)
         return self
 
     def update(self, other, stack, evaluate=True):
-        self.value.update(other.value)
         for element in other.value['atoms']:
             self.drop(element, stack, evaluate)
+        del other.value['atoms']
+        self.value.update(other.value)
 
     def drop(self, element, stack, evaluate=True):
         for key in self.value:
