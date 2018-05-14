@@ -26,11 +26,6 @@ class NyObject:
 
     def __init__(self, value):
         self.value = value
-        if hasattr(value, 'names'):
-            self.names = value.names
-        else:
-            self.names = set()
-        self.avaiable = set()
 
     def evaluate(self, stack):
         return (self.value.evaluate(stack)

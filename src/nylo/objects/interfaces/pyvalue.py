@@ -34,10 +34,9 @@ class PyValue(NyObject):
     evaluate it using a stack.
     """
 
-    def __init__(self, value, types, names):
+    def __init__(self, value, types):
         self.typefun = types
         super().__init__(value)
-        self.names = names
 
 
     def __str__(self) -> str:

@@ -42,7 +42,6 @@ class GetObj(NyObject):
 
     def __init__(self, value, index):
         self.value, self.index = value, index
-        self.names = value.names.union(index.names)
 
     def evaluate(self, stack):
         from nylo.objects.struct.struct import Struct

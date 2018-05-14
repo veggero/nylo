@@ -72,7 +72,7 @@ def stack_keyword(stack: dict, keyword: str, default_value=None):
 
 
 builtins: object = Struct(defaultdict(list, {
-    'if': [Struct(defaultdict(list, {
+    Keyword('if'): [Struct(defaultdict(list, {
         'cond': [Keyword('_arg')],
         TypeDef(('obj', Keyword('first'))): [Keyword('_arg')],
         TypeDef(('obj', Keyword('second'))): [Keyword('_arg')],
@@ -83,58 +83,57 @@ builtins: object = Struct(defaultdict(list, {
                 else stack[Keyword('second')].value,
             lambda stack:
                 stack[-1].typesof('first', stack) +
-                stack[-1].typesof('second', stack),
-            {'first', 'second', 'cond'}
+                stack[-1].typesof('second', stack)
         )]
     }))],
 
-    'for': [Struct(defaultdict(list, {
+    Keyword('for'): [Struct(defaultdict(list, {
         TypeDef(('list', 'obj', Keyword('tomap'))): [Keyword('_arg')],
         TypeDef(('obj', Keyword('mapfun'))): [Keyword('_arg')],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
-                'atoms': [Call(stack[-1][Keyword('mapfun')][-1], el).evaluate(stack)
-                          for el in stack[Keyword('tomap')]['atoms']]})),
-            lambda stack: {'obj', 'list'}, {'tomap', 'mapfun'})]
+                'atoms': [Call(stack[-1].value[Keyword('mapfun')][-1], el).evaluate(stack)
+                          for el in stack[Keyword('tomap')].value['atoms']]})),
+            lambda stack: {'obj', 'list'})]
     }))],
 
-    'filter': [Struct(defaultdict(list, {
+    Keyword('filter'): [Struct(defaultdict(list, {
         TypeDef(('list', 'obj', Keyword('tomap'))): [Keyword('_arg')],
         TypeDef(('obj', Keyword('mapfun'))): [Keyword('_arg')],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [el
-                          for el in stack[Keyword('tomap')]['atoms']
+                          for el in stack[Keyword('tomap')].value['atoms']
                           if Call(
-                              stack[-1][Keyword(
+                              stack[-1].value[Keyword(
                                   'mapfun')][-1], el).evaluate(stack).value]})),
-            lambda stack: {'obj', 'list'}, {'tomap', 'mapfun'})]
+            lambda stack: {'obj', 'list'})]
     }))],
 
-    'repeat': [Struct(defaultdict(list, {
+    Keyword('repeat'): [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('times'))): [Keyword('_arg')],
         TypeDef(('obj', Keyword('todo'))): [Keyword('_arg')],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [stack[Keyword('todo')]
                           for _ in range(stack[Keyword('times')].value)]})),
-            lambda stack: {'todo'}, {'times', 'todo'})]
+            lambda stack: {'todo'})]
     }))],
 
-    'print': [Struct(defaultdict(list, {
+    Keyword('print'): [Struct(defaultdict(list, {
         Keyword('toprint'): [Keyword('_arg')],
         'self': [PyValue(
             lambda stack: print(stack[Keyword('toprint')]),
-            lambda stack: {'obj', 'list'}, {'toprint'})]
+            lambda stack: {'obj', 'list'})]
     }))],
 
-    'exit': [Struct(defaultdict(list, {
+    Keyword('exit'): [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('code'))): [Value(0)],
         Keyword('message'): [Keyword('_arg')],
         'self': [PyValue(
             lambda stack: nylo_exit(stack[Keyword('code')],
                                     stack_keyword(stack, 'message', None)),
-            lambda stack: {'obj', 'list'}, {'code'})]
+            lambda stack: {'obj', 'list'})]
     }))],
 
 }))

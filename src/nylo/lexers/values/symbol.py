@@ -70,7 +70,7 @@ class Symbol(Lexer):
                 otherobj = newobj.args[1]
                 otherobj.args[0], newobj.args[1] = newobj, otherobj.args[0]
                 newobj = otherobj
-        if '_implicit' in newobj.args:
+        if Keyword('_implicit') in newobj.args:
             newobj = Struct(defaultdict(list, {Keyword('_implicit'): 
                         [Keyword('_arg')], Keyword('self'): [newobj]}))
         return newobj

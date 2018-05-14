@@ -1,6 +1,6 @@
 from nylo.objects.nyobject import NyObject
 from nylo.objects.struct.structel import TypeDef
-from nylo.objects.values.keyword import Keyword
+from nylo.objects.values.keyword import Keyword as Kw
 from collections import defaultdict
 
 
@@ -8,49 +8,39 @@ class Struct(NyObject):
 
     def __init__(self, value=defaultdict(list)):
         self.value = value
-        self.names = set().union(*[n.names for n in value['atoms']])
 
     def __str__(self):
-        dictlike = ', '.join(
+        return '(%s)' % (', '.join(
             '%s: %s' % (key, ' | '.join(map(str, val))
                         if not isinstance(val, Struct) else '...') if not key == 'atoms'
-            else ', '.join(map(str, val)) for key, val in self.value.items())
-        return '(%s)' % dictlike
+            else ', '.join(map(str, val)) for key, val in self.value.items()))
 
     def __contains__(self, value):
-        if isinstance(value, str):
-            value = Keyword(value)
         return (self.value[value.value])
-
-    def __getitem__(self, value): return self.value[value]
-
-    def __setitem__(self, key, value): self.value[key] = value
     
     def evaluate(self, stack): 
-        if ['_arg'] in self.value.values() or not self['self']:
+        if ['_arg'] in self.value.values() or not self.value['self']:
             return self
         with stack(self):
-            return self['self'][0].evaluate(stack)
+            return self.getitem('self', stack)
 
-    def update(self, other, stack, evaluate=True):
+    def update(self, other, stack):
         for element in other.value['atoms']:
-            self.drop(element, stack, evaluate)
+            self.drop(element, stack)
         self.value.update({a:b for a,b in other.value.items() 
-                           if a not in ('self', 'atoms')})
+                           if a not in (Kw('self'), Kw('atoms'))})
 
-    def drop(self, element, stack, evaluate=True):
+    def drop(self, element, stack):
         for key in self.value:
-            if self.value[key] != [Keyword('_arg')]:
+            if self.value[key] != [Kw('_arg')]:
                 continue
-            if evaluate and not (isinstance(key, TypeDef) and key.ttype[-1] == 'obj'):
+            if not (isinstance(key, TypeDef) and key.ttype[-1] == 'obj'):
                 element = element.evaluate(stack)
-            self[key] = [element]
-            return
+            self.value[key] = [element]
+            break
 
     def getitem(self, value, stack):
-        for element in reversed(self[value]):
-            return element.evaluate(stack)
-        raise TypeError("Couldn't get '%s' in any way." % value)
+        return self.value[value][-1].evaluate(stack)
 
     # def settype(self, types, stack):
     #    self.types = types

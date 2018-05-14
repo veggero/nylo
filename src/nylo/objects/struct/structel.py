@@ -4,8 +4,6 @@ from nylo.objects.nyobject import NyObject
 class TypeDef(NyObject):
 
     def __init__(self, kws):
-        self.names = {kws[-1].value}
-        self.avaiable = {kws[-1].value}
         *self.ttype, self.value = kws
         self.value = self.value.value
 
