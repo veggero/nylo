@@ -88,7 +88,9 @@ def main():
         reader: object = nylo.Reader(code)
         struct: object = nylo.Struct(reader).value
         #struct.settype(['obj'], nylo.nyglobals)
-        print(struct.evaluate(nylo.nyglobals))
+        out: object = struct.evaluate(nylo.nyglobals)
+        if out.value and str(out) != '()':
+            print(out)
 
 
 if __name__ == '__main__':

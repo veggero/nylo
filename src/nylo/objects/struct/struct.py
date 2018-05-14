@@ -20,27 +20,23 @@ class Struct(NyObject):
     def __contains__(self, value):
         if isinstance(value, str):
             value = Keyword(value)
-        return (self.value[value.value] and
-                all(n in self for el in self[value.value]
-                    for n in el.names))
+        return (self.value[value.value])
 
     def __getitem__(self, value): return self.value[value]
 
     def __setitem__(self, key, value): self.value[key] = value
-
-    def evaluate(self, stack):
-        if 'self' in self.value:
-            with stack(self):
-                if 'ciao' in stack: print(stack['ciao'])
-                if all(Keyword(v) in stack for v in self['self'][0].names):
-                    return self['self'][0].evaluate(stack)
-        return self
+    
+    def evaluate(self, stack): 
+        if ['_arg'] in self.value.values() or not self['self']:
+            return self
+        with stack(self):
+            return self['self'][0].evaluate(stack)
 
     def update(self, other, stack, evaluate=True):
         for element in other.value['atoms']:
             self.drop(element, stack, evaluate)
-        del other.value['atoms']
-        self.value.update(other.value)
+        self.value.update({a:b for a,b in other.value.items() 
+                           if a not in ('self', 'atoms')})
 
     def drop(self, element, stack, evaluate=True):
         for key in self.value:

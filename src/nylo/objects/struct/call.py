@@ -42,9 +42,10 @@ class Call(NyObject):
         self.tobdcalled = self.kw.evaluate(stack)
         self.called = Struct(self.tobdcalled.value.copy())
         # self.called.types = self.tobdcalled.types
-        if 'self' in self.struct.value:
-            self.called.value['self'] = self.struct.value['self']
         self.called.update(self.struct, stack)
+        if self.struct['self']:
+            with stack(self.called):
+                return self.struct['self'][0].evaluate(stack)
         return self.called.evaluate(stack)
 
     # def settype(self, types, stack):
