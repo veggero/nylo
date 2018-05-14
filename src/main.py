@@ -75,9 +75,7 @@ def main():
                 if not statement:
                     reader: object = nylo.Reader(code + '\n')
                     struct: object = nylo.Struct(reader).value
-                    out: object = struct.evaluate(nylo.nyglobals)
-                    if out.value and str(out) != '()':
-                        print(out)
+                    print(struct.evaluate(nylo.nyglobals))
                 del code
             except Exception as e:
                 print(e)
@@ -88,9 +86,7 @@ def main():
         reader: object = nylo.Reader(code)
         struct: object = nylo.Struct(reader).value
         #struct.settype(['obj'], nylo.nyglobals)
-        out: object = struct.evaluate(nylo.nyglobals)
-        if out.value and str(out) != '()':
-            print(out)
+        print(struct.evaluate(nylo.nyglobals))
 
 
 if __name__ == '__main__':

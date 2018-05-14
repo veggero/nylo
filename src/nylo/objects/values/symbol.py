@@ -65,8 +65,7 @@ class Symbol(NyObject):
     def evaluate(self, stack):
         args = [k.evaluate(stack) for k in self.args]
         op = self.map_to_py[self.value]
-        try: tor = op(args[0].value, args[1].value)
-        except: print([*map(str, args)])
+        tor = op(args[0].value, args[1].value)
         if not isinstance(tor, NyObject):
             tor = Value(tor)
         # tor.types = self.types
