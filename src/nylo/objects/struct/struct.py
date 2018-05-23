@@ -28,7 +28,7 @@ class Struct(NyObject):
         for element in other.value['atoms']:
             self.drop(element, stack)
         self.value.update({a:b for a,b in other.value.items() 
-                           if a not in (Kw('self'), Kw('atoms'))})
+                           if a not in ('self', 'atoms')})
 
     def drop(self, element, stack):
         for key in self.value:
