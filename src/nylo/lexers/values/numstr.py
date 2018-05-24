@@ -49,12 +49,14 @@ class Number(Lexer):
 
 
 class String(Lexer):
+    
+    start_to_ends = {'"': '"', "'": "'", '«': '»'}
 
-    def able(reader): return reader.read() in '\'"'
+    def able(reader): return reader.read() in String.start_to_ends
 
     def lexe(self, reader):
         start = reader.move()
-        while reader.read() != start:
+        while reader.read() != self.start_to_ends[start]:
             yield reader.move()
         reader.move()
 
