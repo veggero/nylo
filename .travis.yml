@@ -8,4 +8,4 @@ before_install:
 
 script:
     - cd src
-    - python3 main.py -f ../examples/fib.ny
+    - python3 main.py -f ../testcases/working/fib.ny

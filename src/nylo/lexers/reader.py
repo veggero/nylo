@@ -19,7 +19,7 @@ class Reader:
         if self.read() == '\0':
             raise SyntaxError('EOF while scanning.')
         if todo > 1:
-            self.move(todo-1)
+            self.move(todo - 1)
         return self.code[self.reading_at - 1]
 
     def any_starts_with(self, starts):

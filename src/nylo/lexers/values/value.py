@@ -11,13 +11,31 @@ from nylo.objects.values.value import Value as ValueObj
 
 
 class Value(Lexer):
+    """Value class is similar to PyValue, but it calls a
+    Python object, not a function. It could be used to create an
+    interface between a Nylo and a Python object."""
 
     @staticmethod
     def able(reader):
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
         return (Number.able(reader) or String.able(reader)
                 or Keyword.able(reader) or Struct.able(reader))
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         value = KeyObj('_implicit')
         if Keyword.able(reader):
             found_keyword = Keyword(reader).value
@@ -42,16 +60,44 @@ class Value(Lexer):
         return value
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         return self.lexe(reader)
 
 
 class Get(Lexer):
+    """Get is used to return
+    an element from a list or a similar
+    object - it returns an element associated to
+    an index"""
 
     @staticmethod
     def able(reader): 
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
         return reader.read() == '['
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         reader.move()
         yield Symbol(reader).value
         while reader.read() == ':':
@@ -60,6 +106,15 @@ class Get(Lexer):
         reader.move()
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         out = list(self.lexe(reader))
         if len(out) == 1:
             return out[0]

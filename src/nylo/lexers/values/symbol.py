@@ -6,6 +6,9 @@ from nylo.objects.values.keyword import Keyword
 
 
 class Symbol(Lexer):
+    """Symbol class is used to
+    define all keywords (e.g. ``+``, ``-``, etc..) and to
+    evaluate all their uses (ex. `'1 + 1``)."""
 
     unary_symbols = '+', '-', 'not '
     symbols = ('=', 'and ', '>', 'or ', '<', '!=', 'xor ', '>=',
@@ -24,6 +27,15 @@ class Symbol(Lexer):
     )
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         from nylo.lexers.values.value import Value
         if not reader.any_starts_with(self.unary_symbols):
             yield Value(reader).value
@@ -36,6 +48,15 @@ class Symbol(Lexer):
         yield symbol
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         *values, symbol = list(self.lexe(reader))
         if not values:
             return symbol

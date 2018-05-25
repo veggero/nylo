@@ -7,9 +7,24 @@ class Number(Lexer):
 
     @staticmethod
     def able(reader): 
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
         return reader.read() in string.digits + '_'
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         while reader.read() in string.digits + '_':
             yield reader.move()
         if reader.read() == '.':
@@ -19,6 +34,15 @@ class Number(Lexer):
                     yield reader.move()
 
     def parse(self, reader):
+        """It returns all lexer characters using
+        an object.
+
+        Args:
+            reader (Reader): The reader you're going to use
+
+        Returns:
+            ValueObj: The lexer characters object
+        """
         lexed = ''.join(self.lexe(reader))
         if '.' in lexed:
             return ValueObj(float(lexed))
@@ -31,9 +55,24 @@ class String(Lexer):
 
     @staticmethod
     def able(reader): 
+        """It checks if the token is
+        readable.
+
+        Returns:
+            bool: True if the token is readable, False if not.
+        """
         return reader.read() in String.start_to_ends
 
     def lexe(self, reader):
+        """It generates all characters
+        associated to the token.
+
+        Args:
+            reader (Reader): The reader you're going to use.
+
+        Returns:
+            generator: All characters associated to the token.
+        """
         start = reader.move()
         while reader.read() != self.start_to_ends[start]:
             yield reader.move()

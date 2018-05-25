@@ -6,6 +6,14 @@ from nylo.objects.values.symbol import Symbol
 
 
 class Call(NyObject):
+    """Call class is used to do
+    calls when an object is found
+    between parenthesis.
+
+    It does a copy of the object and update
+    it using struct value and then returns the
+    evaluated object.
+    """
 
     def __init__(self, kw, struct):
         if not isinstance(struct, Struct):
