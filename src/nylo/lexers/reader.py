@@ -44,7 +44,7 @@ class Reader:
             newindent = i - (self.reading_at + 1)
             if newindent <= self.indent:
                 self.code.insert(i, ',')
-            for time in range(abs(self.indent - newindent)):
+            for i in range(abs(self.indent - newindent)):
                 if newindent > self.indent:
                     self.code.insert(i, '(')
                 elif newindent < self.indent:

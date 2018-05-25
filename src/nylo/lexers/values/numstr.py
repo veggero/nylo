@@ -6,7 +6,8 @@ from nylo.objects.values.value import Value as ValueObj
 class Number(Lexer):
 
     @staticmethod
-    def able(reader): return reader.read() in string.digits + '_'
+    def able(reader): 
+        return reader.read() in string.digits + '_'
 
     def lexe(self, reader):
         while reader.read() in string.digits + '_':
@@ -21,15 +22,16 @@ class Number(Lexer):
         lexed = ''.join(self.lexe(reader))
         if '.' in lexed:
             return ValueObj(float(lexed))
-        else:
-            return ValueObj(int(lexed))
+        return ValueObj(int(lexed))
 
 
 class String(Lexer):
 
     start_to_ends = {'"': '"', "'": "'", '«': '»'}
 
-    def able(reader): return reader.read() in String.start_to_ends
+    @staticmethod
+    def able(reader): 
+        return reader.read() in String.start_to_ends
 
     def lexe(self, reader):
         start = reader.move()

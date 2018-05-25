@@ -18,37 +18,38 @@ class Value(Lexer):
                 or Keyword.able(reader) or Struct.able(reader))
 
     def lexe(self, reader):
-        v = KeyObj('_implicit')
+        value = KeyObj('_implicit')
         if Keyword.able(reader):
-            kw = Keyword(reader).value
+            found_keyword = Keyword(reader).value
             if Keyword.able(reader):
-                kws = [kw]
+                kws = [found_keyword]
                 while Keyword.able(reader):
                     kws.append(Keyword(reader).value)
-                v = TypeDef(kws)
+                value = TypeDef(kws)
             else:
-                v = kw
+                value = found_keyword
         elif Number.able(reader):
-            v = Number(reader).value
+            value = Number(reader).value
         elif String.able(reader):
-            v = String(reader).value
+            value = String(reader).value
         elif Struct.able(reader):
-            v = Struct(reader).value
+            value = Struct(reader).value
         reader.avoid_whitespace()
         if reader.read() in '(':
-            return CallObj(v, Struct(reader).value)
+            return CallObj(value, Struct(reader).value)
         elif reader.read() in '[':
-            return GetObj(v, Get(reader).value)
-        else:
-            return v
+            return GetObj(value, Get(reader).value)
+        return value
 
-    def parse(self, reader): return self.lexe(reader)
+    def parse(self, reader):
+        return self.lexe(reader)
 
 
 class Get(Lexer):
 
     @staticmethod
-    def able(reader): return '[' == reader.read()
+    def able(reader): 
+        return reader.read() == '['
 
     def lexe(self, reader):
         reader.move()
@@ -62,5 +63,4 @@ class Get(Lexer):
         out = list(self.lexe(reader))
         if len(out) == 1:
             return out[0]
-        else:
-            return ValueObj(slice(*[o.value for o in out]))
+        return ValueObj(slice(*[o.value for o in out]))

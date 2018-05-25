@@ -26,9 +26,8 @@ class Stack(list):
     def __exit__(self, *args): self.pop()
 
     def __call__(self, value):
-        newvalue = Struct(self[-1].value.copy())
-        newvalue.value.update(value.value)
-        self.append(newvalue)
+        self.append(Struct(self[-1].value.copy()))
+        self[-1].value.update(value.value)
         return self
 
     def __str__(self):

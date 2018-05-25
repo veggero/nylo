@@ -6,6 +6,8 @@ class Lexer:
         self.value = self.parse(reader)
         reader.avoid_whitespace()
 
-    def parse(self): NotImplemented
+    def parse(self, reader):
+        NotImplemented
 
-    def lexe(self): NotImplemented
+    def lexe(self, reader):
+        NotImplemented

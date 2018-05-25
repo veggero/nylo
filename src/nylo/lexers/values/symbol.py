@@ -1,10 +1,8 @@
 from collections import defaultdict
 from nylo.lexers.lexer import Lexer
 from nylo.objects.values.symbol import Symbol as SymObj
-from nylo.objects.values.value import Value as ValObj
 from nylo.objects.struct.struct import Struct
 from nylo.objects.values.keyword import Keyword
-from nylo.objects.struct.call import Call
 
 
 class Symbol(Lexer):
@@ -32,14 +30,14 @@ class Symbol(Lexer):
         if (not reader.any_starts_with(self.symbols)
                 or reader.any_starts_with(self.to_avoid)):
             return
-        self.symbol = reader.any_starts_with(self.symbols)
-        reader.move(len(self.symbol))
+        symbol = reader.any_starts_with(self.symbols)
+        reader.move(len(symbol))
         yield Symbol(reader).value
-        yield self.symbol
+        yield symbol
 
     def parse(self, reader):
         *values, symbol = list(self.lexe(reader))
-        if len(values) == 0:
+        if not values:
             return symbol
         newobj = SymObj(symbol, values)
         if isinstance(values[1], SymObj):
@@ -48,12 +46,10 @@ class Symbol(Lexer):
                 otherobj.args[0], newobj.args[1] = newobj, otherobj.args[0]
                 newobj = otherobj
         if Keyword('_implicit') in newobj.args:
-            newobj = Struct(defaultdict(list, {Keyword('_args'): [Keyword('_implicit')], 
+            newobj = Struct(defaultdict(list, {Keyword('_args'): [Keyword('_implicit')],
                                                '_implicit': ['_arg'],
                                                Keyword('self'): [newobj]}))
         return newobj
 
     def priority(self, symbol):
-        for index, value in enumerate(self.symbols_priority):
-            if symbol in value:
-                return index
+        return [symbol in value for value in self.symbols_priority].index(True)
