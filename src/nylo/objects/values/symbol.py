@@ -1,3 +1,7 @@
+"""
+Contains the symbol class definition.
+"""
+
 import operator
 from collections import defaultdict
 from nylo.objects.nyobject import NyObject
@@ -5,13 +9,19 @@ from nylo.objects.values.value import Value
 
 
 class Symbol(NyObject):
+    """Represent a symbol operation, such
+    as ```1+1``
+    """
 
+    @staticmethod
     def nyrange(*args):
+        """Range in nylo"""
         from nylo.objects.struct.struct import Struct
-        return Struct(defaultdict(list, {'atoms':
-                                         list(map(lambda x: Value(x), range(*args)))}))
+        return Struct(defaultdict(list, {'atoms': [*map(Value, range(*args))]}))
 
+    @staticmethod
     def nyin(value, nylist):
+        """In in nylo"""
         return value in nylist['atoms']
 
     map_to_py = {
@@ -27,7 +37,8 @@ class Symbol(NyObject):
     }
 
     def __init__(self, value, args):
-        self.value, self.args = value, args
+        self.args = args
+        super().__init__(value)
 
     def __repr__(self):
         return str(self)
@@ -36,6 +47,7 @@ class Symbol(NyObject):
         return (' %s ' % self.value).join(str(k) for k in self.args)
 
     def evaluate(self, stack):
+        """Evaluate the symbol operation"""
         args = [k.evaluate(stack).value for k in self.args]
         tor = self.map_to_py[self.value](*args)
         if not isinstance(tor, NyObject):

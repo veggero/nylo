@@ -1,3 +1,7 @@
+"""
+Contains the Keyword class definition.
+"""
+
 import string
 from nylo.lexers.lexer import Lexer
 from nylo.objects.values.keyword import Keyword as KwObj

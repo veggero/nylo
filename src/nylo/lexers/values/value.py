@@ -1,3 +1,7 @@
+"""
+Contains the Value class definition.
+"""
+
 from nylo.lexers.lexer import Lexer
 from nylo.lexers.values.keyword import Keyword
 from nylo.lexers.values.numstr import Number, String
@@ -11,9 +15,9 @@ from nylo.objects.values.value import Value as ValueObj
 
 
 class Value(Lexer):
-    """Value class is similar to PyValue, but it calls a
-    Python object, not a function. It could be used to create an
-    interface between a Nylo and a Python object."""
+    """
+    Value manages parsing for any type of value.
+    """
 
     @staticmethod
     def able(reader):
@@ -79,7 +83,7 @@ class Get(Lexer):
     an index"""
 
     @staticmethod
-    def able(reader): 
+    def able(reader):
         """It checks if the token is
         readable.
 

@@ -1,3 +1,7 @@
+"""
+Contains the Struct class definition.
+"""
+
 from collections import defaultdict
 from nylo.lexers.lexer import Lexer
 from nylo.objects.struct.structel import TypeDef
@@ -6,8 +10,11 @@ from nylo.objects.values.keyword import Keyword as KwObj
 
 
 class Struct(Lexer):
+    """This class is used in parsing everything inside
+    round brackets or indented. It generates a Struct
+    object.
+    """
 
-    def able(reader):
     @staticmethod
     def able(reader):
         """It checks if the token is

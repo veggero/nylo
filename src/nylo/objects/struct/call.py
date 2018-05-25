@@ -1,8 +1,10 @@
+"""
+Contains the Call class definition.
+"""
+
 from collections import defaultdict
 from nylo.objects.struct.struct import Struct
 from nylo.objects.nyobject import NyObject
-from nylo.objects.values.keyword import Keyword
-from nylo.objects.values.symbol import Symbol
 
 
 class Call(NyObject):
@@ -15,18 +17,18 @@ class Call(NyObject):
     evaluated object.
     """
 
-    def __init__(self, kw, struct):
-        if not isinstance(struct, Struct):
-            struct = Struct(defaultdict(list, {'atoms': [struct]}))
-        self.kw, self.struct, self.value = kw, struct, (kw, struct)
+    def __init__(self, called, caller):
+        if not isinstance(caller, Struct):
+            caller = Struct(defaultdict(list, {'atoms': [caller]}))
+        self.called, self.caller = called, caller
 
-    def __str__(self): return '%s%s' % (self.kw, self.struct)
+    def __str__(self):
+        return '%s%s' % (self.called, self.caller)
 
     def evaluate(self, stack):
-        self.tobdcalled = self.kw.evaluate(stack)
-        self.called = Struct(self.tobdcalled.value.copy())
-        self.called.update(self.struct, stack)
-        if self.struct.value['self']:
-            with stack(self.called):
-                return self.struct.getitem('self', stack)
-        return self.called.evaluate(stack)
+        called_struct = Struct(self.called.evaluate(stack).value.copy())
+        called_struct.update(self.caller, stack)
+        if self.caller.value['self']:
+            with stack(called_struct):
+                return self.caller.getitem('self', stack)
+        return called_struct.evaluate(stack)

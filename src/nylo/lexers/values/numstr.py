@@ -1,12 +1,19 @@
+"""
+Contains Number and String classes definitions.
+"""
+
 import string
 from nylo.lexers.lexer import Lexer
 from nylo.objects.values.value import Value as ValueObj
 
 
 class Number(Lexer):
+    """
+    Manage parsing for numbers.
+    """
 
     @staticmethod
-    def able(reader): 
+    def able(reader):
         """It checks if the token is
         readable.
 
@@ -50,11 +57,13 @@ class Number(Lexer):
 
 
 class String(Lexer):
+    """Manage parsing for strings.
+    """
 
     start_to_ends = {'"': '"', "'": "'", '«': '»'}
 
     @staticmethod
-    def able(reader): 
+    def able(reader):
         """It checks if the token is
         readable.
 

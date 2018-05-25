@@ -1,3 +1,9 @@
+"""
+The builtins struct defines all the builtins
+methods and keywords
+"""
+
+import sys
 from collections import defaultdict
 from nylo.objects.interfaces.pyvalue import PyValue
 from nylo.objects.struct.struct import Struct
@@ -5,7 +11,6 @@ from nylo.objects.struct.structel import TypeDef
 from nylo.objects.values.keyword import Keyword
 from nylo.objects.struct.call import Call
 from nylo.objects.values.value import Value
-import sys
 
 
 def nylo_exit(code: int = 0, message: str = None) -> bool:
@@ -55,13 +60,13 @@ builtins: object = Struct(defaultdict(list, {
         '_args': ['cond', 'first', 'second'],
         'cond': ['_arg'], 'first': ['_arg'], 'second': ['_arg'],
         'self': [PyValue(
-            lambda stack:
+            lambda stack: (
                 stack[Keyword('first')].value
                 if stack[Keyword('cond')].value
-                else stack[Keyword('second')].value,
-            lambda stack:
+                else stack[Keyword('second')].value),
+            lambda stack: (
                 stack[-1].typesof('first', stack) +
-                stack[-1].typesof('second', stack)
+                stack[-1].typesof('second', stack))
         )]
     }))],
 
@@ -108,8 +113,9 @@ builtins: object = Struct(defaultdict(list, {
 
     Keyword('exit'): [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('code'))): [Value(0)],
-        '_args': [Keyword('message')],
+        '_args': [Keyword('message'), 'int'],
         'message': ['_arg'],
+        'int': ['_arg'],
         'self': [PyValue(
             lambda stack: nylo_exit(stack[Keyword('code')],
                                     stack_keyword(stack, 'message', None)),
@@ -117,8 +123,3 @@ builtins: object = Struct(defaultdict(list, {
     }))],
 
 }))
-
-"""
-The builtins struct defines all the builtins
-methods and keywords
-"""

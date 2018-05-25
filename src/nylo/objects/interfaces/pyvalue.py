@@ -1,13 +1,15 @@
+"""
+Contains the PyValue class definition.
+"""
+
 from nylo.objects.nyobject import NyObject
 from nylo.objects.values.value import Value
 
 
 class PyValue(NyObject):
-    """This class is used to define a value
-    and it's derived from NyObject.
-
-    It could be used to store a value and
-    evaluate it using a stack.
+    """This class is used to define interface
+    a python value to Nylo, and it's derived
+    from NyObject.
 
     It's a Nylo value that is evaluated using a
     Python function.
@@ -18,13 +20,6 @@ class PyValue(NyObject):
         super().__init__(value)
 
     def __str__(self) -> str:
-        """
-        It returns a string that
-        could represent the object.
-
-        Returns:
-            str: The representation
-        """
         return '<lambda>'
 
     def evaluate(self, stack):

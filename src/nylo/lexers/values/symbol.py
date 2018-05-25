@@ -1,3 +1,7 @@
+"""
+Contains the Symbol class definition.
+"""
+
 from collections import defaultdict
 from nylo.lexers.lexer import Lexer
 from nylo.objects.values.symbol import Symbol as SymObj
@@ -73,4 +77,5 @@ class Symbol(Lexer):
         return newobj
 
     def priority(self, symbol):
+        """Get the priority of the symbol"""
         return [symbol in value for value in self.symbols_priority].index(True)

@@ -1,16 +1,23 @@
+"""
+Contains the definition of Keyword class.
+"""
+
 from nylo.objects.nyobject import NyObject
 
 
 class Keyword(NyObject):
+    """Any variable in the code.
+    """
 
-    def __init__(self, value):
-        self.value = value
-
-    def evaluate(self, stack): return stack[self]
+    def evaluate(self, stack):
+        return stack[self]
 
     def __eq__(self, other):
         if isinstance(other, str):
             return self.value == other
-        return self.value == other.value
+        elif isinstance(other, Keyword):
+            return self.value == other.value
+        return False
 
-    def __hash__(self): return hash(self.value)
+    def __hash__(self):
+        return hash(self.value)
