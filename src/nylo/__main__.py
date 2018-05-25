@@ -26,7 +26,6 @@ import sys
 import argparse
 
 
-
 def main():
     """
     It starts the NyloCMD that could

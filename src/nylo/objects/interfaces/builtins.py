@@ -1,28 +1,4 @@
-# This file is a part of nylo
-#
-# Copyright (c) 2018 The nylo Authors (see AUTHORS)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice
-# shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 from collections import defaultdict
-
 from nylo.objects.interfaces.pyvalue import PyValue
 from nylo.objects.struct.struct import Struct
 from nylo.objects.struct.structel import TypeDef
@@ -73,9 +49,7 @@ def stack_keyword(stack: dict, keyword: str, default_value=None):
 
 builtins: object = Struct(defaultdict(list, {
     Keyword('if'): [Struct(defaultdict(list, {
-        'cond': [Keyword('_arg')],
-        TypeDef(('obj', Keyword('first'))): [Keyword('_arg')],
-        TypeDef(('obj', Keyword('second'))): [Keyword('_arg')],
+        '_args': ['cond', 'first', 'second'],
         'self': [PyValue(
             lambda stack:
                 stack[Keyword('first')].value
@@ -88,8 +62,7 @@ builtins: object = Struct(defaultdict(list, {
     }))],
 
     Keyword('for'): [Struct(defaultdict(list, {
-        TypeDef(('list', 'obj', Keyword('tomap'))): [Keyword('_arg')],
-        TypeDef(('obj', Keyword('mapfun'))): [Keyword('_arg')],
+        '_args': ['tomap', 'mapfun'],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [Call(stack[-1].value[Keyword('mapfun')][-1], el).evaluate(stack)
@@ -98,8 +71,7 @@ builtins: object = Struct(defaultdict(list, {
     }))],
 
     Keyword('filter'): [Struct(defaultdict(list, {
-        TypeDef(('list', 'obj', Keyword('tomap'))): [Keyword('_arg')],
-        TypeDef(('obj', Keyword('mapfun'))): [Keyword('_arg')],
+        '_args': ['tomap', 'mapfun'],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [el
@@ -111,8 +83,7 @@ builtins: object = Struct(defaultdict(list, {
     }))],
 
     Keyword('repeat'): [Struct(defaultdict(list, {
-        TypeDef(('int', Keyword('times'))): [Keyword('_arg')],
-        TypeDef(('obj', Keyword('todo'))): [Keyword('_arg')],
+        '_args': ['times', 'todo'],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [stack[Keyword('todo')]
@@ -121,7 +92,7 @@ builtins: object = Struct(defaultdict(list, {
     }))],
 
     Keyword('print'): [Struct(defaultdict(list, {
-        Keyword('toprint'): [Keyword('_arg')],
+        '_args': ['toprint'],
         'self': [PyValue(
             lambda stack: print(stack[Keyword('toprint')]),
             lambda stack: {'obj', 'list'})]
@@ -129,7 +100,7 @@ builtins: object = Struct(defaultdict(list, {
 
     Keyword('exit'): [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('code'))): [Value(0)],
-        Keyword('message'): [Keyword('_arg')],
+        '_args': [Keyword('message')],
         'self': [PyValue(
             lambda stack: nylo_exit(stack[Keyword('code')],
                                     stack_keyword(stack, 'message', None)),
