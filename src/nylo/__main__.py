@@ -88,6 +88,7 @@ def main():
             code: object = codefile.read()
         reader: object = nylo.Reader(code)
         struct: object = nylo.Struct(reader).value
+        #struct.settype(['obj'], nylo.nyglobals)
         print(struct.calculate(nylo.nyglobals))
 
 

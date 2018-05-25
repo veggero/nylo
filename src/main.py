@@ -26,6 +26,7 @@ import sys
 import argparse
 
 
+
 def main():
     """It starts the NyloCMD that could
     be managed using command line parameters.
@@ -73,12 +74,7 @@ def main():
                 if not statement:
                     reader: object = nylo.Reader(code + '\n')
                     struct: object = nylo.Struct(reader).value
-                    if hasattr(struct, 'calculate'):
-                        out: object = struct.calculate(nylo.nyglobals)
-                    else:
-                        out: object = struct.evaluate(nylo.nyglobals)
-                    if out.value and str(out) != '()':
-                        print(out)
+                    print(struct.evaluate(nylo.nyglobals))
                 del code
             except Exception as e:
                 print(e)
@@ -88,7 +84,8 @@ def main():
             code: object = codefile.read()
         reader: object = nylo.Reader(code)
         struct: object = nylo.Struct(reader).value
-        print(struct.calculate(nylo.nyglobals))
+        #struct.settype(['obj'], nylo.nyglobals)
+        print(struct.evaluate(nylo.nyglobals))
 
 
 if __name__ == '__main__':

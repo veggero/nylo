@@ -1,7 +1,5 @@
-from nylo.objects.nyobject import NyObject
-from nylo.objects.struct.structel import TypeDef
-from nylo.objects.values.keyword import Keyword
 from collections import defaultdict
+from nylo.objects.nyobject import NyObject
 
 
 class Struct(NyObject):
@@ -10,68 +8,32 @@ class Struct(NyObject):
     Nylo. It could be a function, a dictionary: all
     objects that you can find between parenthesis or an
     indented object."""
-
+    
     def __init__(self, value=defaultdict(list)):
-        self.value = value
-        self.names = set()
+        super().__init__(value)
 
     def __str__(self):
-        dictlike = ', '.join('%s: %s' % (key, ' | '.join(map(str, val))
-                                         if not isinstance(val, Struct)
-                                         else '...') if not key == 'atoms'
-                             else ', '.join(map(str, val))
-                             for key, val in self.value.items())
-        return '(%s)' % dictlike
+        return '(%s)' % ', '.join(': '.join(map(str, (a, '|'.join(map(str, b)))))
+                                  for a, b in self.value.items())
 
-    def __contains__(self, value): return len(self.value[value.value]) > 0
+    def __contains__(self, value):
+        return self.value[value.value]
 
-    def __getitem__(self, value): return self.value[value]
-
-    def evaluate(self, stack): return self
-
-    def calculate(self, stack):
+    def evaluate(self, stack):
+        if ['_arg'] in self.value.values() or not self.value['self']:
+            return self
         with stack(self):
-            if 'self' in self.value:
-                return self.value['self'][0].evaluate(stack)
-            else:
-                return self
+            return self.getitem('self', stack)
 
-    def update(self, other, stack, evaluate=True):
-        for key, value in other.value.items():
-            if key in ('atoms', 'self'):
-                continue
-            self.value[key] = self[key] + value
-        for element in other.value['atoms']:
-            self.drop(element, stack, evaluate)
-
-    def drop(self, element, stack, evaluate=True):
-        for key, value in self.value.items():
-            if value == []:
-                if evaluate and not (isinstance(key, TypeDef)
-                                     and key.ttype[-1] == 'obj'):
-                    element = element.evaluate(stack)
-                self.value[key] = self.value[key] + [element]
-                return
+    def update(self, other, stack):
+        for element, key in zip(other.value['atoms'], self.value['_args']):
+            self.value[key] = [stack.wrap(element)]
+            self.value['_args'] = self.value['_args'][1:]
+        self.value.update({a: [*map(stack.wrap, b)] for a, b in other.value.items()
+                           if a not in ('self', 'atoms', '_args')})
 
     def getitem(self, value, stack):
-        for element in reversed(self[value]):
-            return element.evaluate(stack)
-        raise TypeError("Couldn't get '%s' in any way." % value)
-
-    # def settype(self, types, stack):
-    #    self.types = types
-    #    with stack(self):
-    #        for key, value in self.value.items():
-    #            for element in value:
-    #                element.settype(types + [key], stack)
-    #    return self.types
-
-    # def typesof(self, element, stack):
-    #    for key in self.value:
-    #        if key == element:
-    #            if isinstance(key, Keyword):
-    #                return ['obj']
-    #            elif isinstance(key, TypeDef):
-    #                return key.ttype
-    #    print(self)
-    #    raise TypeError("Couldn't get '%s' in any way." % element)
+        if not self.value[value]:
+            raise ValueError("Value %s is not in %s" % (value, self))
+        self.value[value] = self.value[value] + [self.value[value][-1].evaluate(stack)]
+        return self.value[value][-1]

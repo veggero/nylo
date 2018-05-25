@@ -1,26 +1,3 @@
-# This file is a part of nylo
-#
-# Copyright (c) 2018 The nylo Authors (see AUTHORS)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice
-# shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 from nylo.lexers.lexer import Lexer
 from nylo.lexers.values.keyword import Keyword
 from nylo.lexers.values.numstr import Number, String
@@ -38,6 +15,7 @@ class Value(Lexer):
     Python object, not a function. It could be used to create an
     interface between a Nylo and a Python object."""
 
+    @staticmethod
     def able(reader):
         """It checks if the token is
         readable.
@@ -58,29 +36,28 @@ class Value(Lexer):
         Returns:
             generator: All characters associated to the token.
         """
-        v = KeyObj('_implicit')
+        value = KeyObj('_implicit')
         if Keyword.able(reader):
-            kw = Keyword(reader).value
+            found_keyword = Keyword(reader).value
             if Keyword.able(reader):
-                kws = [kw]
+                kws = [found_keyword]
                 while Keyword.able(reader):
                     kws.append(Keyword(reader).value)
-                v = TypeDef(kws)
+                value = TypeDef(kws)
             else:
-                v = kw
+                value = found_keyword
         elif Number.able(reader):
-            v = Number(reader).value
+            value = Number(reader).value
         elif String.able(reader):
-            v = String(reader).value
+            value = String(reader).value
         elif Struct.able(reader):
-            v = Struct(reader).value
+            value = Struct(reader).value
         reader.avoid_whitespace()
         if reader.read() in '(':
-            return CallObj(v, Struct(reader).value)
+            return CallObj(value, Struct(reader).value)
         elif reader.read() in '[':
-            return GetObj(v, Get(reader).value)
-        else:
-            return v
+            return GetObj(value, Get(reader).value)
+        return value
 
     def parse(self, reader):
         """It returns all lexer characters using
@@ -101,14 +78,15 @@ class Get(Lexer):
     object - it returns an element associated to
     an index"""
 
-    def able(reader):
+    @staticmethod
+    def able(reader): 
         """It checks if the token is
         readable.
 
         Returns:
             bool: True if the token is readable, False if not.
         """
-        return '[' == reader.read()
+        return reader.read() == '['
 
     def lexe(self, reader):
         """It generates all characters
@@ -140,5 +118,4 @@ class Get(Lexer):
         out = list(self.lexe(reader))
         if len(out) == 1:
             return out[0]
-        else:
-            return ValueObj(slice(*[o.value for o in out]))
+        return ValueObj(slice(*[o.value for o in out]))

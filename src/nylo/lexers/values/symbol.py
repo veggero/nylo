@@ -1,31 +1,8 @@
-# This file is a part of nylo
-#
-# Copyright (c) 2018 The nylo Authors (see AUTHORS)
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice
-# shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
+from collections import defaultdict
 from nylo.lexers.lexer import Lexer
 from nylo.objects.values.symbol import Symbol as SymObj
-from nylo.objects.values.value import Value as ValObj
 from nylo.objects.struct.struct import Struct
-from nylo.objects.struct.call import Call
+from nylo.objects.values.keyword import Keyword
 
 
 class Symbol(Lexer):
@@ -65,10 +42,10 @@ class Symbol(Lexer):
         if (not reader.any_starts_with(self.symbols)
                 or reader.any_starts_with(self.to_avoid)):
             return
-        self.symbol = reader.any_starts_with(self.symbols)
-        reader.move(len(self.symbol))
+        symbol = reader.any_starts_with(self.symbols)
+        reader.move(len(symbol))
         yield Symbol(reader).value
-        yield self.symbol
+        yield symbol
 
     def parse(self, reader):
         """It returns all lexer characters using
@@ -81,7 +58,7 @@ class Symbol(Lexer):
             ValueObj: The lexer characters object
         """
         *values, symbol = list(self.lexe(reader))
-        if len(values) == 0:
+        if not values:
             return symbol
         newobj = SymObj(symbol, values)
         if isinstance(values[1], SymObj):
@@ -89,9 +66,11 @@ class Symbol(Lexer):
                 otherobj = newobj.args[1]
                 otherobj.args[0], newobj.args[1] = newobj, otherobj.args[0]
                 newobj = otherobj
+        if Keyword('_implicit') in newobj.args:
+            newobj = Struct(defaultdict(list, {Keyword('_args'): [Keyword('_implicit')],
+                                               '_implicit': ['_arg'],
+                                               Keyword('self'): [newobj]}))
         return newobj
 
     def priority(self, symbol):
-        for index, value in enumerate(self.symbols_priority):
-            if symbol in value:
-                return index
+        return [symbol in value for value in self.symbols_priority].index(True)

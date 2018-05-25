@@ -30,10 +30,10 @@ setup(
         'nylo', 'nylo.lexers', 'nylo.lexers.struct', 'nylo.lexers.values',
         'nylo.objects', 'nylo.objects.interfaces', 'nylo.objects.struct',
         'nylo.objects.values'],
-    url='https://github.com/pyTeens/nylo',
+    url='https://github.com/veggero/nylo',
     license='GNU GENERAL PUBLIC LICENSE',
-    author='pyTeens',
-    author_email='',
+    author='veggero',
+    author_email='niccolo@venerandi.com',
     description='A cool programming language',
     entry_points={
         'console_scripts': ['nylo=nylo.__main__:main'],
