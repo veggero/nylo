@@ -50,6 +50,7 @@ def stack_keyword(stack: dict, keyword: str, default_value=None):
 builtins: object = Struct(defaultdict(list, {
     Keyword('if'): [Struct(defaultdict(list, {
         '_args': ['cond', 'first', 'second'],
+        'cond': ['_arg'], 'first': ['_arg'], 'second': ['_arg'],
         'self': [PyValue(
             lambda stack:
                 stack[Keyword('first')].value
@@ -63,6 +64,7 @@ builtins: object = Struct(defaultdict(list, {
 
     Keyword('for'): [Struct(defaultdict(list, {
         '_args': ['tomap', 'mapfun'],
+        'tomap': ['_arg'], 'mapfun': ['_arg'],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [Call(stack[-1].value[Keyword('mapfun')][-1], el).evaluate(stack)
@@ -72,6 +74,7 @@ builtins: object = Struct(defaultdict(list, {
 
     Keyword('filter'): [Struct(defaultdict(list, {
         '_args': ['tomap', 'mapfun'],
+        'tomap': ['_arg'], 'mapfun': ['_arg'],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [el
@@ -84,6 +87,7 @@ builtins: object = Struct(defaultdict(list, {
 
     Keyword('repeat'): [Struct(defaultdict(list, {
         '_args': ['times', 'todo'],
+        'times': ['_arg'], 'todo': ['_arg'],
         'self': [PyValue(
             lambda stack: Struct(defaultdict(list, {
                 'atoms': [stack[Keyword('todo')]
@@ -93,6 +97,7 @@ builtins: object = Struct(defaultdict(list, {
 
     Keyword('print'): [Struct(defaultdict(list, {
         '_args': ['toprint'],
+        'toprint': ['_arg'],
         'self': [PyValue(
             lambda stack: print(stack[Keyword('toprint')]),
             lambda stack: {'obj', 'list'})]
@@ -101,6 +106,7 @@ builtins: object = Struct(defaultdict(list, {
     Keyword('exit'): [Struct(defaultdict(list, {
         TypeDef(('int', Keyword('code'))): [Value(0)],
         '_args': [Keyword('message')],
+        'message': ['_arg'],
         'self': [PyValue(
             lambda stack: nylo_exit(stack[Keyword('code')],
                                     stack_keyword(stack, 'message', None)),

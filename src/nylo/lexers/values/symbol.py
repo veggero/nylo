@@ -48,8 +48,9 @@ class Symbol(Lexer):
                 otherobj.args[0], newobj.args[1] = newobj, otherobj.args[0]
                 newobj = otherobj
         if Keyword('_implicit') in newobj.args:
-            newobj = Struct(defaultdict(list, {Keyword('_args'):
-                                               [Keyword('_implicit')], Keyword('self'): [newobj]}))
+            newobj = Struct(defaultdict(list, {Keyword('_args'): [Keyword('_implicit')], 
+                                               '_implicit': ['_arg'],
+                                               Keyword('self'): [newobj]}))
         return newobj
 
     def priority(self, symbol):

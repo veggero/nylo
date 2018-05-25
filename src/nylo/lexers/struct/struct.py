@@ -28,6 +28,7 @@ class Struct(Lexer):
                 atoms[key].append(value)
             elif isinstance(value, TypeDef):
                 atoms['_args'].append(value)
+                atoms[value].append(KwObj('_arg'))
             else:
                 atoms['atoms'].append(value)
         if reader.starts_with('->'):

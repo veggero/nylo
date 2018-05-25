@@ -3,7 +3,7 @@ from nylo.objects.nyobject import NyObject
 
 
 class Struct(NyObject):
-
+    
     def __init__(self, value=defaultdict(list)):
         super().__init__(value)
 
@@ -15,7 +15,7 @@ class Struct(NyObject):
         return self.value[value.value]
 
     def evaluate(self, stack):
-        if self.value['_args'] or not self.value['self']:
+        if ['_arg'] in self.value.values() or not self.value['self']:
             return self
         with stack(self):
             return self.getitem('self', stack)
@@ -24,8 +24,11 @@ class Struct(NyObject):
         for element, key in zip(other.value['atoms'], self.value['_args']):
             self.value[key] = [stack.wrap(element)]
             self.value['_args'] = self.value['_args'][1:]
-        self.value.update({a: b for a, b in other.value.items()
+        self.value.update({a: [*map(stack.wrap, b)] for a, b in other.value.items()
                            if a not in ('self', 'atoms', '_args')})
 
     def getitem(self, value, stack):
-        return self.value[value][-1].evaluate(stack)
+        if not self.value[value]:
+            raise ValueError("Value %s is not in %s" % (value, self))
+        self.value[value] = self.value[value] + [self.value[value][-1].evaluate(stack)]
+        return self.value[value][-1]
