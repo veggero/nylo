@@ -1,9 +1,9 @@
 food:
     diabetic: 1<0
     coffee: 
-        sugar: if(diabetic 0 10)
+        sugar: if(diabetic, 0, 10)
     candy: 
-        sweetener: if(diabetic "artificial" "sugar")
+        sweetener: if(diabetic, "artificial", "sugar")
 
 Joe:
     diabetic: 1>0
