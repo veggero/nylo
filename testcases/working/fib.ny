@@ -6,4 +6,4 @@ fib:
     -> result
     
 -> fib
-    16
+    20
