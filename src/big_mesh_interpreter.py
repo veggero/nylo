@@ -1,75 +1,106 @@
 import operator
+import time
+from collections import deque
 
 bc_pow = {
-    ('if', 'self'):                     ["IF", ('if', 'cond'), ('if', 'then'), ('if', 'else')],
+    'classes': {
+        ('self',):                ('pow',),
+        ('pow', 'self'):          ('if',),
+        ('pow', 'self', 'else'):  ('pow',),
+        },
+    ('if', 'self'):                     [('if', 'then'), ('if', 'else'), "IF", ('if', 'cond')],
     ('pow', 'self'):                    ('pow', 'self', 'self'),
     ('pow', 'self', 'cond'):            [operator.eq, ('pow', 'n'), 1],
     ('pow', 'self', 'then'):            1,
     ('pow', 'self', 'else'):            [operator.mul, ('pow', 'n'), ('pow', 'self', 'else', 'self')],
-    ('pow', 'self', 'class'):           ('if',),
     ('pow', 'self', 'else', 'n'):       [operator.sub, ('pow', 'n'), 1],
-    ('pow', 'self', 'else', 'class'):   ('pow',),
     ('self',):                          ('self', 'self'),
-    ('self', 'n'):                      140,
-    ('self', 'class'):                  ('pow',)
+    ('self', 'n'):                      20,
 }
 
 bc_fib = {
-    ('if', 'self'):                     ["IF", ('if', 'cond'), ('if', 'then'), ('if', 'else')],
+    'classes': {
+        ('self',):                      ('fib',),
+        ('fib', 'self'):                ('if',),
+        ('fib', 'self', 'else', '1'):   ('fib',),
+        ('fib', 'self', 'else', '2'):   ('fib',),
+        },
+    ('if', 'self'):                     [('if', 'then'), ('if', 'else'), "IF", ('if', 'cond')],
     ('fib', 'self'):                    ('fib', 'self', 'self'),
     ('fib', 'self', 'cond'):            [operator.lt, ('fib', 'n'), 2],
     ('fib', 'self', 'then'):            ('fib', 'n'),
     ('fib', 'self', 'else'):            [operator.add, ('fib', 'self', 'else', '1', 'self'), ('fib', 'self', 'else', '2', 'self')],
-    ('fib', 'self', 'class'):           ('if',),
     ('fib', 'self', 'else', '1', 'n'):  [operator.sub, ('fib', 'n'), 1],
-    ('fib', 'self', 'else', '1', 'class'): ('fib',),
     ('fib', 'self', 'else', '2', 'n'):  [operator.sub, ('fib', 'n'), 2],
-    ('fib', 'self', 'else', '2', 'class'): ('fib',),
     ('self',):                          ('self', 'self'),
-    ('self', 'n'):                      16,
-    ('self', 'class'):                  ('fib',)
+    ('self', 'n'):                      20,
 }
 
-def evaluate(obj, mesh):
-    if isinstance(obj, list):
-        op, *args = obj
-        if isinstance(op, str):
-            if op == 'IF':
-                args[0] = evaluate(args[0], mesh)
-                if args[0]: return evaluate(args[1], mesh)
-                else: return evaluate(args[2], mesh)
-        args = [evaluate(el, mesh) for el in args]
-        return op(*args)
-    elif isinstance(obj, tuple):
-        tmp = resolve(obj, mesh)
-        out = evaluate(tmp, mesh)
-        mesh[obj] = out
-        return out
-    return obj
+bc_rec = {
+    ('a', 'self'):          ('a', 'self', 'self'),
+    ('a', 'self', 'n'):     [operator.add, ('a', 'n'), 1],
+    ('a', 'self', 'class'): ('a',),
+    ('self',):              ('self', 'self'),
+    ('self', 'n'):          0,
+    ('self', 'class'):      ('a',)
+    }
+
+def execute(mesh):
+    targets = [('self',)]
+    arguments = []
+    tick = 0
+    while targets:
+        tick += 1
+        last = targets.pop()
+        if isinstance(last, tuple):
+            tickstart = time.time()
+            obj = resolve(last, mesh)
+            if isinstance(obj, list):
+                targets.append(last)
+                targets.extend(obj)
+            targets.append(obj)
+        elif isinstance(last, type(operator.add)):
+            tickstart = time.time()
+            targets.append(last(*(arguments.pop(), arguments.pop())))
+            mesh[targets.pop(-2)] = targets[-1]
+        elif isinstance(last, str):
+            tickstart = time.time()
+            if last == "IF":
+                if arguments.pop():
+                    targets.pop()
+                else:
+                    targets.pop(-2)
+                targets.pop(-2)
+        else:
+            tickstart = time.time()
+            arguments.append(last)
+    return arguments.pop()
 
 def resolve(path, mesh):
-    if path in mesh:
-        return mesh[path] #*orgasm here*
-    # shit.
-    for i in range(len(path)):
-        classpath = path[:i]+('class',)
-        if classpath in mesh:
-            replaced = mesh[classpath]+path[i:]
-            try:
-                replaced_out = resolve(replaced, mesh)
-            except NameError:
-                continue
-            out = replace_back(path, i, replaced_out, mesh[classpath])
-            mesh[path] = out
-            return out
-    raise NameError(path)
-    
-def replace_back(path, i, obj, beginning):
-    if isinstance(obj, tuple) and obj[:len(beginning)]==beginning:
-        return path[:i]+obj[len(beginning):]
+    replaces = []
+    while path not in mesh:
+        for classpath in sorted(mesh['classes'], key=len, reverse=True):
+            subpath = path[:len(classpath)]
+            if classpath == subpath:
+                fclass = mesh['classes'][classpath]
+                replaces.append((subpath, fclass))
+                path = fclass+path[len(subpath):]
+                break
+        else:
+            raise NameError(path)
+    out = mesh[path]
+    for replace in reversed(replaces):
+        mesh[path] = out
+        out = replace_back(out, *replace)
+        path = replace_back(path, *replace)
+    return out
+
+def replace_back(obj, subpath, fclass):
+    if isinstance(obj, tuple) and obj[:len(fclass)]==fclass:
+        return subpath+obj[len(fclass):]
     elif isinstance(obj, list):
-        return [obj[0]]+[replace_back(path, i, el, beginning) for el in obj[1:]]
+        return [replace_back(el, subpath, fclass) for el in obj]
     else:
         return obj
     
-print(evaluate(('self',), bc_fib))
+print(execute(bc_pow))
