@@ -26,3 +26,6 @@ class Lexer:
         """Yield every character that makes
         the object to parse.
         """
+
+    def __repr__(self):
+        return f"{type(self).__name__}({self.value})"

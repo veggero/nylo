@@ -87,9 +87,8 @@ def main():
         with open(args.file, 'r') as codefile:
             code: object = codefile.read()
         reader: object = nylo.Reader(code)
-        struct: object = nylo.Struct(reader).value
-        #struct.settype(['obj'], nylo.nyglobals)
-        print(struct.calculate(nylo.nyglobals))
+        struct: object = nylo.Struct(reader)
+        print(struct)
 
 
 if __name__ == '__main__':

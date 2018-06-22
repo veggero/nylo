@@ -2,17 +2,12 @@
 Contains the Value class definition.
 """
 
+from collections import defaultdict
 from nylo.lexers.lexer import Lexer
 from nylo.lexers.values.keyword import Keyword
 from nylo.lexers.values.numstr import Number, String
 from nylo.lexers.values.symbol import Symbol
 from nylo.lexers.struct.struct import Struct
-from nylo.objects.struct.call import Call as CallObj
-from nylo.objects.values.value import GetObj
-from nylo.objects.struct.structel import TypeDef
-from nylo.objects.values.keyword import Keyword as KeyObj
-from nylo.objects.values.value import Value as ValueObj
-
 
 class Value(Lexer):
     """
@@ -40,27 +35,27 @@ class Value(Lexer):
         Returns:
             generator: All characters associated to the token.
         """
-        value = KeyObj('_implicit')
+        value = '_implicit'
         if Keyword.able(reader):
-            found_keyword = Keyword(reader).value
+            found_keyword = Keyword(reader)
             if Keyword.able(reader):
                 kws = [found_keyword]
                 while Keyword.able(reader):
-                    kws.append(Keyword(reader).value)
-                value = TypeDef(kws)
+                    kws.append(Keyword(reader))
+                value = kws
             else:
                 value = found_keyword
         elif Number.able(reader):
-            value = Number(reader).value
+            value = Number(reader)
         elif String.able(reader):
-            value = String(reader).value
+            value = String(reader)
         elif Struct.able(reader):
-            value = Struct(reader).value
+            value = Struct(reader)
         reader.avoid_whitespace()
         if reader.read() in '(':
-            return CallObj(value, Struct(reader).value)
+            return (value, Struct(reader))
         elif reader.read() in '[':
-            return GetObj(value, Get(reader).value)
+            return (value, Get(reader))
         return value
 
     def parse(self, reader):
@@ -69,11 +64,29 @@ class Value(Lexer):
 
         Args:
             reader (Reader): The reader you're going to use
-
-        Returns:
-            ValueObj: The lexer characters object
         """
         return self.lexe(reader)
+    
+    def transpile(self, mesh, path):
+        if isinstance(self.value, list):
+            return self.value[-1].transpile(mesh, path)
+        if isinstance(self.value, tuple):
+            called, caller = self.value
+            if isinstance(called, Keyword):
+                called = called.transpile(mesh, path)
+            else:
+                called, newcalled = path+('temp',), called
+                mesh[called] = newcalled.transpile(mesh, called)
+            if not isinstance(caller.value, defaultdict):
+                caller.value = defaultdict(list, {'atoms': [caller.value]})
+            caller.transpile_call(mesh, path, called)
+            mesh['classes'][path] = called
+            print(caller.value, 'self' in caller.value)
+            if 'self' in caller.value:
+                return caller.value['self'][0].transpile(mesh, called)
+            return path+('self',)
+        else:
+            return self.value.transpile(mesh, path)
 
 
 class Get(Lexer):
@@ -98,15 +111,12 @@ class Get(Lexer):
 
         Args:
             reader (Reader): The reader you're going to use.
-
-        Returns:
-            generator: All characters associated to the token.
         """
         reader.move()
-        yield Symbol(reader).value
+        yield Symbol(reader)
         while reader.read() == ':':
             reader.move()
-            yield Symbol(reader).value
+            yield Symbol(reader)
         reader.move()
 
     def parse(self, reader):
@@ -115,11 +125,8 @@ class Get(Lexer):
 
         Args:
             reader (Reader): The reader you're going to use
-
-        Returns:
-            ValueObj: The lexer characters object
         """
         out = list(self.lexe(reader))
         if len(out) == 1:
             return out[0]
-        return ValueObj(slice(*[o.value for o in out]))
+        return slice(*[o for o in out])

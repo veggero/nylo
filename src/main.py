@@ -24,13 +24,13 @@
 import nylo
 import sys
 import argparse
-
-
+from pprint import pprint as print
+from big_mesh_interpreter import execute
 
 def main():
     """It starts the NyloCMD that could
     be managed using command line parameters.
-    
+
     See `nylo -h` for that.
     """
     if len(sys.argv) <= 1:
@@ -74,7 +74,12 @@ def main():
                 if not statement:
                     reader: object = nylo.Reader(code + '\n')
                     struct: object = nylo.Struct(reader).value
-                    print(struct.evaluate(nylo.nyglobals))
+                    if hasattr(struct, 'calculate'):
+                        out: object = struct.calculate(nylo.nyglobals)
+                    else:
+                        out: object = struct.evaluate(nylo.nyglobals)
+                    if out.value and str(out) != '()':
+                        print(out)
                 del code
             except Exception as e:
                 print(e)
@@ -83,9 +88,11 @@ def main():
         with open(args.file, 'r') as codefile:
             code: object = codefile.read()
         reader: object = nylo.Reader(code)
-        struct: object = nylo.Struct(reader).value
-        #struct.settype(['obj'], nylo.nyglobals)
-        print(struct.evaluate(nylo.nyglobals))
+        struct: object = nylo.Struct(reader)
+        mesh = nylo.builtins.copy()
+        struct.transpile(mesh, ())
+        print(mesh)
+        print(execute(mesh))
 
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ bc_pow = {
     ('pow', 'self', 'else'):            [operator.mul, ('pow', 'n'), ('pow', 'self', 'else', 'self')],
     ('pow', 'self', 'else', 'n'):       [operator.sub, ('pow', 'n'), 1],
     ('self',):                          ('self', 'self'),
-    ('self', 'n'):                      20,
+    ('self', 'n'):                      16,
 }
 
 bc_fib = {
@@ -53,27 +53,35 @@ def execute(mesh):
         tick += 1
         last = targets.pop()
         if isinstance(last, tuple):
+            #print("LOAD", last)
             tickstart = time.time()
             obj = resolve(last, mesh)
-            if isinstance(obj, list):
+            if isinstance(obj, tuple):
+                targets.append(obj)
+            elif isinstance(obj, list):
                 targets.append(last)
                 targets.extend(obj)
-            targets.append(obj)
+            else:
+                targets.append(obj)
         elif isinstance(last, type(operator.add)):
+            #print("EXECUTE", last, arguments[-2:])
             tickstart = time.time()
-            targets.append(last(*(arguments.pop(), arguments.pop())))
-            mesh[targets.pop(-2)] = targets[-1]
-        elif isinstance(last, str):
+            arguments.append(last(*(arguments.pop(), arguments.pop())))
+            mesh[targets.pop()] = arguments[-1]
+        elif isinstance(last, str) and last == 'IF':
+            #print("IF")
             tickstart = time.time()
-            if last == "IF":
-                if arguments.pop():
-                    targets.pop()
-                else:
-                    targets.pop(-2)
+            if arguments.pop():
+                targets.pop()
+            else:
                 targets.pop(-2)
+            targets.pop(-2)
         else:
+            #print("APPEND", last)
             tickstart = time.time()
             arguments.append(last)
+        #print(round((time.time()-tickstart)*100000, 4))
+    print(f"Code executed in {tick} ticks.")
     return arguments.pop()
 
 def resolve(path, mesh):
@@ -102,5 +110,3 @@ def replace_back(obj, subpath, fclass):
         return [replace_back(el, subpath, fclass) for el in obj]
     else:
         return obj
-    
-print(execute(bc_pow))

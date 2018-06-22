@@ -21,6 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from collections import defaultdict
+
 # noinspection PyUnresolvedReferences
 from nylo.lexers.reader import Reader
 # noinspection PyUnresolvedReferences
@@ -33,13 +35,15 @@ from nylo.lexers.values.symbol import Symbol
 from nylo.lexers.values.numstr import Number, String
 # noinspection PyUnresolvedReferences
 from nylo.lexers.struct.struct import Struct
-# noinspection PyUnresolvedReferences
-from nylo.objects.stack import Stack
-# noinspection PyUnresolvedReferences
-from nylo.objects.interfaces.builtins import builtins
 
-# builtins.settype(['obj'], Stack())
-nyglobals = Stack([builtins])
+builtins = {
+    ('if',): ('placeholder',),
+    ('if', 'self'): [('if', 'then'), ('if', 'else'), "IF", ('if', 'cond')],
+    'classes': {}, 
+    'arguments': defaultdict(list, {
+        ('if',): [('if', 'cond'), ('if', 'then'), ('if', 'else')],
+        }),
+}
 
 __author__ = 'veggero'
 __team__ = 'pyTeens'
