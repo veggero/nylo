@@ -21,32 +21,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import defaultdict
-
-# noinspection PyUnresolvedReferences
-from nylo.lexers.reader import Reader
-# noinspection PyUnresolvedReferences
-from nylo.lexers.values.value import Value
-# noinspection PyUnresolvedReferences
-from nylo.lexers.values.keyword import Keyword
-# noinspection PyUnresolvedReferences
-from nylo.lexers.values.symbol import Symbol
-# noinspection PyUnresolvedReferences
-from nylo.lexers.values.numstr import Number, String
-# noinspection PyUnresolvedReferences
-from nylo.lexers.struct.struct import Struct
-
-builtins = {
-    ('if',): ('placeholder',),
-    ('if', 'self'): [('if', 'then'), ('if', 'else'), "IF", ('if', 'cond')],
-    'classes': {}, 
-    'arguments': defaultdict(list, {
-        ('if',): [('if', 'cond'), ('if', 'then'), ('if', 'else')],
-        }),
-}
-
-__author__ = 'veggero'
-__team__ = 'pyTeens'
-__license__ = 'GNU GENERAL PUBLIC LICENSE'
-__url__ = 'https://github.com/pyTeens/nylo'
-__version__ = '0.1.0'
+from .reader import Reader
+from .lexer import Lexer

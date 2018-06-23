@@ -90,6 +90,8 @@ def main():
         reader: object = nylo.Reader(code)
         struct: object = nylo.Struct(reader)
         mesh = nylo.builtins.copy()
+        #print(''.join(reader.code))
+        print(struct)
         struct.transpile(mesh, ())
         print(mesh)
         print(execute(mesh))

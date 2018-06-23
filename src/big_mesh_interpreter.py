@@ -50,37 +50,22 @@ def execute(mesh):
     arguments = []
     tick = 0
     while targets:
+        print(targets, arguments)
         tick += 1
         last = targets.pop()
         if isinstance(last, tuple):
-            #print("LOAD", last)
-            tickstart = time.time()
             obj = resolve(last, mesh)
             if isinstance(obj, tuple):
                 targets.append(obj)
             elif isinstance(obj, list):
-                targets.append(last)
                 targets.extend(obj)
             else:
                 targets.append(obj)
-        elif isinstance(last, type(operator.add)):
-            #print("EXECUTE", last, arguments[-2:])
-            tickstart = time.time()
-            arguments.append(last(*(arguments.pop(), arguments.pop())))
-            mesh[targets.pop()] = arguments[-1]
-        elif isinstance(last, str) and last == 'IF':
-            #print("IF")
-            tickstart = time.time()
-            if arguments.pop():
-                targets.pop()
-            else:
-                targets.pop(-2)
-            targets.pop(-2)
+        elif callable(last):
+            targets.append(last(*[arguments.pop()
+                for i in range(last.__code__.co_argcount)]))
         else:
-            #print("APPEND", last)
-            tickstart = time.time()
             arguments.append(last)
-        #print(round((time.time()-tickstart)*100000, 4))
     print(f"Code executed in {tick} ticks.")
     return arguments.pop()
 
