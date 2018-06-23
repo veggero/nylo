@@ -21,6 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .reader import Reader
-from .lexer import Lexer
-from tokens import *
+from .keyword import Keyword
+from .numstr import Number, String
+from .symbol import Symbol
+from .value import Value
+from .struct import Struct
