@@ -4,7 +4,7 @@ Contains the Value class definition.
 
 from collections import defaultdict
 from nylo.token import Token
-from nylo.tokens.keyword import TypeDef
+from nylo.tokens.keyword import TypeDef, Keyword
 from nylo.tokens.numstr import Number, String
 
 
@@ -23,8 +23,6 @@ class Value(Token):
         
     def __repr__(self):
         return '(Value)'
-    
-    def traspile()
                 
                 
 class Call(Token):
@@ -46,25 +44,23 @@ class Call(Token):
             
     def __repr__(self):
         return f'{self.called}{self.caller}'
+    
+    def transpile(self, mesh, path):
+        from nylo.tokens.struct import Struct
+        if isinstance(self.called, Keyword):
+            self.called.transpile(mesh, path)
+            called_path = self.called.ref
+        else:
+            self.called.transpile(mesh, path+('temp',))
+            mesh[path+('temp',)] = self.called
+            called_path = path+('temp',)
+        if not isinstance(self.called, Struct):
+            self.caller = Struct(defaultdict(list, 
+                {Keyword('atoms'): [self.called]}))
+        self.caller.transpile_call(mesh, path, called_path)
+        mesh['classes'][path] = called_path
+        if Keyword('self') in self.caller.value:
+            self.toev = self.caller.value[Keyword('self')][0]
+        else:
+            self.toev = path+(Keyword('self'),)
             
-
-#class OLDValue(Lexer):
-#    def transpile(self, mesh, path):
-#        if isinstance(self.value, list):
-#            return self.value[-1].transpile(mesh, path)
-#        if isinstance(self.value, tuple):
-#            called, caller = self.value
-#            if isinstance(called, Keyword):
-#                called = called.transpile(mesh, path)
-#            else:
-#                called, newcalled = path+('temp',), called
-#                mesh[called] = newcalled.transpile(mesh, called)
-#            if not isinstance(caller.value, defaultdict):
-#                caller.value = defaultdict(list, {'atoms': [caller.value]})
-#            caller.transpile_call(mesh, path, called)
-#            mesh['classes'][path] = called
-#            if 'self' in caller.value:
-#                return caller.value['self'][0].transpile(mesh, called)
-#            return path+('self',)
-#        else:
-#            return self.value.transpile(mesh, path)

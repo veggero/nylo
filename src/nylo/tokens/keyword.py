@@ -32,18 +32,12 @@ class TypeDef(Token):
         
     def __repr__(self):
         return ' '.join(map(str, self.value)) if self.value else '*'
-    
-    def __hash__(self):
-        return hash(self.value)
-    
-    def __eq__(self, other):
-        return self.value == other
 
 
 class Keyword(Token):
     
-    def __init__(self, value=''):
-        self.value = value
+    def __init__(self, value='', ref=None):
+        self.value, self.ref = value, ref
     
     def parse(self, parser):
         while parser.read() in string.ascii_letters + '_':
@@ -52,16 +46,20 @@ class Keyword(Token):
     
     def transpile(self, mesh, path):
         for i in reversed(range(len(path)+1)):
-            if path[:i]+(self.value,) in mesh:
-                self.value = path[:i]+(self.value,)
-                return self
+            if path[:i]+(self,) in mesh:
+                self.ref = path[:i]+(self,)
+                return
         raise NameError(f"Couldn't find variable {self.value}")
 
     def __repr__(self):
-        return str(self.value)
-    
-    def __hash__(self):
-        return hash(self.value)
-    
-    def __eq__(self, other):
-        return self.value == other.value
+        return '$'+str(self.value)
+        
+    def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(self)
+        
+    def evaluate(self, *args):
+        mesh[self.ref].interprete(*args)
+        
+    def chroot(self, oldroot, newroot):
+        if self.ref[:len(oldroot)] == oldroot:
+            return Keyword(self.value, newroot+self.ref[len(oldroot):])

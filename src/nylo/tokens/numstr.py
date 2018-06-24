@@ -31,6 +31,15 @@ class Number(Token):
     
     def __repr__(self):
         return repr(self.value)
+        
+    def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(self)
+        
+    def evaluate(self, interpreting, interpreted):
+        interpreted.append(self)
+        
+    def chroot(self, oldroot, newroot):
+        return self
             
 class String:
 
@@ -55,3 +64,12 @@ class String:
     
     def __repr__(self):
         return self.value
+        
+    def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(self)
+        
+    def evaluate(self, interpreting, interpreted):
+        interpreted.append(self)
+        
+    def chroot(self, oldroot, newroot):
+        return self

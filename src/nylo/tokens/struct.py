@@ -46,51 +46,38 @@ class Struct(Token):
         return '(%s)' % ', '.join(f'{key}: {value}' for key, value in self.value.items()
                                   if value)
     
-    def traspile(self, mesh, path):
+    def transpile(self, mesh, path):
         mesh[path] = Keyword('placeholedr'),
         for value in [*self.value.keys()] + self.value[Keyword('atoms')]:
             if isinstance(value, TypeDef):
                 value = value.value[-1]
             if isinstance(value, Keyword):
-                mesh[path+(key,)] = Keyword('placeholder')
+                mesh[path+(value,)] = Keyword('placeholder')
                 if value in self.value[Keyword('atoms')]:
                     mesh['arguments'][path].append(value)
         for key, value in self.value.items():
             if isinstance(key, TypeDef):
                 key = key.value[-1]
             if len(value)==1:
-                mesh[path+(key,)] = value[0].transpile(mesh, path+(key,))
+                value[0].transpile(mesh, path+(key,))
+                mesh[path+(key,)] = value[0]
             else:
                 for i, vl in enumerate(value):
-                    mesh[path+(key,i)] = vl.traspile(mesh, path+(key, i))
-
-#class OLDStruct(Lexer):
-#        
-#    def transpile_call(self, mesh, path, called):
-#        for key, value in ([*self.value.items()]+
-#                           [*zip(mesh['arguments'][called],
-#                                 self.value['atoms'])]):
-#            if key == 'atoms': 
-#                continue
-#            if not isinstance(key, tuple):
-#                if key == 'self':
-#                    continue
-#                key = key.transpile(mesh, called)
-#                value = value[0]
-#            key = path+key[len(called):]
-#            value = value.transpile(mesh, path)
-#            mesh[key] = value
-#            
-#            
-#def get_raw_key(key):
-#        if isinstance(key, str):
-#            return key
-#        key = key.value.value
-#        if isinstance(key, Keyword):
-#            key = key.value
-#        elif isinstance(key, list) and all(isinstance(el, Keyword) for el in key):
-#            *types, key = key
-#            key = key.value
-#        else:
-#            raise SyntaxError("Expected dictionary key, found value.")
-#        return key
+                    vl.traspile(mesh, path+(key, i))
+                    mesh[path+(key,i)] = vl
+                    
+    def transpile_call(self, mesh, path, called):
+        for key, value in ([*self.value.items()]+
+                           [*zip(mesh['arguments'][called],
+                                 self.value[Keyword('atoms')])]):
+            if key == Keyword('atoms'): 
+                continue
+            if not isinstance(key, tuple):
+                if key == Keyword('self'):
+                    continue
+                key.transpile(mesh, called)
+                key = key.value
+                value = value[0]
+            key = path+key[len(called):]
+            value.transpile(mesh, path)
+            mesh[key] = value

@@ -53,9 +53,22 @@ class Symbol(Token):
         "Get the priority of the symbol"
         return [self.op in value for value in self.symbols_priority].index(True)
     
-    def traspile(self, mesh, path):
+    def transpile(self, mesh, path):
         for i, arg in enumerate(self.args):
             arg.transpile(mesh, path+(i,))
     
     def __repr__(self):
         return str(self.op) + ' ' + ' '.join(map(repr, self.args))
+        
+    def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(self)
+        for arg in self.args:
+            arg.interprete(mesh, interpreting, interpreted)
+        
+    def evaluate(self, interpreting, interpreted):
+        interpreting.append(self.map_to_py[self.op](
+                interpreted.pop(), interpreted.pop()))
+    
+    def chroot(self, oldroot, newroot):
+        return Symbol(self.op, 
+            [arg.chroot(oldroot, newroot) for arg in self.args])

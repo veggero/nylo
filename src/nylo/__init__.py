@@ -21,5 +21,42 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from collections import defaultdict
 from .parser import Parser
 from .token import Token
+from .tokens.keyword import Keyword
+
+class If(Token):
+    
+    def __init__(self, cond=Keyword('cond', (Keyword('if'), Keyword('cond'))), 
+                 then=Keyword('then', (Keyword('if'), Keyword('then'))), 
+                 else_=Keyword('else', (Keyword('if'), Keyword('else')))):
+        self.cond, self.then, self.else_ = cond, then, else_
+        
+    def interprete(self, mesh, interpreting, interpreted):
+        self.interpreting.extend([self, self.cond])
+        
+    def evaluate(self, mesh: dict, interpreting: list, interpreted: list):
+        interpreting.append(self.then if interpreted.pop() else self.cond)
+        
+    def chroot(self, oldroot: tuple, newroot: tuple):
+        return If(self.cond.chroot(oldroot, newroot),
+                  self.then.chroot(oldroot, newroot),
+                  self.else_.chroot(oldroot, newroot))
+
+builtins = {
+    'classes': defaultdict(list),
+    'types': {},
+    'arguments': defaultdict(list, {
+        (Keyword('if'),): [(Keyword('if'), Keyword('cond')),
+                           (Keyword('if'), Keyword('else')),
+                           (Keyword('if'), Keyword('then'))]
+    }),
+    (Keyword('if'),): (Keyword('placeholder'),),
+    (Keyword('if'), Keyword('self')): If(),
+    }
+
+__author__ = 'Veggero il Veggente'
+__url__ = 'https://github.com/veggero/nylo'
+__license__ = 'GNU GENERAL PUBLIC LICENSE'
+__version__ = '0.0.0'
