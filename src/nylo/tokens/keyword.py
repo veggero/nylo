@@ -3,7 +3,7 @@ Contains the Keyword class definition.
 """
 
 import string
-from nylo.lexers.token import Token
+from nylo.token import Token
 
 
 class TypeDef(Token):
@@ -18,16 +18,20 @@ class TypeDef(Token):
     def parse(self, parser):
         if self.value is None:
             self.value = []
-            return parser.parse(self, Keyword)
+            return parser.parse(self, Keyword())
         self.value.append(parser.getarg())
-        if self.can_parse(reader):
-            return parser.parse(self, Keyword)
-        return parser.hasparsed(self len(self.value) > 1 
+        if self.can_parse(parser):
+            return parser.parse(self, Keyword())
+        return parser.hasparsed(self if len(self.value) > 1 
                                 else self.value[0])
     
     def transpile(self, mesh, path):
         self.value[-1].transpile(mesh, path)
         mesh['types'][self.value[-1].value] = self
+        
+        
+    def __repr__(self):
+        return ' '.join(map(str, self.value)) if self.value else '*'
 
 
 class Keyword(Token):
@@ -46,3 +50,12 @@ class Keyword(Token):
                 self.value = path[:i]+(self.value,)
                 return self
         raise NameError(f"Couldn't find variable {self.value}")
+
+    def __repr__(self):
+        return str(self.value)
+    
+    def __hash__(self):
+        return hash(self.value)
+    
+    def __eq__(self, other):
+        return self.value == other.value

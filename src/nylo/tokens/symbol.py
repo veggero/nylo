@@ -4,8 +4,8 @@ Contains the Symbol class definition.
 
 import operator as op
 from collections import defaultdict
-from nylo.lexers.token import Token
-from nylo.lexers.values.value import Value
+from nylo.token import Token
+from nylo.tokens.value import Value
 
 
 class Symbol(Token):
@@ -29,21 +29,18 @@ class Symbol(Token):
         ('..', '%'), ('+', '-', '&'),
         ('*', '/'), ('^', '+-'), ('.',))
     
-    def __init__(self, op=None, args=[]):
-        self.op, self.args = op, args
+    def __init__(self, op=None, args=None):
+        self.op, self.args = op, args if args else []
         
     def parse(self, parser):
-        if not op:
-            self.op = True
-            parser.parse(Value(), self, Value())
-        elif op == True:
-            self.op = parser.any_starts_with(self.symbols) or True
-            if self.op != True:
-                self.args.append(parser.parsed.pop())
-            else:
-                parser.parsing.pop()
+        if not self.op:
+            self.op = parser.any_starts_with(self.symbols) or None
+            if self.op and not parser.any_starts_with(self.to_avoid):
+                parser.move(len(self.op))
+                self.args.append(parser.getarg())
+                parser.parse(self, Value())
         else:
-            self.args.append(parser.parsed.pop())
+            self.args.append(parser.getarg())
             if (isinstance(self.args[1], Symbol) and 
                 self.priority() > self.args[1].priority()):
                 otherobj = self.args[1]
@@ -52,9 +49,12 @@ class Symbol(Token):
             else:
                 parser.hasparsed(self)
 
-    def priority(self, symbol):
+    def priority(self):
         "Get the priority of the symbol"
-        return [self in value for value in self.symbols_priority].index(True)
+        return [self.op in value for value in self.symbols_priority].index(True)
+    
+    def __repr__(self):
+        return str(self.op) + ' ' + ' '.join(map(repr, self.args))
             
 
 #class OLDSymbol(Lexer):

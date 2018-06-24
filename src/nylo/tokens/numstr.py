@@ -3,7 +3,7 @@ Contains Number and String classes definitions.
 """
 
 import string
-from nylo.lexers.token import Token
+from nylo.token import Token
 
 
 class Number(Token):
@@ -17,7 +17,7 @@ class Number(Token):
         
     def parse(self, parser):
         if ((parser.starts_with('.') and 
-            reader.code[reader.reading_at + 1] in string.digits
+            parser.code[parser.reading_at + 1] in string.digits
             and not '.' in self.value)
             or parser.any_starts_with(string.digits + '_')):
             parser.parse(self)
@@ -28,6 +28,9 @@ class Number(Token):
     
     def transpile(self, mesh, path):
         pass
+    
+    def __repr__(self):
+        return repr(self.value)
             
 class String:
 
@@ -44,8 +47,11 @@ class String:
         start = parser.move()
         while parser.read() != self.start_to_ends[start]:
             self.value += parser.move()
-        reader.move()
+        parser.move()
         parser.hasparsed(self)
     
     def transpile(self, mesh, path):
         pass
+    
+    def __repr__(self):
+        return self.value

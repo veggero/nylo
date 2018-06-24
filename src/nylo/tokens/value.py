@@ -3,9 +3,9 @@ Contains the Value class definition.
 """
 
 from collections import defaultdict
-from nylo.lexers.token import Token
-from nylo.lexers.values.keyword import Keyword
-from nylo.lexers.values.numstr import Number, String
+from nylo.token import Token
+from nylo.tokens.keyword import TypeDef
+from nylo.tokens.numstr import Number, String
 
 
 class Value(Token):
@@ -14,10 +14,15 @@ class Value(Token):
         self.value = value
         
     def parse(self, parser):
-        from nylo.lexers.struct.struct import Struct
+        from nylo.tokens.struct import Struct
+        from nylo.tokens.symbol import Symbol
         for token in (TypeDef, Number, String, Struct):
-            if token.can_parse(reader):
-                return parser.parse(token(), Call())
+            if token.can_parse(parser):
+                return parser.parse(Symbol(), Call(), token())
+        parser.hasparsed(None)
+        
+    def __repr__(self):
+        return '(Value)'
                 
                 
 class Call(Token):
@@ -26,14 +31,19 @@ class Call(Token):
         self.called, self.caller = called, caller
         
     def parse(self, parser):
+        from nylo.tokens.struct import Struct
         if not parser.starts_with('('): 
             return
         if self.called:
-            self.caller = parser.parsed.pop()
+            self.caller = parser.getarg()
             parser.hasparsed(self)
+            parser.parse(Call())
         else:
-            self.called = parser.parsed.pop()
+            self.called = parser.getarg()
             parser.parse(self, Struct())
+            
+    def __repr__(self):
+        return f'{self.called}{self.caller}'
             
 
 #class OLDValue(Lexer):

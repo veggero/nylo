@@ -21,6 +21,15 @@ class Parser:
         self.parsed, self.parsing = [], [Struct()]
         self.reading_at = reading_at
         self.line, self.char = 1, 1
+        
+    @staticmethod
+    def parsecode(code):
+        parser = Parser(code)
+        while parser.parsing:
+            print(parser.parsing, parser.parsed, parser.read())
+            parser.parsing.pop().parse(parser)
+            parser.avoid_whitespace()
+        return parser.parsed.pop()
 
     def read(self):
         """Read the current character"""

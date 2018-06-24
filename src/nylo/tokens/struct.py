@@ -5,7 +5,7 @@ Contains the Struct class definition.
 from collections import defaultdict
 from nylo.token import Token
 from nylo.tokens.keyword import Keyword
-from nylo.tokens.symbol import Symbol
+from nylo.tokens.value import Value
 
 
 class Struct(Token):
@@ -19,22 +19,30 @@ class Struct(Token):
         return parser.starts_with('(')
     
     def parse(self, parser):
-        if parser.any_starts_with(('(', ':', ',')):
-            parser.move()
-            parser.parse(self, Symbol())
-        elif parser.starts_with(')'):
-            parser.hasparsed(self)
-        elif parser.starts_with('->'):
-            parser.move(2)
-            parser.parse(self, Symbol())
-            self.key = Keyword('self')
-        else:
-            parser.parse(self, Symbol)
         if parser.starts_with(':'):
             self.key = parser.getarg()
         elif not parser.starts_with('('):
             self.value[self.key].append(parser.getarg())
+            if self.value[self.key][-1] is None:
+                self.value[self.key].pop()
             self.key = Keyword('atoms')
+        if parser.any_starts_with(('(', ':', ',')):
+            parser.move()
+            parser.parse(self, Value())
+        elif parser.starts_with(')'):
+            if (len(self.value) == 1 and
+                len(self.value[Keyword('atoms')]) == 1):
+                return parser.hasparsed(self.value[Keyword('atoms')][0])
+            parser.hasparsed(self)
+        elif parser.starts_with('->'):
+            parser.move(2)
+            parser.parse(self, Value())
+            self.key = Keyword('self')
+        else:
+            parser.parse(self, Value())
+            
+    def __repr__(self):
+        return '(%s)' % ', '.join(f'{key}:{value}' for key, value in self.value.items())
 
 #class OLDStruct(Lexer):
 #

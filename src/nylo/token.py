@@ -3,7 +3,7 @@ Contains the Lexer class definition.
 """
 
 from abc import abstractmethod, ABC as Abstract
-from nylo.lexers.parser import Parser
+from nylo.parser import Parser
 
 class Token(Abstract):
     """This is the base class for every
@@ -11,8 +11,8 @@ class Token(Abstract):
     """
 
     @abstractmethod
-    def __init__(self, *values) -> None:
-        "Initialize the token object"
+    def __init__(self, *values) :
+        "Initialize the token object."
     
     @staticmethod
     def can_parse(parser: Parser) -> bool:
@@ -23,20 +23,20 @@ class Token(Abstract):
         """
 
     @abstractmethod
-    def parse(self, parser: Parser) -> None:
+    def parse(self, parser: Parser):
         """Parse the object by reading parser characters;
         when done, adds the parsed object by calling
         parser.hasparsed; might call parser.parse for
         parsing more tokens.
         """
         
-    @abstracmethod
-    def transpile(self, mesh: dict, path: tuple) -> Token:
+    #@abstractmethod
+    def transpile(self, mesh: dict, path: tuple):
         """Traspile the value into the mesh; initialize
         mesh nodes and their values. Returns the token
         that should go to interpretation."""
         
-    @abstracmethod
+    #@abstractmethod
     def evaluate(self, mesh: dict, interpreting: list, interpreted: list):
         """Evaluate the Token, adding things to interpreter or
         adding things that has been interpreted to the two lists.
@@ -45,11 +45,12 @@ class Token(Abstract):
         to interpreter.
         """
         
-    @abstracmethod
-    def chroot(self, oldroot: tuple, newroot: tuple) -> None:
+    #@abstractmethod
+    def chroot(self, oldroot: tuple, newroot: tuple):
         """Change the root location for absolute variable
-        references
+        references.
         """
         
-    def __str__(self):
-        return f"{type(self).__name__}:{self.value}"
+    @abstractmethod
+    def __repr__(self):
+        "Representation of the Token."
