@@ -26,7 +26,7 @@ class Parser:
     def parsecode(code):
         parser = Parser(code)
         while parser.parsing:
-            print(parser.parsing, parser.parsed, parser.read())
+            parser.avoid_whitespace()
             parser.parsing.pop().parse(parser)
             parser.avoid_whitespace()
         return parser.parsed.pop()

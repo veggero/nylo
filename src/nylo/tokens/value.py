@@ -23,6 +23,8 @@ class Value(Token):
         
     def __repr__(self):
         return '(Value)'
+    
+    def traspile()
                 
                 
 class Call(Token):
@@ -32,13 +34,13 @@ class Call(Token):
         
     def parse(self, parser):
         from nylo.tokens.struct import Struct
-        if not parser.starts_with('('): 
-            return
         if self.called:
             self.caller = parser.getarg()
             parser.hasparsed(self)
             parser.parse(Call())
         else:
+            if not parser.starts_with('('): 
+                return
             self.called = parser.getarg()
             parser.parse(self, Struct())
             

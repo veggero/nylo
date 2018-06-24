@@ -53,21 +53,9 @@ class Symbol(Token):
         "Get the priority of the symbol"
         return [self.op in value for value in self.symbols_priority].index(True)
     
+    def traspile(self, mesh, path):
+        for i, arg in enumerate(self.args):
+            arg.transpile(mesh, path+(i,))
+    
     def __repr__(self):
         return str(self.op) + ' ' + ' '.join(map(repr, self.args))
-            
-
-#class OLDSymbol(Lexer):
-#    
-#    def transpile(obj, mesh, path):
-#        if isinstance(obj.value, list):
-#            op, args = obj.value
-#            nw = [lambda x, y: Symbol.map_to_py[op](x, y)]
-#            for i, arg in enumerate(args):
-#                newarg = arg.transpile(mesh, path+(str(i),))
-#                if not isinstance(arg, list):
-#                    newarg = [newarg]
-#                nw.extend(newarg)
-#            return nw
-#        else:
-#            return obj.value.transpile(mesh, path)

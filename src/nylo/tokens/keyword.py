@@ -32,6 +32,12 @@ class TypeDef(Token):
         
     def __repr__(self):
         return ' '.join(map(str, self.value)) if self.value else '*'
+    
+    def __hash__(self):
+        return hash(self.value)
+    
+    def __eq__(self, other):
+        return self.value == other
 
 
 class Keyword(Token):

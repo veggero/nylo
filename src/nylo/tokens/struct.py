@@ -4,7 +4,7 @@ Contains the Struct class definition.
 
 from collections import defaultdict
 from nylo.token import Token
-from nylo.tokens.keyword import Keyword
+from nylo.tokens.keyword import Keyword, TypeDef
 from nylo.tokens.value import Value
 
 
@@ -30,6 +30,7 @@ class Struct(Token):
             parser.move()
             parser.parse(self, Value())
         elif parser.starts_with(')'):
+            parser.move()
             if (len(self.value) == 1 and
                 len(self.value[Keyword('atoms')]) == 1):
                 return parser.hasparsed(self.value[Keyword('atoms')][0])
@@ -42,32 +43,28 @@ class Struct(Token):
             parser.parse(self, Value())
             
     def __repr__(self):
-        return '(%s)' % ', '.join(f'{key}:{value}' for key, value in self.value.items())
+        return '(%s)' % ', '.join(f'{key}: {value}' for key, value in self.value.items()
+                                  if value)
+    
+    def traspile(self, mesh, path):
+        mesh[path] = Keyword('placeholedr'),
+        for value in [*self.value.keys()] + self.value[Keyword('atoms')]:
+            if isinstance(value, TypeDef):
+                value = value.value[-1]
+            if isinstance(value, Keyword):
+                mesh[path+(key,)] = Keyword('placeholder')
+                if value in self.value[Keyword('atoms')]:
+                    mesh['arguments'][path].append(value)
+        for key, value in self.value.items():
+            if isinstance(key, TypeDef):
+                key = key.value[-1]
+            if len(value)==1:
+                mesh[path+(key,)] = value[0].transpile(mesh, path+(key,))
+            else:
+                for i, vl in enumerate(value):
+                    mesh[path+(key,i)] = vl.traspile(mesh, path+(key, i))
 
 #class OLDStruct(Lexer):
-#
-#    def transpile(self, mesh, path):
-#        if isinstance(self.value, defaultdict):
-#            for key, value in self.value.items():
-#                if key == "atoms":
-#                    for el in value:
-#                        try:
-#                            arg = path+(get_raw_key(el),)
-#                            mesh[arg] = ('placeholder',)
-#                            mesh['arguments'][path].append(arg)
-#                        except SyntaxError:
-#                            pass
-#                key = get_raw_key(key)
-#                mesh[path+(key,)] = ('placeholder',)
-#            for i, (key, value) in enumerate(self.value.items()):
-#                key = get_raw_key(key)
-#                newpath = path+(key,)
-#                if len(value)==1:
-#                    mesh[newpath] = value[0].transpile(mesh, newpath)
-#                else:
-#                    for i, vl in enumerate(value):
-#                        mesh[newpath+(i,)] = vl.transpile(mesh, newpath+(i,))
-#            return ('placeholder',)
 #        
 #    def transpile_call(self, mesh, path, called):
 #        for key, value in ([*self.value.items()]+
