@@ -43,6 +43,11 @@ class If(Token):
         return If(self.cond.chroot(oldroot, newroot),
                   self.then.chroot(oldroot, newroot),
                   self.else_.chroot(oldroot, newroot))
+    
+def interpr(code, mesh):
+    interpreting, interpreted = [code], []
+    while interpreting:
+        interpreting.pop().evaluate(mesh, interpreting, interpreted)
 
 builtins = {
     'classes': defaultdict(list),

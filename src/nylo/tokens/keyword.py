@@ -57,8 +57,24 @@ class Keyword(Token):
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self)
         
-    def evaluate(self, *args):
-        mesh[self.ref].interprete(*args)
+    def evaluate(self, mesh, interpreting, interpreted):
+        replaces = []
+        while self.ref not in mesh:
+            for classpath in sorted(mesh['classes'], key=len, reverse=True):
+                subpath = self.ref[:len(classpath)]
+                if classpath == subpath:
+                    fclass = mesh['classes'][classpath]
+                    replaces.append((subpath, fclass))
+                    self.ref = fclass+self.ref[len(subpath):]
+                    break
+            else:
+                raise NameError(self.ref)
+        out = mesh[self.ref].interprete(mesh, interpreting, interpreted)
+        for replace in reversed(replaces):
+            #mesh[self.ref] = out
+            #self.ref = self.ref.chroot(*replace)
+            out = out.chroot(*replace)
+        interpreting.append(self.ref)
         
     def chroot(self, oldroot, newroot):
         if self.ref[:len(oldroot)] == oldroot:
