@@ -35,6 +35,7 @@ class Struct(Token):
                 len(self.value[Keyword('atoms')]) == 1):
                 return parser.hasparsed(self.value[Keyword('atoms')][0])
             parser.hasparsed(self)
+            print(self)
         elif parser.starts_with('->'):
             parser.move(2)
             parser.parse(self, Value())
@@ -47,24 +48,29 @@ class Struct(Token):
                                   if value)
     
     def transpile(self, mesh, path):
-        mesh[path] = Keyword('placeholedr'),
-        for value in [*self.value.keys()] + self.value[Keyword('atoms')]:
-            if isinstance(value, TypeDef):
-                value = value.value[-1]
-            if isinstance(value, Keyword):
-                mesh[path+(value,)] = Keyword('placeholder'),
-                if value in self.value[Keyword('atoms')]:
-                    mesh['arguments'][path].append(value)
+        for key, value in self.value.items():
+            if key == Keyword('atoms'):
+                for el in value:
+                    if isinstance(el, TypeDef):
+                        el = el.value[-1]
+                    if isinstance(el, Keyword):
+                        arg = path+(el.value,)
+                        mesh[arg] = Keyword('placeholder')
+                        mesh['arguments'][path].append(arg)
+            if isinstance(key, TypeDef):
+                key = key.value[-1]
+            mesh[path+(key.value,)] = Keyword('placeholder')
         for key, value in self.value.items():
             if isinstance(key, TypeDef):
                 key = key.value[-1]
-            if len(value)==1:
-                value[0].transpile(mesh, path+(key,))
-                mesh[path+(key,)] = value[0]
+            newpath = path+(key.value,)
+            if len(value) == 1:
+                value[0].transpile(mesh, newpath)
+                mesh[newpath] = value[0]
             else:
                 for i, vl in enumerate(value):
-                    vl.transpile(mesh, path+(key, i))
-                    mesh[path+(key,i)] = vl
+                    vl.transpile(mesh, newpath)
+                    mesh[newpath] = vl
                     
     def transpile_call(self, mesh, path, called):
         for key, value in ([*self.value.items()]+
@@ -72,12 +78,12 @@ class Struct(Token):
                                  self.value[Keyword('atoms')])]):
             if key == Keyword('atoms'): 
                 continue
-            if not key.ref:
+            if isinstance(key, Keyword):
                 if key == Keyword('self'):
                     continue
                 key.transpile(mesh, called)
-                key = key.value
+                key = key.ref
                 value = value[0]
-            key = path+key.ref[len(called):]
+            key = path+key[len(called):]
             value.transpile(mesh, path)
             mesh[key] = value

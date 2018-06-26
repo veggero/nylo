@@ -44,7 +44,6 @@ class Keyword(Token):
         parser.hasparsed(self)
     
     def transpile(self, mesh, path):
-        from pprint import pprint as print
         for i in reversed(range(len(path)+1)):
             if path[:i]+(self,) in mesh:
                 self.ref = path[:i]+(Keyword(self.value),)

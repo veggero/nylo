@@ -47,6 +47,8 @@ class Call(Token):
     
     def transpile(self, mesh, path):
         from nylo.tokens.struct import Struct
+        if isinstance(self.called, TypeDef):
+            self.called = self.called.value[-1]
         if isinstance(self.called, Keyword):
             self.called.transpile(mesh, path)
             called_path = self.called.ref

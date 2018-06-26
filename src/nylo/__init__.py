@@ -56,9 +56,9 @@ builtins = {
     'classes': defaultdict(list),
     'types': {},
     'arguments': defaultdict(list, {
-        (Keyword('if'),): [Keyword('', (Keyword('if'), Keyword('cond'))),
-                           Keyword('', (Keyword('if'), Keyword('then'))),
-                           Keyword('', (Keyword('if'), Keyword('else')))]
+        (Keyword('if'),): [(Keyword('if'), Keyword('cond')),
+                           (Keyword('if'), Keyword('then')),
+                           (Keyword('if'), Keyword('else'))]
     }),
     (Keyword('if'),): (Keyword('placeholder'),),
     (Keyword('if'), Keyword('self')): If(),
