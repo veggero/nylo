@@ -34,7 +34,7 @@ class If(Token):
         self.cond, self.then, self.else_ = cond, then, else_
         
     def interprete(self, mesh, interpreting, interpreted):
-        self.interpreting.extend([self, self.cond])
+        interpreting.extend([self, self.cond])
         
     def evaluate(self, mesh: dict, interpreting: list, interpreted: list):
         interpreting.append(self.then if interpreted.pop() else self.cond)
@@ -44,18 +44,21 @@ class If(Token):
                   self.then.chroot(oldroot, newroot),
                   self.else_.chroot(oldroot, newroot))
     
-def interpr(code, mesh):
-    interpreting, interpreted = [code], []
+def interpr(mesh):
+    interpreting, interpreted = [], []
+    mesh[(Keyword('self'),)].interprete(mesh, interpreting, interpreted)
     while interpreting:
+        print(interpreting, interpreted)
         interpreting.pop().evaluate(mesh, interpreting, interpreted)
+    return interpreted.pop()
 
 builtins = {
     'classes': defaultdict(list),
     'types': {},
     'arguments': defaultdict(list, {
-        (Keyword('if'),): [(Keyword('if'), Keyword('cond')),
-                           (Keyword('if'), Keyword('else')),
-                           (Keyword('if'), Keyword('then'))]
+        (Keyword('if'),): [Keyword('', (Keyword('if'), Keyword('cond'))),
+                           Keyword('', (Keyword('if'), Keyword('then'))),
+                           Keyword('', (Keyword('if'), Keyword('else')))]
     }),
     (Keyword('if'),): (Keyword('placeholder'),),
     (Keyword('if'), Keyword('self')): If(),

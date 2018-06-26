@@ -54,13 +54,18 @@ class Call(Token):
             self.called.transpile(mesh, path+('temp',))
             mesh[path+('temp',)] = self.called
             called_path = path+('temp',)
-        if not isinstance(self.called, Struct):
+        if not isinstance(self.caller, Struct):
             self.caller = Struct(defaultdict(list, 
-                {Keyword('atoms'): [self.called]}))
+                {Keyword('atoms'): [self.caller]}))
         self.caller.transpile_call(mesh, path, called_path)
         mesh['classes'][path] = called_path
         if Keyword('self') in self.caller.value:
-            self.toev = self.caller.value[Keyword('self')][0]
+            self.toev = Keyword('self', self.caller.value[Keyword('self')][0])
         else:
-            self.toev = path+(Keyword('self'),)
+            self.toev = Keyword('self', path+(Keyword('self'),))
             
+    def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(self.toev)
+        
+    def chroot(self, oldroot, newroot):
+        return self.toev.chroot(oldroot, newroot)

@@ -49,7 +49,8 @@ class Token(Abstract):
         """
         
     def __hash__(self):
-        return hash(tuple(self.__dict__.keys()))
+        return hash(tuple([tuple(x) if isinstance(x, list)
+            else x for x in self.__dict__.values()]))
     
     def __eq__(self, other):
-        return self.value == other
+        return hash(self) == hash(other)

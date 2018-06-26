@@ -29,7 +29,6 @@ class TypeDef(Token):
         self.value[-1].transpile(mesh, path)
         mesh['types'][self.value[-1].value] = self
         
-        
     def __repr__(self):
         return ' '.join(map(str, self.value)) if self.value else '*'
 
@@ -45,14 +44,15 @@ class Keyword(Token):
         parser.hasparsed(self)
     
     def transpile(self, mesh, path):
+        from pprint import pprint as print
         for i in reversed(range(len(path)+1)):
             if path[:i]+(self,) in mesh:
-                self.ref = path[:i]+(self,)
+                self.ref = path[:i]+(Keyword(self.value),)
                 return
         raise NameError(f"Couldn't find variable {self.value}")
 
     def __repr__(self):
-        return '$'+str(self.value)
+        return str(self.value)+('@'+str(self.ref) if self.ref else '')
         
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self)
@@ -69,13 +69,17 @@ class Keyword(Token):
                     break
             else:
                 raise NameError(self.ref)
-        out = mesh[self.ref].interprete(mesh, interpreting, interpreted)
+        out = mesh[self.ref]
         for replace in reversed(replaces):
             #mesh[self.ref] = out
             #self.ref = self.ref.chroot(*replace)
             out = out.chroot(*replace)
-        interpreting.append(self.ref)
+        out.interprete(mesh, interpreting, interpreted)
         
-    def chroot(self, oldroot, newroot):
+    def chroot(self, newroot, oldroot):
         if self.ref[:len(oldroot)] == oldroot:
             return Keyword(self.value, newroot+self.ref[len(oldroot):])
+        return self
+    
+    def __hash__(self):
+        return hash(self.value)

@@ -52,7 +52,7 @@ class Struct(Token):
             if isinstance(value, TypeDef):
                 value = value.value[-1]
             if isinstance(value, Keyword):
-                mesh[path+(value,)] = Keyword('placeholder')
+                mesh[path+(value,)] = Keyword('placeholder'),
                 if value in self.value[Keyword('atoms')]:
                     mesh['arguments'][path].append(value)
         for key, value in self.value.items():
@@ -63,7 +63,7 @@ class Struct(Token):
                 mesh[path+(key,)] = value[0]
             else:
                 for i, vl in enumerate(value):
-                    vl.traspile(mesh, path+(key, i))
+                    vl.transpile(mesh, path+(key, i))
                     mesh[path+(key,i)] = vl
                     
     def transpile_call(self, mesh, path, called):
@@ -72,12 +72,12 @@ class Struct(Token):
                                  self.value[Keyword('atoms')])]):
             if key == Keyword('atoms'): 
                 continue
-            if not isinstance(key, tuple):
+            if not key.ref:
                 if key == Keyword('self'):
                     continue
                 key.transpile(mesh, called)
                 key = key.value
                 value = value[0]
-            key = path+key[len(called):]
+            key = path+key.ref[len(called):]
             value.transpile(mesh, path)
             mesh[key] = value
