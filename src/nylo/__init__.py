@@ -37,18 +37,20 @@ class If(Token):
         interpreting.extend([self, self.cond])
         
     def evaluate(self, mesh: dict, interpreting: list, interpreted: list):
-        interpreting.append(self.then if interpreted.pop() else self.cond)
+        interpreting.append(self.then if interpreted.pop().value else self.else_)
         
     def chroot(self, oldroot: tuple, newroot: tuple):
         return If(self.cond.chroot(oldroot, newroot),
                   self.then.chroot(oldroot, newroot),
                   self.else_.chroot(oldroot, newroot))
     
+    def __repr__(self):
+        return "IF"
+    
 def interpr(mesh):
     interpreting, interpreted = [], []
     mesh[(Keyword('self'),)].interprete(mesh, interpreting, interpreted)
     while interpreting:
-        print(interpreting, interpreted)
         interpreting.pop().evaluate(mesh, interpreting, interpreted)
     return interpreted.pop()
 

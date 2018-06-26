@@ -32,7 +32,7 @@ class Number(Token):
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self)
         
-    def evaluate(self, interpreting, interpreted):
+    def evaluate(self, mesh, interpreting, interpreted):
         interpreted.append(self)
         
     def chroot(self, oldroot, newroot):
@@ -65,7 +65,7 @@ class String:
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self)
         
-    def evaluate(self, interpreting, interpreted):
+    def evaluate(self, mesh, interpreting, interpreted):
         interpreted.append(self)
         
     def chroot(self, oldroot, newroot):

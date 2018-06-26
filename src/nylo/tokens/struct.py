@@ -35,7 +35,6 @@ class Struct(Token):
                 len(self.value[Keyword('atoms')]) == 1):
                 return parser.hasparsed(self.value[Keyword('atoms')][0])
             parser.hasparsed(self)
-            print(self)
         elif parser.starts_with('->'):
             parser.move(2)
             parser.parse(self, Value())
@@ -87,3 +86,12 @@ class Struct(Token):
             key = path+key[len(called):]
             value.transpile(mesh, path)
             mesh[key] = value
+        
+    def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(self)
+        
+    def evaluate(self, mesh, interpreting, interpreted):
+        interpreted.append(self)
+        
+    def chroot(self, oldroot, newroot):
+        return self

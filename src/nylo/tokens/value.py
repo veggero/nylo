@@ -22,7 +22,16 @@ class Value(Token):
         parser.hasparsed(None)
         
     def __repr__(self):
-        return '(Value)'
+        return "$"+repr(self.value)
+            
+    def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(self)
+        
+    def evaluate(self, mesh, interpreting, interpreted):
+        interpreted.append(self)
+        
+    def chroot(self, oldroot, newroot):
+        pass
                 
                 
 class Call(Token):
@@ -68,6 +77,9 @@ class Call(Token):
             
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self.toev)
+        
+    def evaluate(self, mesh, interpreting, interpreted):
+        interpreted.append(self)
         
     def chroot(self, oldroot, newroot):
         return self.toev.chroot(oldroot, newroot)

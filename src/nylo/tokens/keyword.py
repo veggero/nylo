@@ -70,9 +70,9 @@ class Keyword(Token):
                 raise NameError(self.ref)
         out = mesh[self.ref]
         for replace in reversed(replaces):
-            #mesh[self.ref] = out
-            #self.ref = self.ref.chroot(*replace)
+            mesh[self.ref] = out
             out = out.chroot(*replace)
+            self.ref = self.chroot(*replace).ref
         out.interprete(mesh, interpreting, interpreted)
         
     def chroot(self, newroot, oldroot):
