@@ -1,4 +1,11 @@
+// Fibonacci in Nylo
+
 fib:
-    int n -> if(n<2, n, fib(n-1)+fib(n-2))
+    int n
+    prevs: fib(n-1) + fib(n-2)
+    result: if(n<2, n, prevs)
+    example:
+        fib(16)
+    -> result
     
--> fib(15)
+-> fib(->example)

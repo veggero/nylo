@@ -64,11 +64,12 @@ class Symbol(Token):
         interpreting.append(self)
         for arg in self.args:
             arg.interprete(mesh, interpreting, interpreted)
-        self.args = []
         
     def evaluate(self, mesh, interpreting, interpreted):
         interpreting.append(Value(self.map_to_py[self.op](
             interpreted.pop().value, interpreted.pop().value)))
+        if hasattr(self, 'location'):
+            mesh[self.location] = interpreting[-1]
     
     def chroot(self, oldroot, newroot):
         return Symbol(self.op, 

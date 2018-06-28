@@ -73,6 +73,7 @@ class Keyword(Token):
             mesh[self.ref] = out
             out = out.chroot(*replace)
             self.ref = self.chroot(*replace).ref
+        out.location = self.ref
         out.interprete(mesh, interpreting, interpreted)
         
     def chroot(self, newroot, oldroot):

@@ -70,6 +70,9 @@ class Parser:
         or a ")" if deindent is found. Also separates line on the
         with the same indent with ","
         """
+        if self.starts_with('//'):
+            while self.move() != '\n':
+                pass
         while self.read() in ' \t':
             self.move()
         if self.read() == '\n':

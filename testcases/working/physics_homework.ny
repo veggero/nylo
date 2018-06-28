@@ -1,8 +1,8 @@
-"Gli esempi mostrano l'utilizzo della funzione."
-"Sono presi direttamente dal mio libro di fisica."
+// Gli esempi mostrano l'utilizzo della funzione.
+// Sono presi direttamente dal mio libro di fisica.
 
-"Per avviare:"
-"$ python3 src/main.py -f examples/physics_homework.ny"
+//  Per avviare:
+// $ python3 src/main.py -f examples/physics_homework.ny
 
 g: 9.81
 
@@ -72,8 +72,8 @@ corpo:
             velocita_iniziale: 4
             velocita: 0
             accelerazione: 0 - corpo
-                "La massa viene semplificata e non e' esplicitata."
-                "Ogni massa qui va bene."
+                // La massa viene semplificata e non e' esplicitata.
+                //  Ogni massa qui va bene.
                 massa: 5
                 mu_d: 0.05
                 -> forza_attrito_dinamico / massa

@@ -75,6 +75,8 @@ class Struct(Token):
         for key, value in ([*self.value.items()]+
                            [*zip(mesh['arguments'][called],
                                  self.value[Keyword('atoms')])]):
+            if isinstance(key, TypeDef):
+                key = key.value[-1]
             if key == Keyword('atoms'): 
                 continue
             if isinstance(key, Keyword):
@@ -86,6 +88,8 @@ class Struct(Token):
             key = path+key[len(called):]
             value.transpile(mesh, path)
             mesh[key] = value
+        mesh['arguments'][path] = \
+            mesh['arguments'][called][len(self.value[Keyword('atoms')]):]
         
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self)

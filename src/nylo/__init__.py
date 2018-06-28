@@ -25,7 +25,7 @@ from collections import defaultdict
 from .parser import Parser
 from .token import Token
 from .tokens.keyword import Keyword
-
+import time
 class If(Token):
     
     def __init__(self, cond=Keyword('cond', (Keyword('if'), Keyword('cond'))), 

@@ -22,7 +22,7 @@ class Value(Token):
         parser.hasparsed(None)
         
     def __repr__(self):
-        return "$"+repr(self.value)
+        return repr(self.value)
             
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self)
@@ -31,7 +31,7 @@ class Value(Token):
         interpreted.append(self)
         
     def chroot(self, oldroot, newroot):
-        pass
+        return self
                 
                 
 class Call(Token):
@@ -71,9 +71,10 @@ class Call(Token):
         self.caller.transpile_call(mesh, path, called_path)
         mesh['classes'][path] = called_path
         if Keyword('self') in self.caller.value:
-            self.toev = Keyword('self', self.caller.value[Keyword('self')][0])
-        else:
-            self.toev = Keyword('self', path+(Keyword('self'),))
+            self.caller.value[Keyword('self')][0].transpile(mesh, called_path)
+            mesh[path+(Keyword('self'),)] = \
+                self.caller.value[Keyword('self')][0].chroot(path, called_path)
+        self.toev = Keyword('self', path+(Keyword('self'),))
             
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self.toev)

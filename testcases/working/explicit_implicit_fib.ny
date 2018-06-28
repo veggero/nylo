@@ -1,4 +1,4 @@
-"Fibonacci in Nylo"
+// Fibonacci in Nylo
 
 impfib:
     int n
@@ -9,7 +9,7 @@ impfib:
 
 expfib:
     int n
-    int prevs: expfib(int n: n-1) + expfib(int n: n-2)
+    int prevs: expfib(int n: n-1) + expfib(n: n-2)
     int result: if(n<2, n, prevs)
     example: expfib(int n: 16)
     -> result
