@@ -47,6 +47,7 @@ class Struct(Token):
                                   if value)
     
     def transpile(self, mesh, path):
+        self.path = path
         for key, value in self.value.items():
             if key == Keyword('atoms'):
                 for el in value:
@@ -92,10 +93,7 @@ class Struct(Token):
             mesh['arguments'][called][len(self.value[Keyword('atoms')]):]
         
     def interprete(self, mesh, interpreting, interpreted):
-        interpreting.append(self)
-        
-    def evaluate(self, mesh, interpreting, interpreted):
-        interpreted.append(self)
+        interpreting.append(Keyword('self', self.path+(Keyword('self'),)))
         
     def chroot(self, oldroot, newroot):
         return self

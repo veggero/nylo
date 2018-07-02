@@ -23,5 +23,5 @@ if args.file:
     mesh = nylo.builtins
     struct.transpile(mesh, ())
     #print(mesh)
-    out = nylo.interpr(mesh)
+    out = nylo.interprete(mesh)
     print(out)

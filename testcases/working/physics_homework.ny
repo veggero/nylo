@@ -80,6 +80,6 @@ corpo:
             -> spazio
                 
                 
-esempio: corpo(->esempio)
+esempio: corpo.esempio
                 
 -> esempio

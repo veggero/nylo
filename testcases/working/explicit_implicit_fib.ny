@@ -14,4 +14,4 @@ expfib:
     example: expfib(int n: 16)
     -> result
     
--> expfib(-> example) + impfib(-> example)
+-> expfib.example + impfib.example

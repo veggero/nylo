@@ -25,5 +25,4 @@ misure:
             metri: 6
             -> chilometri
             
--> proporzione
-    -> esempio
+-> proporzione.esempio

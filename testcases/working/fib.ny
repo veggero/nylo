@@ -8,4 +8,4 @@ fib:
         fib(16)
     -> result
     
--> fib(->example)
+-> fib.example

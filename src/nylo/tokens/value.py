@@ -14,12 +14,8 @@ class Value(Token):
         self.value = value
         
     def parse(self, parser):
-        from nylo.tokens.struct import Struct
         from nylo.tokens.symbol import Symbol
-        for token in (TypeDef, Number, String, Struct):
-            if token.can_parse(parser):
-                return parser.parse(Symbol(), Call(), token())
-        parser.hasparsed(None)
+        parser.parse(Symbol(), Call(), Get(), SingleValue())
         
     def __repr__(self):
         return repr(self.value)
@@ -32,6 +28,16 @@ class Value(Token):
         
     def chroot(self, oldroot, newroot):
         return self
+    
+
+class SingleValue(Token):
+        
+    def parse(self, parser):
+        from nylo.tokens.struct import Struct
+        for token in (TypeDef, Number, String, Struct):
+            if token.can_parse(parser):
+                return parser.parse(token())
+        parser.hasparsed(None)
                 
                 
 class Call(Token):
@@ -84,3 +90,28 @@ class Call(Token):
         
     def chroot(self, oldroot, newroot):
         return self.toev.chroot(oldroot, newroot)
+
+class Get(Token):
+    
+    def __init__(self, keyword=None, gets=None):
+        self.keyword, self.gets = keyword, gets
+        
+    def parse(self, parser):
+        if not self.keyword:
+            if not parser.starts_with('.'):
+                return 
+            parser.move()
+            self.keyword = parser.getarg()
+            self.gets = []
+            return parser.parse(self, SingleValue())
+        self.gets.append(parser.getarg())
+        if parser.starts_with('.'):
+            parser.move()
+            return parser.parse(self, SingleValue())
+        return parser.hasparsed(self)
+        
+    def transpile(self, mesh, path):
+        self.keyword.transpile(mesh, path)
+        
+    def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(Keyword('get', self.keyword.ref+tuple(self.gets)))

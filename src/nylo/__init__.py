@@ -24,35 +24,10 @@
 from collections import defaultdict
 from .parser import Parser
 from .token import Token
+from .interpreter import interprete
+from .builtins import If
 from .tokens.keyword import Keyword
 import time
-class If(Token):
-    
-    def __init__(self, cond=Keyword('cond', (Keyword('if'), Keyword('cond'))), 
-                 then=Keyword('then', (Keyword('if'), Keyword('then'))), 
-                 else_=Keyword('else', (Keyword('if'), Keyword('else')))):
-        self.cond, self.then, self.else_ = cond, then, else_
-        
-    def interprete(self, mesh, interpreting, interpreted):
-        interpreting.extend([self, self.cond])
-        
-    def evaluate(self, mesh: dict, interpreting: list, interpreted: list):
-        interpreting.append(self.then if interpreted.pop().value else self.else_)
-        
-    def chroot(self, oldroot: tuple, newroot: tuple):
-        return If(self.cond.chroot(oldroot, newroot),
-                  self.then.chroot(oldroot, newroot),
-                  self.else_.chroot(oldroot, newroot))
-    
-    def __repr__(self):
-        return "IF"
-    
-def interpr(mesh):
-    interpreting, interpreted = [], []
-    mesh[(Keyword('self'),)].interprete(mesh, interpreting, interpreted)
-    while interpreting:
-        interpreting.pop().evaluate(mesh, interpreting, interpreted)
-    return interpreted.pop()
 
 builtins = {
     'classes': defaultdict(list),
