@@ -21,4 +21,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from .keyword import Keyword
+from .numstr import Number, String
+from .symbol import Symbol
+from .value import Value
 from .struct import Struct

@@ -1,8 +1,9 @@
 """
-Contains the Reader class definition.
+Contains the Parser class definition.
 """
 
-class Reader:
+
+class Parser:
     """Stores the code and keeps track of the character
     the parser are reading at.
     """
@@ -14,10 +15,21 @@ class Reader:
             code (str): the code string to parse
             reading_at (int): the character parser are reading
         """
+        from nylo.tokens.struct import Struct
         self.code = list(f'({code}\n),\n\0')
         self.indent = 0
+        self.parsed, self.parsing = [], [Struct()]
         self.reading_at = reading_at
         self.line, self.char = 1, 1
+        
+    @staticmethod
+    def parsecode(code):
+        parser = Parser(code)
+        while parser.parsing:
+            parser.avoid_whitespace()
+            parser.parsing.pop().parse(parser)
+            parser.avoid_whitespace()
+        return parser.parsed.pop()
 
     def read(self):
         """Read the current character"""
@@ -58,6 +70,9 @@ class Reader:
         or a ")" if deindent is found. Also separates line on the
         with the same indent with ","
         """
+        if self.starts_with('//'):
+            while self.move() != '\n':
+                pass
         while self.read() in ' \t':
             self.move()
         if self.read() == '\n':
@@ -77,3 +92,15 @@ class Reader:
                     self.code.insert(i, ')')
             self.move()
             self.indent = newindent
+
+    def parse(self, *args):
+        "Add tokens to be parsed."
+        self.parsing.extend(args)
+        
+    def hasparsed(self, *args):
+        "Add parsed tokens."
+        self.parsed.extend(args)
+        
+    def getarg(self):
+        "Get the last parsed token."
+        return self.parsed.pop()

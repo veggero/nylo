@@ -22,31 +22,26 @@
 # SOFTWARE.
 
 from collections import defaultdict
-
-# noinspection PyUnresolvedReferences
-from nylo.lexers.reader import Reader
-# noinspection PyUnresolvedReferences
-from nylo.lexers.values.value import Value
-# noinspection PyUnresolvedReferences
-from nylo.lexers.values.keyword import Keyword
-# noinspection PyUnresolvedReferences
-from nylo.lexers.values.symbol import Symbol
-# noinspection PyUnresolvedReferences
-from nylo.lexers.values.numstr import Number, String
-# noinspection PyUnresolvedReferences
-from nylo.lexers.struct.struct import Struct
+from .parser import Parser
+from .token import Token
+from .interpreter import interprete
+from .builtins import If
+from .tokens.keyword import Keyword
+import time
 
 builtins = {
-    ('if',): ('placeholder',),
-    ('if', 'self'): [('if', 'then'), ('if', 'else'), "IF", ('if', 'cond')],
-    'classes': {}, 
+    'classes': defaultdict(list),
+    'types': {},
     'arguments': defaultdict(list, {
-        ('if',): [('if', 'cond'), ('if', 'then'), ('if', 'else')],
-        }),
-}
+        (Keyword('if'),): [(Keyword('if'), Keyword('cond')),
+                           (Keyword('if'), Keyword('then')),
+                           (Keyword('if'), Keyword('else'))]
+    }),
+    (Keyword('if'),): (Keyword('placeholder'),),
+    (Keyword('if'), Keyword('self')): If(),
+    }
 
-__author__ = 'veggero'
-__team__ = 'pyTeens'
+__author__ = 'Veggero il Veggente'
+__url__ = 'https://github.com/veggero/nylo'
 __license__ = 'GNU GENERAL PUBLIC LICENSE'
-__url__ = 'https://github.com/pyTeens/nylo'
-__version__ = '0.1.0'
+__version__ = '0.0.0'
