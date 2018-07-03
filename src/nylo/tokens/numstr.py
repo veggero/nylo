@@ -38,7 +38,7 @@ class Number(Token):
     def chroot(self, oldroot, newroot):
         return self
             
-class String:
+class String(Token):
 
     start_to_ends = {'"': '"', "'": "'", '«': '»'}
     
@@ -60,7 +60,7 @@ class String:
         pass
     
     def __repr__(self):
-        return self.value
+        return "'%s'" %self.value
         
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(self)

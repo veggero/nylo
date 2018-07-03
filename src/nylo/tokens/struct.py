@@ -5,6 +5,7 @@ Contains the Struct class definition.
 from collections import defaultdict
 from nylo.token import Token
 from nylo.tokens.keyword import Keyword, TypeDef
+from nylo.tokens.symbol import Symbol
 from nylo.tokens.value import Value
 
 
@@ -48,22 +49,26 @@ class Struct(Token):
     
     def transpile(self, mesh, path):
         self.path = path
+        mesh[path+(Keyword('self'),)] = Value(repr(self))
         for key, value in self.value.items():
             if key == Keyword('atoms'):
-                for el in value:
+                for i, el in enumerate(value):
                     if isinstance(el, TypeDef):
                         el = el.value[-1]
                     if isinstance(el, Keyword):
                         arg = path+(el.value,)
                         mesh[arg] = Keyword('placeholder')
                         mesh['arguments'][path].append(arg)
+                    else:
+                        mesh[path+(Value(i),)] = el
             if isinstance(key, TypeDef):
                 key = key.value[-1]
-            mesh[path+(key.value,)] = Keyword('placeholder')
+            if isinstance(key, Keyword):
+                mesh[path+(key.value,)] = Keyword('placeholder')
         for key, value in self.value.items():
             if isinstance(key, TypeDef):
                 key = key.value[-1]
-            newpath = path+(key.value,)
+            newpath = path+(key,)
             if len(value) == 1:
                 value[0].transpile(mesh, newpath)
                 mesh[newpath] = value[0]
@@ -94,6 +99,9 @@ class Struct(Token):
         
     def interprete(self, mesh, interpreting, interpreted):
         interpreting.append(Keyword('self', self.path+(Keyword('self'),)))
+    
+    def evaluate(self, mesh, interpreting, interpreted):
+        interpreted.append(self)
         
     def chroot(self, oldroot, newroot):
         return self

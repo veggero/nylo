@@ -93,25 +93,39 @@ class Call(Token):
 
 class Get(Token):
     
-    def __init__(self, keyword=None, gets=None):
-        self.keyword, self.gets = keyword, gets
+    def __init__(self, keyword=None, gets=None, toev=None):
+        self.keyword, self.gets, self.toev = keyword, gets, toev
         
     def parse(self, parser):
         if not self.keyword:
             if not parser.starts_with('.'):
                 return 
-            parser.move()
             self.keyword = parser.getarg()
-            self.gets = []
-            return parser.parse(self, SingleValue())
-        self.gets.append(parser.getarg())
+            self.gets, self.toev = [], []
+        else:
+            self.gets.append(parser.getarg())
+            if parser.starts_with(')'):
+                parser.move()
+                self.toev.append(self.gets[-1])
         if parser.starts_with('.'):
             parser.move()
-            return parser.parse(self, SingleValue())
+            if parser.starts_with('('):
+                parser.move()
+            return parser.parse(self, Value())
         return parser.hasparsed(self)
         
     def transpile(self, mesh, path):
+        for i, el in enumerate(self.toev):
+            el.transpile(mesh, path+(i,))
         self.keyword.transpile(mesh, path)
         
     def interprete(self, mesh, interpreting, interpreted):
+        interpreting.append(self)
+        for val in self.toev:
+            val.interprete(mesh, interpreting, interpreted)
+        
+    def evaluate(self, mesh, interpreting, interpreted):
+        for i, el in enumerate(self.gets):
+            if el in self.toev:
+                self.gets[i] = interpreted.pop()
         interpreting.append(Keyword('get', self.keyword.ref+tuple(self.gets)))

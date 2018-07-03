@@ -5,6 +5,8 @@ This module contains builtin objects in nylo.
 
 from .token import Token
 from .tokens.keyword import Keyword
+from collections import defaultdict
+from .tokens.value import Value
 
 
 class If(Token):
@@ -27,3 +29,17 @@ class If(Token):
     
     def __repr__(self):
         return "IF"
+    
+    
+builtins = {
+    'classes': defaultdict(list),
+    'types': {},
+    'arguments': defaultdict(list, {
+        (Keyword('if'),): [(Keyword('if'), Keyword('cond')),
+                           (Keyword('if'), Keyword('then')),
+                           (Keyword('if'), Keyword('else'))]
+    }),
+    (Keyword('if'),): (Keyword('placeholder'),),
+    (Keyword('if'), Keyword('self')): If(),
+    (Keyword('placeholder'),): Value(None)
+    }

@@ -21,25 +21,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import defaultdict
+
 from .parser import Parser
 from .token import Token
 from .interpreter import interprete
-from .builtins import If
+from .builtins import If, builtins
 from .tokens.keyword import Keyword
 import time
 
-builtins = {
-    'classes': defaultdict(list),
-    'types': {},
-    'arguments': defaultdict(list, {
-        (Keyword('if'),): [(Keyword('if'), Keyword('cond')),
-                           (Keyword('if'), Keyword('then')),
-                           (Keyword('if'), Keyword('else'))]
-    }),
-    (Keyword('if'),): (Keyword('placeholder'),),
-    (Keyword('if'), Keyword('self')): If(),
-    }
 
 __author__ = 'Veggero il Veggente'
 __url__ = 'https://github.com/veggero/nylo'
