@@ -111,7 +111,8 @@ class Get(Token):
             parser.move()
             if parser.starts_with('('):
                 parser.move()
-            return parser.parse(self, Value())
+                return parser.parse(self, Value())
+            return parser.parse(self, SingleValue())
         return parser.hasparsed(self)
         
     def transpile(self, mesh, path):
