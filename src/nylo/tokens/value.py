@@ -10,7 +10,10 @@ from nylo.tokens.numstr import Number, String
 
 class Value(Token):
     
-    def __init__(self, value=None):
+    def __init__(self, value=None, enum=[0]):
+        if value is None:
+            value = enum[0]
+            enum[0] += 1
         self.value = value
         
     def parse(self, parser):

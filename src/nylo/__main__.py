@@ -19,9 +19,7 @@ if args.file:
     with open(args.file, 'r') as codefile:
         code = codefile.read()
     struct = nylo.Parser.parsecode(code)
-    #print(struct)
     mesh = nylo.builtins
     struct.transpile(mesh, ())
-    #print(mesh)
     out = nylo.interprete(mesh)
     print(out)

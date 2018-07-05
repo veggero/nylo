@@ -39,7 +39,7 @@ builtins = {
                            (Keyword('if'), Keyword('then')),
                            (Keyword('if'), Keyword('else'))]
     }),
-    (Keyword('if'),): (Keyword('placeholder'),),
+    (Keyword('if'),): (Keyword('placeholder', (Keyword('placeholder'),)),),
     (Keyword('if'), Keyword('self')): If(),
     (Keyword('placeholder'),): Value(None)
     }

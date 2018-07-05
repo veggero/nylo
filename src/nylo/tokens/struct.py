@@ -57,14 +57,14 @@ class Struct(Token):
                         el = el.value[-1]
                     if isinstance(el, Keyword):
                         arg = path+(el.value,)
-                        mesh[arg] = Keyword('placeholder')
+                        mesh[arg] = Value()
                         mesh['arguments'][path].append(arg)
                     else:
                         mesh[path+(Value(i),)] = el
             if isinstance(key, TypeDef):
                 key = key.value[-1]
             if isinstance(key, Keyword):
-                mesh[path+(key.value,)] = Keyword('placeholder')
+                mesh[path+(key.value,)] = Keyword('placeholder', (Keyword('placeholder'),))
         for key, value in self.value.items():
             if isinstance(key, TypeDef):
                 key = key.value[-1]
