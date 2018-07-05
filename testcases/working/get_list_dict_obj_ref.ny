@@ -18,4 +18,4 @@ examples:
     a.(1+1)
     a.(a.x)
 
--> examples.9
+-> examples

@@ -44,12 +44,14 @@ class Struct(Token):
             parser.parse(self, Value())
             
     def __repr__(self):
-        return '(%s)' % ', '.join(f'{key}: {value}' for key, value in self.value.items()
-                                  if value)
+        return ('('+', '.join(f'{key}: {value}' for key, value in self.value.items()
+                        if value and key not in ('atoms', 'self')) +
+                    ', '.join(map(repr, self.value['atoms'])) +
+                    ('-> ' + repr(self.value['self'])) * bool(self.value['self']) 
+                    + ')')
     
     def transpile(self, mesh, path):
         self.path = path
-        mesh[path+(Keyword('self'),)] = Value(repr(self))
         for key, value in self.value.items():
             if key == Keyword('atoms'):
                 for i, el in enumerate(value):
@@ -74,8 +76,8 @@ class Struct(Token):
                 mesh[newpath] = value[0]
             else:
                 for i, vl in enumerate(value):
-                    vl.transpile(mesh, newpath)
-                    mesh[newpath] = vl
+                    vl.transpile(mesh, newpath+(i,))
+                    mesh[newpath+(i,)] = vl
                     
     def transpile_call(self, mesh, path, called):
         for key, value in ([*self.value.items()]+
@@ -98,10 +100,22 @@ class Struct(Token):
             mesh['arguments'][called][len(self.value[Keyword('atoms')]):]
         
     def interprete(self, mesh, interpreting, interpreted):
-        interpreting.append(Keyword('self', self.path+(Keyword('self'),)))
+        if self.path+(Keyword('self'),) in mesh:
+            return interpreting.append(Keyword('self', self.path+(Keyword('self'),)))
+        interpreting.append(self)
     
     def evaluate(self, mesh, interpreting, interpreted):
+        from nylo.interpreter import interprete as interpr
         interpreted.append(self)
+        for key, value in self.value.items():
+            if isinstance(key, TypeDef):
+                key = key.value[-1]
+            newpath = self.path+(key,)
+            if len(value) == 1:
+                self.value[key][0] = interpr(mesh, newpath)
+            else:
+                for i, vl in enumerate(value):
+                    self.value[key][i] = interpr(mesh, newpath+(i,))
         
     def chroot(self, oldroot, newroot):
         return self
