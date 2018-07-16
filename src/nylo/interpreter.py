@@ -1,14 +1,13 @@
-"""
-This modules contains all the function related to interpreting.
-"""
+class Integer(int):
+    pass
 
+class Float(float):
+    pass
 
-from .tokens.keyword import Keyword
+class String(str):
+    pass
 
-
-def interprete(mesh):
-    interpreting, interpreted = [], []
-    mesh[(Keyword('self'),)].interprete(mesh, interpreting, interpreted)
-    while interpreting:
-        interpreting.pop().evaluate(mesh, interpreting, interpreted)
-    return interpreted.pop()
+class Variable(str):
+    
+    def __repr__(self):
+        return '$%s' % self

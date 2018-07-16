@@ -1,106 +1,127 @@
 """
-Contains the Parser class definition.
+This module implement the parsers for Nylo.
+All the parsers have the code as input. The code is a list
+of characters. Parser will pop out the values they parse, and
+return the parsed value.
 """
 
 
-class Parser:
-    """Stores the code and keeps track of the character
-    the parser are reading at.
+from itertools import takewhile
+from functools import partial
+from collections import deque
+from typing import Union
+from string import ascii_lowercase as letters, digits
+
+
+from exceptions import NySyntaxError
+from interpreter import Integer, Float, String, Variable
+
+
+def anyvalue(code: list):
     """
+    anyvalue ::= number | string | variable
+    >>> code = [*'«strakas»19sailors']
+    >>> anyvalue(code)
+    'strakas'
+    >>> anyvalue(code)
+    19
+    >>> anyvalue(code)
+    $sailors
+    >>> anyvalue([*'~'])
+    Traceback (most recent call last):
+      ...
+    exceptions.NySyntaxError: Unexpected character found while parsing.
+    >>> anyvalue([])
+    Traceback (most recent call last):
+      ...
+    exceptions.NySyntaxError: Unexpected EOF while parsing.
+    """
+    try:
+        return next(f(code) for v, f in {digits + '.': number,
+            '"\'«': string, letters + '_': variable}.items() if code[0] in v)
+    except StopIteration:
+        raise NySyntaxError('Unexpected character found while parsing.')
+    except IndexError:
+        raise NySyntaxError('Unexpected EOF while parsing.')
+    
 
-    def __init__(self, code, reading_at=0):
-        """Initialize the class
+def number(code: list) -> Union[Integer, Float]:
+    """
+    number ::= (1-9)* ["." (1-9)*]
+    >>> number([*'123'])
+    123
+    >>> number([*'1 2 3'])
+    1
+    >>> number([*'42.2.'])
+    42.2
+    >>> number([])
+    Traceback (innermost last):
+      ....
+    exceptions.NySyntaxError: Non-numeric character while parsing number.
+    >>> number([*'caffe'])
+    Traceback (innermost last):
+      ....
+    exceptions.NySyntaxError: Non-numeric character while parsing number.
+    """
+    value: str = ''.join(takewhile(str.isdigit, code))
+    if not value:
+        raise NySyntaxError('Non-numeric character while parsing number.')
+    if code[len(value):][:1] == ['.']:
+        value += ('.' + ''.join(takewhile(str.isdigit, code[len(value)+1:])))
+    deque(map(code.remove, value))
+    return (Float if '.' in value else Integer)(value)
 
-        Args:
-            code (str): the code string to parse
-            reading_at (int): the character parser are reading
-        """
-        from nylo.tokens.struct import Struct
-        self.code = list(f'({code}\n),\n\0')
-        self.indent = 0
-        self.parsed, self.parsing = [], [Struct()]
-        self.reading_at = reading_at
-        self.line, self.char = 1, 1
-        
-    @staticmethod
-    def parsecode(code):
-        parser = Parser(code)
-        while parser.parsing:
-            parser.avoid_whitespace()
-            parser.parsing.pop().parse(parser)
-            parser.avoid_whitespace()
-        return parser.parsed.pop()
 
-    def read(self):
-        """Read the current character"""
-        return self.code[self.reading_at]
+def string(code: list) -> String:
+    """
+    string ::= '"' .* '"' | "'" .* "'" | "«" .* "»"
+    >>> string([*"'spam'"])
+    'spam'
+    >>> string([*'"foo" "bar"'])
+    'foo'
+    >>> string([*'«42»!'])
+    '42'
+    >>> string([*'caffe'])
+    Traceback (innermost last):
+      ....
+    exceptions.NySyntaxError: Non-string character while parsing string.
+    >>> string([])
+    Traceback (innermost last):
+      ....
+    exceptions.NySyntaxError: Non-string character while parsing string.
+    >>> string([*'«this has no end'])
+    Traceback (innermost last):
+      ....
+    exceptions.NySyntaxError: Found EOF while parsing for string end.
+    """
+    if not (code and code[0] in '\'"«'):
+        raise NySyntaxError('Non-string character while parsing string.')
+    try:
+        return String(''.join(iter(partial(code.pop, 0),
+            {"'": "'", '"': '"', '«': '»'}[code.pop(0)])))
+    except IndexError:
+        raise NySyntaxError('Found EOF while parsing for string end.')
 
-    def move(self, todo=1):
-        """Move {todo} characters on"""
-        if self.read() == '\n':
-            self.line += 1
-            self.char = 1
-        else:
-            self.char += 1
-        self.reading_at += 1
-        if self.read() == '\0':
-            raise SyntaxError('EOF while scanning.')
-        if todo > 1:
-            self.move(todo - 1)
-        return self.code[self.reading_at - 1]
-
-    def any_starts_with(self, starts):
-        """Check if the reading_at character starts
-        with any of the starts
-        """
-        for start in starts:
-            if self.starts_with(start):
-                return start
-        return False
-
-    def starts_with(self, string):
-        """Check if the reading_at character starts
-        with the given string
-        """
-        return ''.join(self.code).startswith(string, self.reading_at)
-
-    def avoid_whitespace(self):
-        """Makes two things: move on until first non-withespace
-        character, but also insert a "(" if indented code is found,
-        or a ")" if deindent is found. Also separates line on the
-        with the same indent with ","
-        """
-        if self.starts_with('//'):
-            while self.move() != '\n':
-                pass
-        while self.read() in ' \t':
-            self.move()
-        if self.read() == '\n':
-            i = self.reading_at + 1
-            while self.code[i] in '\t ':
-                i += 1
-            if self.code[i] == '\n':
-                self.reading_at = i
-                return self.avoid_whitespace()
-            newindent = i - (self.reading_at + 1)
-            if newindent <= self.indent:
-                self.code.insert(i, ',')
-            for y in range(abs(self.indent - newindent)):
-                if newindent > self.indent:
-                    self.code.insert(i, '(')
-                elif newindent < self.indent:
-                    self.code.insert(i, ')')
-            self.move()
-            self.indent = newindent
-
-    def parse(self, *args):
-        "Add tokens to be parsed."
-        self.parsing.extend(args)
-        
-    def hasparsed(self, *args):
-        "Add parsed tokens."
-        self.parsed.extend(args)
-        
-    def getarg(self):
-        "Get the last parsed token."
-        return self.parsed.pop()
+def variable(code: list) -> Variable:
+    """
+    variable ::= (a-Z_) (a-Z_')*
+    >>> variable([*'tau'])
+    $tau
+    >>> variable([*"k_9' leela"])
+    $k_9'
+    >>> variable([*'c8e.'])
+    $c8e
+    >>> variable([*'32'])
+    Traceback (innermost last):
+      ....
+    exceptions.NySyntaxError: Non-variable character while parsing variable.
+    >>> variable([])
+    Traceback (innermost last):
+      ....
+    exceptions.NySyntaxError: Non-variable character while parsing variable.
+    """
+    if not (code and code[0] in letters + '_'):
+        raise NySyntaxError('Non-variable character while parsing variable.')
+    value = ''.join(takewhile(lambda x: x in letters + digits + "_'", code))
+    deque(map(code.remove, value))
+    return Variable(value)
