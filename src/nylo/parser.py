@@ -44,6 +44,59 @@ def anyvalue(code: list):
     except IndexError:
         raise NySyntaxError('Unexpected EOF while parsing.')
     
+    
+def whitespace(code: list, indent=[0]):
+    r"""
+    >>> code = [*'    ']
+    >>> whitespace(code)
+    >>> code
+    []
+    >>> whitespace([*" \t \t 3"])
+    Traceback (most recent call last):
+      ...
+    exceptions.NySyntaxError: Unexpected tab while parsing whitespace.
+    >>> code = []
+    >>> whitespace(code)
+    >>> code
+    []
+    >>> code = [*"\n 3"]
+    >>> whitespace(code, [0])
+    >>> code
+    ['(', '3']
+    >>> code = [*"\n\t3"]
+    >>> whitespace(code, [1])
+    >>> code
+    [',', '3']
+    >>> code = [*"\n 3"]
+    >>> whitespace(code, [2])
+    >>> code
+    [')', '3']
+    >>> code = [*"\n\t3"]
+    >>> whitespace(code, [3])
+    >>> code
+    [')', ')', '3']
+    >>> code = [*'\n']
+    >>> whitespace(code, [4])
+    >>> code
+    [')', ')', ')', ')']
+    >>> code = [*"\n\t\t\t\n\t3"]
+    >>> whitespace(code, [2])
+    >>> code
+    [')', '3']
+    """
+    deque(map(code.remove, [*takewhile(lambda x: x == ' ', code)]))
+    if code and code[0] == '\t':
+        raise NySyntaxError("Unexpected tab while parsing whitespace.")
+    if code and code[0] == '\n':
+        while code and code[0] == '\n':
+            code.pop(0)
+            newindent = [*takewhile(lambda x: x in ' \t', code)]
+            deque(map(code.remove, newindent))
+        delta = len(newindent) - indent[0]
+        deque(map(partial(code.insert, 0), 
+                    (')' * -delta * (delta < 0) +
+                    ',' * (delta == 0) +
+                    '(' * delta * (delta > 0))))
 
 def number(code: list) -> Union[Integer, Float]:
     """
