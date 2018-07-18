@@ -53,11 +53,11 @@ def structure(code: list):
     """
     if not code or not code[0] == '(':
         raise NySyntaxError('Non-structure character while parsing structure.')
-    code.pop(0)
+    del code[0]
     dirs, atoms, rvalue = {}, [], None
     while code[0] != ')':
         while code and code[0] == ',':
-            code.pop(0)
+            del code[0]
             whitespace(code)
         if ''.join(code).startswith('->'):
             del code[:2]
@@ -67,7 +67,7 @@ def structure(code: list):
         if not code:
             raise NySyntaxError('Unexpected EOF while parsing.')
         if code[0] == ':':
-            code.pop(0)
+            del code[0]
             key, value = value, anyvalue(code)
             dirs[key] = value
         else:
@@ -76,7 +76,7 @@ def structure(code: list):
         raise NySyntaxError('Unexpected EOF while parsing.')
     elif code[0] != ')':
         raise NySyntaxError('Missing ")" after "->" value.')
-    code.pop(0)
+    del code[0]
     return Struct(dirs, tuple(atoms), rvalue)
 
 def anyvalue(code: list):
@@ -155,9 +155,9 @@ def whitespace(code: list, indent=[0]):
         raise NySyntaxError("Unexpected tab while parsing whitespace.")
     if code and code[0] == '\n':
         while code and code[0] == '\n':
-            code.pop(0)
+            del code[0]
             newindent = [*takewhile(lambda x: x in ' \t', code)]
-            deque(map(code.remove, newindent))
+            del code[:len(newindent)]
         delta = len(newindent) - indent[0]
         deque(map(partial(code.insert, 0), 
                     (')' * -delta * (delta < 0) +
@@ -187,7 +187,7 @@ def number(code: list) -> Union[Integer, Float]:
         raise NySyntaxError('Non-numeric character while parsing number.')
     if code[len(value):][:1] == ['.']:
         value += ('.' + ''.join(takewhile(str.isdigit, code[len(value)+1:])))
-    deque(map(code.remove, value))
+    del code[:len(value)]
     return (Float if '.' in value else Integer)(value)
 
 
@@ -242,5 +242,5 @@ def variable(code: list) -> Variable:
     if not (code and code[0] in letters + '_'):
         raise NySyntaxError('Non-variable character while parsing variable.')
     value = ''.join(takewhile(lambda x: x in letters + digits + "_'", code))
-    deque(map(code.remove, value))
+    del code[:len(value)]
     return Variable(value)
