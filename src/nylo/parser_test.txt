@@ -1,0 +1,164 @@
+>>> from parser import number
+>>> number([*'123'])
+123
+>>> number([*'1 2 3'])
+1
+>>> number([*'42.2.'])
+42.2
+>>> number([])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Non-numeric character while parsing number.
+>>> number([*'caffe'])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Non-numeric character while parsing number.
+
+>>> from parser import text
+>>> text([*"'spam'"])
+'spam'
+>>> text([*'"foo" "bar"'])
+'foo'
+>>> text([*'«42»!'])
+'42'
+>>> text([*'caffe'])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Non-text character while parsing text.
+>>> text([])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Non-text character while parsing text.
+>>> text([*'«this has no end'])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Found EOF while parsing for text end.
+
+>>> from parser import variable
+>>> variable([*'tau'])
+$tau
+>>> variable([*"k_9' leela"])
+$k_9'
+>>> variable([*'c8e.'])
+$c8e
+>>> variable([*'32'])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Non-variable character while parsing variable.
+>>> variable([])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Non-variable character while parsing variable.
+
+>>> from parser import whitespace
+>>> code = [*'    ']
+>>> whitespace(code)
+>>> code
+[]
+>>> whitespace([*" \t \t 3"])
+Traceback (most recent call last):
+    ...
+exceptions.NySyntaxError: Unexpected tab while parsing whitespace.
+>>> code = []
+>>> whitespace(code)
+>>> code
+[]
+>>> code = [*"\n 3"]
+>>> whitespace(code, [0])
+>>> code
+['(', '3']
+>>> code = [*"\n\t3"]
+>>> whitespace(code, [1])
+>>> code
+[',', '3']
+>>> code = [*"\n 3"]
+>>> whitespace(code, [2])
+>>> code
+[')', '3']
+>>> code = [*"\n\t3"]
+>>> whitespace(code, [3])
+>>> code
+[')', ')', '3']
+>>> code = [*'\n']
+>>> whitespace(code, [4])
+>>> code
+[')', ')', ')', ')']
+>>> code = [*"\n\t\t\t\n\t3"]
+>>> whitespace(code, [2])
+>>> code
+[')', '3']
+
+>>> from parser import anyvalue
+>>> code = [*'«strakas»19sailors']
+>>> anyvalue(code)
+'strakas'
+>>> anyvalue(code)
+19
+>>> anyvalue(code)
+$sailors
+>>> anyvalue([*'~'])
+Traceback (most recent call last):
+    ...    
+exceptions.NySyntaxError: Unexpected character "'~'" found while parsing.
+>>> anyvalue([])
+Traceback (most recent call last):
+    ...
+exceptions.NySyntaxError: Unexpected EOF while parsing.
+
+>>> from parser import structure
+>>> structure([*'(a:  1  5  :b   c  3  d  ->   5)'])
+{$a: 1, 5: $b}/($c, 3, $d)/5
+>>> structure([*'(  5  1:1, , 6:b 6 , 8 d: f  ,->10)'])
+{1: 1, 6: $b, $d: $f}/(5, 6, 8)/10
+>>> structure([*'(1)'])
+1
+>>> structure([*'(1,)'])
+{}/(1,)/None
+>>> structure([*'(r g b)'])
+{}/($r, $g, $b)/None
+>>> structure([])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Non-structure character while parsing structure.
+>>> structure([*'(2, 4 b'])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Unexpected EOF while parsing.
+>>> structure([*'(2, 4 b,,'])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Unexpected EOF while parsing.
+>>> structure([*'(2, 4 b: '])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Unexpected EOF while parsing.
+>>> structure([*'(2, 4 -> 3'])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Unexpected EOF while parsing.
+>>> structure([*'(1, 4, -> 2 4)'])
+Traceback (innermost last):
+    ....
+exceptions.NySyntaxError: Missing ")" after "->" value.
+
+>>> from parser import sentence
+>>> sentence([*'15'])
+15
+>>> sentence([*'hello'])
+$hello
+>>> sentence([*'1+1'])
+(+)(1 1)
+>>> sentence([*'*2'])
+(*)(2)
+>>> sentence([*'/'])
+(/)
+>>> sentence([*'2-'])
+(-)(2)
+>>> sentence([*''])
+Traceback (most recent call last):
+    ...    
+exceptions.NySyntaxError: Unexpected EOF while parsing.
+>>> sentence([*'~'])
+Traceback (most recent call last):
+    ...    
+exceptions.NySyntaxError: Unexpected character "'~'" found while parsing.
