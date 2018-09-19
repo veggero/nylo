@@ -4,8 +4,8 @@ import pprint
 
 class Code:
 	
-	def __init__(self, code: list):
-		self.code = [*code]
+	def __init__(self, code: str):
+		self.code: list = [*code]
 		self.whitespace()
 		
 	def assume(self, characters: str):
@@ -33,10 +33,12 @@ class Code:
 		while self.code and self.code[0] in string.whitespace:
 			self.code.pop(0)
 			
+
 def parse(code):
 	mesh = collections.defaultdict(list)
 	any(Code(code), (), mesh)
 	return mesh
+
 
 def structure(code, path: tuple, mesh):
 	code.skip('(')
