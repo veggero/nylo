@@ -4,26 +4,29 @@ import pprint
 
 class Code:
 	
-	def __init__(self, code):
+	def __init__(self, code: list):
 		self.code = [*code]
 		self.whitespace()
 		
-	def skip(self, characters):
+	def assume(self, characters: str):
 		if not self.is_in(characters):
-			print(self.code)
 			raise SyntaxError(f'Found {self.code[0]!r} while '
 					  f'parsing for {characters!r}')
+		
+	def skip(self, characters: str):
+		self.assume(characters)
 		popd = self.code.pop(0)
 		self.whitespace()
 		return popd
 	
-	def skip_while(self, characters):
-		value = self.skip(characters)
+	def skip_while(self, characters: str, value=''):
+		self.assume(characters)
 		while self.is_in(characters):
-			value += self.skip(characters)
+			value += self.code.pop(0)
+		self.whitespace()
 		return value
 	
-	def is_in(self, characters):
+	def is_in(self, characters: str):
 		return self.code and self.code[0] in characters
 	
 	def whitespace(self):
@@ -35,12 +38,12 @@ def parse(code):
 	any(Code(code), (), mesh)
 	return mesh
 
-def structure(code, path, mesh):
+def structure(code, path: tuple, mesh):
 	code.skip('(')
 	while not code.is_in(')'):
-		key = variable(code)
+		key: tuple = variable(code)
 		code.skip(':')
-		value = any(code, path+(key,), mesh)
+		any(code, path+(key,), mesh)
 		while code.is_in(','):
 			code.skip(',')
 	code.skip(')')
@@ -50,9 +53,13 @@ def variable(code):
 	return code.skip_while(string.ascii_letters)
 
 
-def any(code, path, mesh):
-	while code.is_in('('+string.ascii_letters):
-		if code.is_in('('):
-			structure(code, path, mesh)
-		elif code.is_in(string.ascii_letters):
-			mesh[path].append(variable(code))
+def any(code, path: tuple, mesh):
+	if code.is_in('('):
+		structure(code, path, mesh)
+	elif code.is_in(string.ascii_letters):
+		mesh[path].append(variable(code))
+	if code.is_in('.'):
+		code.skip('.')
+		any(code, path, mesh)
+	elif code.is_in('('):
+		any(code, path, mesh)
