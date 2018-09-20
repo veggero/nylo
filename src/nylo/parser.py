@@ -40,12 +40,12 @@ def parse(code):
 	return mesh
 
 
-def structure(code, path: tuple, mesh):
+def structure(code, path: tuple, mesh, call=False):
 	code.skip('(')
 	while not code.is_in(')'):
 		key: tuple = variable(code)
 		code.skip(':')
-		any(code, path+(key,), mesh)
+		any(code, path+(key,), mesh, call)
 		while code.is_in(','):
 			code.skip(',')
 	code.skip(')')
@@ -55,13 +55,15 @@ def variable(code):
 	return code.skip_while(string.ascii_letters)
 
 
-def any(code, path: tuple, mesh):
+def any(code, path: tuple, mesh, call=False):
 	if code.is_in('('):
-		structure(code, path, mesh)
+		structure(code, path, mesh, call)
 	elif code.is_in(string.ascii_letters):
+		if call:
+			mesh[path].append('..')
 		mesh[path].append(variable(code))
 	if code.is_in('.'):
 		code.skip('.')
 		any(code, path, mesh)
 	elif code.is_in('('):
-		any(code, path, mesh)
+		any(code, path, mesh, call=True)
