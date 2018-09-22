@@ -60,30 +60,24 @@ def any(code, path: tuple, mesh, call=False):
 	if code.is_in('('):
 		structure(code, path, mesh, call)
 	elif code.is_in(string.ascii_letters):
-		mesh[path].append(variable(code))
-	if code.is_in('.'):
-		code.skip('.')
-		any(code, path, mesh)
-	elif code.is_in('('):
-		any(code, path, mesh, call=True)
+		mesh[path] = [call if call else path, variable(code)]
+		while code.is_in('.'):
+			code.skip('.')
+			mesh[path].append(variable(code))
+	if code.is_in('('):
+		any(code, path, mesh, call=path[:-1])
 		
 
 def static(mesh):
 	for key, value in mesh.items():
 		if not value:
 			continue
-		for n in range(len(key)+1):
+		scope = value.pop(0)
+		for n in reversed(range(len(scope)+1)):
 			dir = key[:n]+(value[0],)
 			if dir in mesh:
 				mesh[key] = dir+tuple(value[1:])
 				break
 		else:
-			raise SyntaxError(f'name {value[0]} is not defined.')
+			raise SyntaxError(f'name {value[0]!r} is not defined.')
 	return mesh
-			
-
-f = static(parse('''
-(n: (), f: ()).n(f: f)
-'''))
-
-pprint.pprint(f)
