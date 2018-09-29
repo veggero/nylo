@@ -1,6 +1,8 @@
 Welcome to nylo
 ========================
 
+WARNING: README IS INCREDIBLY OUTDATED. I'm working on this, but I still need to figure out a lot of things, even the grammar itself. As soon as I have a clear and sure idea of how Nylo is going to be, I will rewrite everything.
+
 |image0|
 
 ::
@@ -39,8 +41,7 @@ Contents
 How to contribute
 -----------------
 
-*In primis* (“firstable”), you **must** be a member of `pyTeens`_, then
-**ask** @veggero!
+Just ask @veggero :)
 
 Present and future of project
 -----------------------------
@@ -220,13 +221,7 @@ to follow if a condition is not followed. Warning will be anyway raised.
    ] [list[0] == 0 -> print("Wrong header!")   // First element should be 0
    ] t: 0..5
 
-**Copyright** (c) 2017, 2018 `veggero`_. All
-rights reserved.
-
-**Copyright** (c) 2018 `pyTeens`_. All rights reserved.
-
-**Copyright** (c) 2018 `Amerigo Guadagno`_. All rights
-reserved.
+No one own this, you can do whatever you want with this code, and you should not care about who made it. Have fun!
 
 .. _How to contribute: #how-to-contribute
 .. _Present and future of project: present-and-future-of-project
