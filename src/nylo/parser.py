@@ -33,6 +33,9 @@ class Code:
 		while self.code and self.code[0] in string.whitespace:
 			self.code.pop(0)
 			
+	def startswith(self, characters: str):
+		return ''.join(self.code).startswith(characters)
+			
 
 def parse(code):
 	mesh = collections.defaultdict(list)
@@ -41,14 +44,19 @@ def parse(code):
 
 
 def structure(code, path: tuple, mesh, call=False):
-	mesh[path]
+	if not mesh[path]:
+		mesh[path] = None
 	code.skip('(')
-	while not code.is_in(')'):
+	while not (code.is_in(')') or code.startswith('->')):
 		key: tuple = variable(code)
 		code.skip(':')
 		any(code, path+(key,), mesh, call)
 		while code.is_in(','):
 			code.skip(',')
+	if code.startswith('->'):
+		code.skip('-')
+		code.skip('>')
+		any(code, path+('self',), mesh, call)
 	code.skip(')')
 
 
@@ -65,7 +73,7 @@ def any(code, path: tuple, mesh, call=False):
 			code.skip('.')
 			mesh[path].append(variable(code))
 	if code.is_in('('):
-		any(code, path, mesh, call=path[:-1])
+		any(code, path, mesh, call=path)
 		
 
 def static(mesh):
@@ -73,7 +81,7 @@ def static(mesh):
 		if not value:
 			continue
 		scope = value.pop(0)
-		for n in reversed(range(len(scope)+1)):
+		for n in reversed(range(len(scope))):
 			dir = key[:n]+(value[0],)
 			if dir in mesh:
 				mesh[key] = dir+tuple(value[1:])
@@ -81,3 +89,32 @@ def static(mesh):
 		else:
 			raise SyntaxError(f'name {value[0]!r} is not defined.')
 	return mesh
+
+
+def evaluate(mesh, path):
+	if mesh[path] is None:
+		return path
+	if mesh[path]:
+		return evaluate(mesh, mesh[path])
+	for i in reversed(range(len(path))): 
+		subpath = path[:i]
+		if mesh[subpath]:
+			out = evaluate(mesh, mesh[subpath])
+
+f = static(parse('''
+(
+	natural: (
+		zero: ()
+		positive: (
+			prev: natural
+		)
+	)
+	succ: (
+		from: to.prev
+		to: natural.positive(prev: from)
+	)
+	-> natural.positive(prev: natural.positive(prev: natural.zero))
+)
+'''))
+
+pprint.pprint(f)
