@@ -11,7 +11,7 @@ class Code:
 	def assume(self, characters: str):
 		if not self.is_in(characters):
 			raise SyntaxError(f'Found {self.code[0]!r} while '
-					  f'parsing for {characters!r}')
+					  f'parsing for {characters!r} #SAD')
 		
 	def skip(self, characters: str):
 		self.assume(characters)
@@ -44,8 +44,6 @@ def parse(code):
 
 
 def structure(code, path: tuple, mesh, call=False):
-	if not mesh[path]:
-		mesh[path] = None
 	code.skip('(')
 	while not (code.is_in(')') or code.startswith('->')):
 		key: tuple = variable(code)
@@ -58,6 +56,8 @@ def structure(code, path: tuple, mesh, call=False):
 		code.skip('>')
 		any(code, path+('self',), mesh, call)
 	code.skip(')')
+	if not mesh[path]:
+		mesh[path] = None
 
 
 def variable(code):
@@ -87,34 +87,61 @@ def static(mesh):
 				mesh[key] = dir+tuple(value[1:])
 				break
 		else:
-			raise SyntaxError(f'name {value[0]!r} is not defined.')
+			raise SyntaxError(f'name {value[0]!r} is not defined. #SIGH')
 	return mesh
 
 
 def evaluate(mesh, path):
-	if mesh[path] is None:
+	value = seek(mesh, path)
+	if value is None:
 		return path
-	if mesh[path]:
-		return evaluate(mesh, mesh[path])
+	return evaluate(mesh, value)
+			
+def seek(mesh, path):
+	if mesh[path] != []:
+		return mesh[path]
 	for i in reversed(range(len(path))): 
 		subpath = path[:i]
-		if mesh[subpath]:
-			out = evaluate(mesh, mesh[subpath])
+		if not mesh[subpath]:
+			continue
+		newsubpath = mesh[subpath]
+		newpath = newsubpath + path[i:]
+		value = seek(mesh, newpath)
+		if value[:len(newsubpath)] == newsubpath:
+			value = subpath+value[len(newsubpath):]
+		break
+	else:
+		raise SyntaxError(f'Could not find value of {path!r} while interpreting. #BAD')
+	return value
 
-f = static(parse('''
-(
-	natural: (
-		zero: ()
-		positive: (
-			prev: natural
-		)
-	)
-	succ: (
-		from: to.prev
-		to: natural.positive(prev: from)
-	)
-	-> natural.positive(prev: natural.positive(prev: natural.zero))
-)
-'''))
+def represent(mesh):
+	type_to_repr = evaluate(mesh, ('self',))
+	if type_to_repr == ('nat',):
+		i = 1
+		while evaluate(mesh, ('self',)+('prev',)*i) == ('nat',):
+			i += 1
+		if evaluate(mesh, ('self',)+('prev',)*i) != ('zero',):
+			raise ValueError('Non-zero value inside nat.prev')
+		return i
+	return type_to_repr
+	
+
+#f = represent(static(parse('''(
+#zero: ()
+#nat: (
+#	prev: nat
+#)
+#succ: (
+#	to: nat(prev: from)
+#	from: to.prev
+#	-> to
+#)
+#-> succ(from: nat(prev: zero))
+#)''')))
+f = represent(static(parse('''(
+	b: ()
+	a: (-> (k: b))
+	-> a.k
+)''')))
 
 pprint.pprint(f)
