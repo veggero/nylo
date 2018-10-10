@@ -87,7 +87,8 @@ def static(mesh):
 				mesh[key] = dir+tuple(value[1:])
 				break
 		else:
-			raise SyntaxError(f'name {value[0]!r} is not defined. #SIGH')
+			raise SyntaxError(f'name {value[0]!r}'
+					   ' is not defined. #SIGH')
 	return mesh
 
 
@@ -95,24 +96,36 @@ def evaluate(mesh, path):
 	value = seek(mesh, path)
 	if value is None:
 		return path
+	if value == []:
+		raise SyntaxError(f'Could not find value of {path!r}'
+				   ' while interpreting. #BAD')
 	return evaluate(mesh, value)
-			
+
+
 def seek(mesh, path):
+	#pprint.pprint((mesh, path))
 	if mesh[path] != []:
 		return mesh[path]
-	for i in reversed(range(len(path))): 
+	for i in reversed(range(len(path))):
 		subpath = path[:i]
 		if not mesh[subpath]:
 			continue
 		newsubpath = mesh[subpath]
-		newpath = newsubpath + path[i:]
-		value = seek(mesh, newpath)
-		if value[:len(newsubpath)] == newsubpath:
-			value = subpath+value[len(newsubpath):]
-		break
-	else:
-		raise SyntaxError(f'Could not find value of {path!r} while interpreting. #BAD')
-	return value
+		for oldpath in mesh.copy():
+			newpath = chroot(oldpath, subpath, newsubpath)
+			if mesh[newpath] != [] and newpath != subpath:
+				continue
+			mesh[newpath] = chroot(mesh[oldpath], subpath, newsubpath)
+		return path
+		
+		
+def chroot(path, oldsubpath, newsubpath):
+	if not isinstance(path, tuple):
+		return path
+	if path[:len(newsubpath)] == newsubpath:
+		return oldsubpath + path[len(newsubpath):]
+	return path
+
 
 def represent(mesh):
 	type_to_repr = evaluate(mesh, ('self',))
@@ -123,25 +136,22 @@ def represent(mesh):
 		if evaluate(mesh, ('self',)+('prev',)*i) != ('zero',):
 			raise ValueError('Non-zero value inside nat.prev')
 		return i
+	if type_to_repr == ('zero',):
+		return 0
 	return type_to_repr
 	
 
-#f = represent(static(parse('''(
-#zero: ()
-#nat: (
-#	prev: nat
-#)
-#succ: (
-#	to: nat(prev: from)
-#	from: to.prev
-#	-> to
-#)
-#-> succ(from: nat(prev: zero))
-#)''')))
 f = represent(static(parse('''(
-	b: ()
-	a: (-> (k: b))
-	-> a.k
+zero: ()
+nat: (
+	prev: nat
+)
+succ: (
+	from: to.prev
+	to: nat(prev: from)
+)
+helper: succ(to: nat(prev: zero))
+-> helper.from
 )''')))
 
 pprint.pprint(f)
