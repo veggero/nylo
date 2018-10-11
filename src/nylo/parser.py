@@ -35,11 +35,14 @@ class Code:
 			
 	def startswith(self, characters: str):
 		return ''.join(self.code).startswith(characters)
+	
+	characters_start = string.ascii_letters + "$_"
+	characters_while = characters_start + string.digits
 			
 
 def parse(code):
 	mesh = collections.defaultdict(list)
-	any(Code(code), (), mesh)
+	any(Code(code), ('root',), mesh)
 	return mesh
 
 
@@ -61,19 +64,19 @@ def structure(code, path: tuple, mesh, call=False):
 
 
 def variable(code):
-	return code.skip_while(string.ascii_letters)
+	return code.skip_while(Code.characters_while)
 
 
 def any(code, path: tuple, mesh, call=False):
 	if code.is_in('('):
 		structure(code, path, mesh, call)
-	elif code.is_in(string.ascii_letters):
+	elif code.is_in(Code.characters_start):
 		mesh[path] = [call if call else path, variable(code)]
 		while code.is_in('.'):
 			code.skip('.')
 			mesh[path].append(variable(code))
 	if code.is_in('('):
-		any(code, path, mesh, call=path)
+		any(code, path, mesh, call=(call or path))
 		
 
 def static(mesh):
@@ -103,9 +106,13 @@ def evaluate(mesh, path):
 
 
 def seek(mesh, path):
-	#pprint.pprint((mesh, path))
 	if mesh[path] != []:
-		return mesh[path]
+		if isinstance(mesh[path], tuple) and mesh[path][-1] == '$':
+			toev = evaluate(mesh, mesh[path][:-1])[-1]
+			mesh[path] = path[:-1]+(toev+'$',)
+			return seek(mesh, path)
+		else:
+			return mesh[path]
 	for i in reversed(range(len(path))):
 		subpath = path[:i]
 		if not mesh[subpath]:
@@ -113,45 +120,58 @@ def seek(mesh, path):
 		newsubpath = mesh[subpath]
 		for oldpath in mesh.copy():
 			newpath = chroot(oldpath, subpath, newsubpath)
-			if mesh[newpath] != [] and newpath != subpath:
+			if mesh[newsubpath]:
+				mesh[subpath] = mesh[newsubpath]
+			if oldpath == newpath or mesh[newpath]:
 				continue
 			mesh[newpath] = chroot(mesh[oldpath], subpath, newsubpath)
 		return path
+	return []
 		
 		
 def chroot(path, oldsubpath, newsubpath):
 	if not isinstance(path, tuple):
 		return path
-	if path[:len(newsubpath)] == newsubpath:
+	if path[:len(newsubpath)] == newsubpath and path != newsubpath:
 		return oldsubpath + path[len(newsubpath):]
 	return path
 
 
 def represent(mesh):
-	type_to_repr = evaluate(mesh, ('self',))
-	if type_to_repr == ('nat',):
+	type_to_repr = evaluate(mesh, ('root', 'self'))
+	if type_to_repr == ('root', 'nat',):
 		i = 1
-		while evaluate(mesh, ('self',)+('prev',)*i) == ('nat',):
+		while evaluate(mesh, ('root', 'self')+('prev',)*i) == ('root', 'nat',):
 			i += 1
-		if evaluate(mesh, ('self',)+('prev',)*i) != ('zero',):
+		if evaluate(mesh, ('root', 'self')+('prev',)*i) != ('root', 'nat', 'zero',):
 			raise ValueError('Non-zero value inside nat.prev')
 		return i
-	if type_to_repr == ('zero',):
+	if type_to_repr == ('root', 'nat', 'zero',):
 		return 0
 	return type_to_repr
 	
 
 f = represent(static(parse('''(
-zero: ()
 nat: (
 	prev: nat
+	zero: ()
 )
-succ: (
-	from: to.prev
-	to: nat(prev: from)
+sum: (
+	a: nat
+	b: nat
+	result: a.$
+	helper: sum(
+		a: a.prev
+		b: nat(prev: b)
+	)
+	nat$: helper.result
+	zero$: b
 )
-helper: succ(to: nat(prev: zero))
--> helper.from
+outsider: sum(
+	a: nat(prev: nat.zero)
+	b: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat.zero))))))))))
+)
+-> outsider.result
 )''')))
 
 pprint.pprint(f)
