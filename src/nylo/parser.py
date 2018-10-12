@@ -71,12 +71,19 @@ def any(code, path: tuple, mesh, call=False):
 	if code.is_in('('):
 		structure(code, path, mesh, call)
 	elif code.is_in(Code.characters_start):
-		mesh[path] = [call if call else path, variable(code)]
+		if not mesh[path]:
+			mesh[path] = [call if call else path]
+		mesh[path].append(variable(code))
 		while code.is_in('.'):
 			code.skip('.')
 			mesh[path].append(variable(code))
 	if code.is_in('('):
-		any(code, path, mesh, call=(call or path))
+		any(code, path, mesh, call or path)
+		if code.is_in('.'):
+			mesh[path[:-1]+('(helper)',)] = mesh[path].copy()
+			mesh[path] = [mesh[path][0], '(helper)']
+			code.skip('.')
+			any(code, path, mesh, call)
 		
 
 def static(mesh):
@@ -156,6 +163,10 @@ nat: (
 	prev: nat
 	zero: ()
 )
+bool: (
+	true: ()
+	false: ()
+)
 sum: (
 	a: nat
 	b: nat
@@ -167,10 +178,61 @@ sum: (
 	nat$: helper.result
 	zero$: b
 )
-outsider: sum(
-	a: nat(prev: nat.zero)
-	b: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat.zero))))))))))
+eq: (
+	a: nat
+	b: nat
+	left: (
+		result: a.$
+		nat$: aright.result
+		zero$: bright.result
+	)
+	aright: (
+		result: b.$
+		helper: eq(
+			a: a.prev
+			b: b.prev
+		)
+		nat$: helper.result
+		zero$: bool.false
+	)
+	bright: (
+		result: b.$
+		nat$: bool.false
+		zero$: bool.true
+	)
+	result: left.result
 )
+or: (
+	a: bool
+	b: bool
+	result: a.$
+	true$: bool.true
+	false$: b
+)
+if: (
+	cond: bool
+	then: root
+	else: root
+	result: cond.$
+	true$: then
+	false$: else
+)
+fib: (
+	n: nat  
+	prev_a: fib(n: n.prev)
+	prev_b: fib(n: n.prev.prev)
+	prevs: sum(a: prev_a.result, b: prev_b.result)
+	aend: eq(a: n, b: nat.zero)
+	bend: eq(a: n, b: nat(prev: nat.zero))
+	end: or(a: aend.result, b: bend.result)
+	helper_result: if(
+		cond: end.result,
+		then: nat(prev: nat.zero)
+		else: prevs.result
+	)
+	result: helper_result.result
+)
+outsider: fib(n: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat.zero))))))
 -> outsider.result
 )''')))
 
