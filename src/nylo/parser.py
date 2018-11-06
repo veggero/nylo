@@ -89,8 +89,8 @@ def any(code, path: tuple, mesh, call=False):
 		while code.is_in('.'):
 			code.skip('.')
 			mesh[path].append(variable(code))
-	if code.is_in('('):
-		any(code, path, mesh, call or path)
+		if code.is_in('('):
+			any(code, path, mesh, call or path)
 		
 
 def static(mesh):
@@ -238,7 +238,7 @@ fib: (
 		else: prevs 
 	->)
 )
--> fib(n: nat(prev: nat(prev: nat.zero)) ->)
+-> fib(n: nat.zero ->)
 )''')))
 
 pprint.pprint(f)
