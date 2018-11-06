@@ -47,6 +47,9 @@ def parse(code):
 
 
 def structure(code, path: tuple, mesh, call=False):
+	if call:
+		path += ('.outer',)
+		mesh[path] = mesh[path[:-1]]
 	code.skip('(')
 	while not (code.is_in(')') or code.startswith('->')):
 		key: tuple = variable(code)
@@ -57,7 +60,16 @@ def structure(code, path: tuple, mesh, call=False):
 	if code.startswith('->'):
 		code.skip('-')
 		code.skip('>')
-		any(code, path+('self',), mesh, call)
+		if call:
+			if code.is_in(')'):
+				kwd = 'self'
+			else:
+				kwd = variable(code)
+			mesh[path[:-1]] = [path, '.outer', kwd]
+		else:
+			any(code, path+('self',), mesh, call)
+	elif call:
+		mesh[path[:-1]] = [path, '.outer']
 	code.skip(')')
 	if not mesh[path]:
 		mesh[path] = None
@@ -79,11 +91,6 @@ def any(code, path: tuple, mesh, call=False):
 			mesh[path].append(variable(code))
 	if code.is_in('('):
 		any(code, path, mesh, call or path)
-		if code.is_in('.'):
-			mesh[path[:-1]+('(helper)',)] = mesh[path].copy()
-			mesh[path] = [mesh[path][0], '(helper)']
-			code.skip('.')
-			any(code, path, mesh, call)
 		
 
 def static(mesh):
@@ -132,7 +139,7 @@ def seek(mesh, path):
 			if oldpath == newpath or mesh[newpath]:
 				continue
 			mesh[newpath] = chroot(mesh[oldpath], subpath, newsubpath)
-		return path
+		return chroot(path, subpath, newsubpath)
 	return []
 		
 		
@@ -170,13 +177,12 @@ bool: (
 sum: (
 	a: nat
 	b: nat
-	result: a.$
-	helper: sum(
+	nat$: sum(
 		a: a.prev
 		b: nat(prev: b)
-	)
-	nat$: helper.result
+	->)
 	zero$: b
+	-> a.$
 )
 eq: (
 	a: nat
@@ -188,11 +194,10 @@ eq: (
 	)
 	aright: (
 		result: b.$
-		helper: eq(
+		nat$: eq(
 			a: a.prev
 			b: b.prev
-		)
-		nat$: helper.result
+		->)
 		zero$: bool.false
 	)
 	bright: (
@@ -200,40 +205,40 @@ eq: (
 		nat$: bool.false
 		zero$: bool.true
 	)
-	result: left.result
+	-> left.result
 )
 or: (
 	a: bool
 	b: bool
-	result: a.$
 	true$: bool.true
 	false$: b
+	-> a.$
 )
 if: (
 	cond: bool
 	then: root
 	else: root
-	result: cond.$
 	true$: then
 	false$: else
+	-> cond.$
 )
 fib: (
 	n: nat  
-	prev_a: fib(n: n.prev)
-	prev_b: fib(n: n.prev.prev)
-	prevs: sum(a: prev_a.result, b: prev_b.result)
-	aend: eq(a: n, b: nat.zero)
-	bend: eq(a: n, b: nat(prev: nat.zero))
-	end: or(a: aend.result, b: bend.result)
-	helper_result: if(
-		cond: end.result,
+	prevs: sum(
+		a: fib(n: n.prev ->) 
+		b: fib(n: n.prev.prev ->)
+	->)
+	end: or(
+		a: eq(a: n, b: nat.zero ->)
+		b: eq(a: n, b: nat(prev: nat.zero) ->) 
+	->)
+	-> if(
+		cond: end,
 		then: nat(prev: nat.zero)
-		else: prevs.result
-	)
-	result: helper_result.result
+		else: prevs 
+	->)
 )
-outsider: fib(n: nat(prev: nat(prev: nat(prev: nat(prev: nat(prev: nat.zero))))))
--> outsider.result
+-> fib(n: nat(prev: nat(prev: nat.zero)) ->)
 )''')))
 
 pprint.pprint(f)
