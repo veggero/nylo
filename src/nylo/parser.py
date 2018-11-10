@@ -62,14 +62,18 @@ def structure(code, path: tuple, mesh, call=False):
 		code.skip('>')
 		if call:
 			if code.is_in(')'):
-				kwd = 'self'
+				mesh[path[:-1]] = [path, '.outer']
+				#kwd = 'self'
 			else:
-				kwd = variable(code)
-			mesh[path[:-1]] = [path, '.outer', kwd]
+				mesh[path[:-1]] = [path, '.outer', variable(code)]
+				#kwd = variable(code)
 		else:
 			any(code, path+('self',), mesh, call)
-	elif call:
-		mesh[path[:-1]] = [path, '.outer']
+	else:
+		if call:
+			mesh[path[:-1]] = [path, '.outer', 'self']
+		else:
+			mesh[path+('self',)] = [path, *path]
 	code.skip(')')
 	if not mesh[path]:
 		mesh[path] = None
@@ -136,6 +140,8 @@ def seek(mesh, path):
 			newpath = chroot(oldpath, subpath, newsubpath)
 			if mesh[newsubpath]:
 				mesh[subpath] = mesh[newsubpath]
+			if mesh[newsubpath+('self',)] and mesh[newsubpath+('self',)] == newsubpath:
+				mesh[subpath+('self',)] = subpath
 			if oldpath == newpath or mesh[newpath]:
 				continue
 			mesh[newpath] = chroot(mesh[oldpath], subpath, newsubpath)
@@ -180,7 +186,7 @@ sum: (
 	nat$: sum(
 		a: a.prev
 		b: nat(prev: b)
-	->)
+	)
 	zero$: b
 	-> a.$
 )
@@ -197,7 +203,7 @@ eq: (
 		nat$: eq(
 			a: a.prev
 			b: b.prev
-		->)
+		)
 		zero$: bool.false
 	)
 	bright: (
@@ -225,20 +231,20 @@ if: (
 fib: (
 	n: nat  
 	prevs: sum(
-		a: fib(n: n.prev ->) 
-		b: fib(n: n.prev.prev ->)
-	->)
+		a: fib(n: n.prev) 
+		b: fib(n: n.prev.prev)
+	)
 	end: or(
-		a: eq(a: n, b: nat.zero ->)
-		b: eq(a: n, b: nat(prev: nat.zero) ->) 
-	->)
+		a: eq(a: n, b: nat.zero)
+		b: eq(a: n, b: nat(prev: nat.zero)) 
+	)
 	-> if(
 		cond: end,
 		then: nat(prev: nat.zero)
 		else: prevs 
-	->)
+	)
 )
--> fib(n: nat.zero ->)
+-> fib(n: nat(prev: nat(prev: nat.zero)))
 )''')))
 
 pprint.pprint(f)
