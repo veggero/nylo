@@ -114,6 +114,8 @@ def static(mesh):
 
 
 def evaluate(mesh, path):
+	print(path)
+	input()
 	value = seek(mesh, path)
 	if value is None:
 		return path
@@ -136,6 +138,9 @@ def seek(mesh, path):
 		if not mesh[subpath]:
 			continue
 		newsubpath = mesh[subpath]
+		if (subpath, newsubpath) in mesh['chrootsmade']:
+			continue
+		mesh['chrootsmade'].append((subpath, newsubpath))
 		for oldpath in mesh.copy():
 			newpath = chroot(oldpath, subpath, newsubpath)
 			if mesh[newsubpath]:
@@ -163,6 +168,8 @@ def represent(mesh):
 		i = 1
 		while evaluate(mesh, ('root', 'self')+('prev',)*i) == ('root', 'nat',):
 			i += 1
+			if i > 100:
+				return 'infinite'
 		if evaluate(mesh, ('root', 'self')+('prev',)*i) != ('root', 'nat', 'zero',):
 			raise ValueError('Non-zero value inside nat.prev')
 		return i
@@ -234,17 +241,16 @@ fib: (
 		a: fib(n: n.prev) 
 		b: fib(n: n.prev.prev)
 	)
-	end: or(
-		a: eq(a: n, b: nat.zero)
-		b: eq(a: n, b: nat(prev: nat.zero)) 
-	)
 	-> if(
-		cond: end,
+		cond: or(
+			a: eq(a: n, b: nat.zero)
+			b: eq(a: n, b: nat(prev: nat.zero)) 
+		),
 		then: nat(prev: nat.zero)
 		else: prevs 
 	)
 )
--> fib(n: nat(prev: nat(prev: nat.zero)))
+-> fib(n: nat(prev: nat.zero))
 )''')))
 
 pprint.pprint(f)
