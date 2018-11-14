@@ -3,6 +3,8 @@ Welcome to nylo
 
 WARNING: README IS INCREDIBLY OUTDATED. I'm working on this, but I still need to figure out a lot of things, even the grammar itself. As soon as I have a clear and sure idea of how Nylo is going to be, I will rewrite everything.
 
+[If you're thinking "is he still working on this?": yes, I am.]
+
 |image0|
 
 ::
