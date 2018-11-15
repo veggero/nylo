@@ -114,8 +114,6 @@ def static(mesh):
 
 
 def evaluate(mesh, path):
-	print(path)
-	input()
 	value = seek(mesh, path)
 	if value is None:
 		return path
@@ -250,7 +248,7 @@ fib: (
 		else: prevs 
 	)
 )
--> fib(n: nat(prev: nat.zero))
+-> fib(n: nat.zero)
 )''')))
 
 pprint.pprint(f)
