@@ -1,5 +1,6 @@
 import collections
 import string
+import random
 import pprint
 
 class Code:
@@ -48,7 +49,8 @@ def parse(code):
 
 def structure(code, path: tuple, mesh, call=False):
 	if call:
-		path += ('.outer',)
+		random_outer = '.outer'+str(random.random())[2:5]
+		path += (random_outer,)
 		mesh[path] = mesh[path[:-1]]
 	code.skip('(')
 	while not (code.is_in(')') or code.startswith('->')):
@@ -62,16 +64,16 @@ def structure(code, path: tuple, mesh, call=False):
 		code.skip('>')
 		if call:
 			if code.is_in(')'):
-				mesh[path[:-1]] = [path, '.outer']
+				mesh[path[:-1]] = [path, random_outer]
 				#kwd = 'self'
 			else:
-				mesh[path[:-1]] = [path, '.outer', variable(code)]
+				mesh[path[:-1]] = [path, random_outer, variable(code)]
 				#kwd = variable(code)
 		else:
 			any(code, path+('self',), mesh, call)
 	else:
 		if call:
-			mesh[path[:-1]] = [path, '.outer', 'self']
+			mesh[path[:-1]] = [path, random_outer, 'self']
 		else:
 			mesh[path+('self',)] = [path, *path]
 	code.skip(')')
@@ -95,11 +97,19 @@ def any(code, path: tuple, mesh, call=False):
 			mesh[path].append(variable(code))
 		if code.is_in('('):
 			any(code, path, mesh, call or path)
+	if code.is_in('|'):
+		code.skip('|')
+		newmesh = collections.defaultdict(list)
+		if not mesh['alternatives']:
+			mesh['alternatives'] = {}
+		mesh['alternatives'][path] = any(code, path, newmesh, call or path)
 		
 
 def static(mesh):
 	for key, value in mesh.items():
 		if not value:
+			continue
+		if not isinstance(key, tuple):
 			continue
 		scope = value.pop(0)
 		for n in reversed(range(len(scope))):
@@ -138,16 +148,30 @@ def seek(mesh, path):
 		newsubpath = mesh[subpath]
 		if (subpath, newsubpath) in mesh['chrootsmade']:
 			continue
-		mesh['chrootsmade'].append((subpath, newsubpath))
+		if mesh[newsubpath]:
+			mesh[subpath] = mesh[newsubpath]
+		if mesh[newsubpath+('self',)] and mesh[newsubpath+('self',)] == newsubpath:
+			mesh[subpath+('self',)] = subpath
 		for oldpath in mesh.copy():
 			newpath = chroot(oldpath, subpath, newsubpath)
-			if mesh[newsubpath]:
-				mesh[subpath] = mesh[newsubpath]
-			if mesh[newsubpath+('self',)] and mesh[newsubpath+('self',)] == newsubpath:
-				mesh[subpath+('self',)] = subpath
 			if oldpath == newpath or mesh[newpath]:
 				continue
 			mesh[newpath] = chroot(mesh[oldpath], subpath, newsubpath)
+		mesh['chrootsmade'].append((subpath, newsubpath))
+			
+		for oldpath in mesh.copy():
+			if mesh[oldpath] and mesh[newpath]:
+				if mesh[oldpath] and mesh[newpath]:
+					print('-->', mesh[oldpath])
+					print('<--', evaluate(mesh, mesh[oldpath]))
+					#if oldpath != newpath:
+					#	if not mesh[newpath][:len(mesh[oldpath])] == mesh[oldpath]:
+					#		oldtype = evaluate(mesh, mesh[newpath])
+					#		newtype = evaluate(mesh, mesh[oldpath])
+					#		if not oldtype[:len(newtype)] == newtype:
+					#			print(f'suppressing {newtype} for {oldtype} in {oldpath} vs {newpath}')
+					#			print("--->",  evaluate(mesh, newtype))
+								
 		return chroot(path, subpath, newsubpath)
 	return []
 		
@@ -176,7 +200,7 @@ def represent(mesh):
 	return type_to_repr
 	
 
-f = represent(static(parse('''(
+f = (parse('''(
 nat: (
 	prev: nat
 	zero: ()
@@ -249,6 +273,19 @@ fib: (
 	)
 )
 -> fib(n: nat.zero)
+)'''))
+f = represent(static(f))
+pprint.pprint(f)
+
+print('*****')
+
+g = represent(static(parse('''(
+a: ()
+b: ()
+c: ()
+d: ()
+e: (k: b -> c) | (k: a -> d)
+-> e(k: a)
 )''')))
 
-pprint.pprint(f)
+pprint.pprint(g)
