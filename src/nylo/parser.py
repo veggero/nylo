@@ -49,7 +49,7 @@ def parse(code):
 
 def structure(code, path: tuple, mesh, call=False):
 	if call:
-		random_outer = '.outer'+str(random.random())[2:5]
+		random_outer = '.'+path[-2]+str(random.random())[2:5]
 		path += (random_outer,)
 		mesh[path] = mesh[path[:-1]]
 	code.skip('(')
@@ -82,6 +82,7 @@ def structure(code, path: tuple, mesh, call=False):
 
 
 def variable(code):
+	# a.b.c should be moved here
 	return code.skip_while(Code.characters_while)
 
 
@@ -102,7 +103,7 @@ def any(code, path: tuple, mesh, call=False):
 		newmesh = collections.defaultdict(list)
 		if not mesh['alternatives']:
 			mesh['alternatives'] = {}
-		mesh['alternatives'][path] = any(code, path, newmesh, call or path)
+		mesh['alternatives'][path] = any(code, path, newmesh, call)
 		
 
 def static(mesh):
@@ -146,6 +147,7 @@ def seek(mesh, path):
 		if not mesh[subpath]:
 			continue
 		newsubpath = mesh[subpath]
+		
 		if (subpath, newsubpath) in mesh['chrootsmade']:
 			continue
 		if mesh[newsubpath]:
@@ -153,25 +155,23 @@ def seek(mesh, path):
 		if mesh[newsubpath+('self',)] and mesh[newsubpath+('self',)] == newsubpath:
 			mesh[subpath+('self',)] = subpath
 		for oldpath in mesh.copy():
+			if not isinstance(oldpath, tuple):
+				continue
 			newpath = chroot(oldpath, subpath, newsubpath)
+			
+			if mesh[newpath] and mesh[oldpath] and oldpath != newpath:
+				newtype = evaluate(mesh, mesh[newpath])
+				oldtype = evaluate(mesh, mesh[oldpath])
+				instance = newtype[:len(oldtype)] == oldtype
+				if not instance:
+					print('fuck', oldtype, newtype)
+					print('miscarriage @', newpath)
+				
 			if oldpath == newpath or mesh[newpath]:
 				continue
 			mesh[newpath] = chroot(mesh[oldpath], subpath, newsubpath)
 		mesh['chrootsmade'].append((subpath, newsubpath))
-			
-		for oldpath in mesh.copy():
-			if mesh[oldpath] and mesh[newpath]:
-				if mesh[oldpath] and mesh[newpath]:
-					print('-->', mesh[oldpath])
-					print('<--', evaluate(mesh, mesh[oldpath]))
-					#if oldpath != newpath:
-					#	if not mesh[newpath][:len(mesh[oldpath])] == mesh[oldpath]:
-					#		oldtype = evaluate(mesh, mesh[newpath])
-					#		newtype = evaluate(mesh, mesh[oldpath])
-					#		if not oldtype[:len(newtype)] == newtype:
-					#			print(f'suppressing {newtype} for {oldtype} in {oldpath} vs {newpath}')
-					#			print("--->",  evaluate(mesh, newtype))
-								
+									
 		return chroot(path, subpath, newsubpath)
 	return []
 		
@@ -200,64 +200,86 @@ def represent(mesh):
 	return type_to_repr
 	
 
-f = (parse('''(
+f = static(parse('''(
 nat: (
 	prev: nat
 	zero: ()
+	succ: nat(prev: self)
 )
+
 bool: (
 	true: ()
 	false: ()
 )
+
 sum: (
+	a: nat.zero
+	b: nat
+	-> b
+) | (
 	a: nat
 	b: nat
-	nat$: sum(
+	-> sum(
 		a: a.prev
-		b: nat(prev: b)
+		b: b.succ
 	)
-	zero$: b
-	-> a.$
 )
+
 eq: (
+	a: nat.zero
+	b: nat.zero
+	-> bool.true
+) | (
+	a: nat.zero
+	b: nat
+	-> bool.false
+) | (
+	a: nat
+	b: nat.zero
+	-> bool.false
+) | (
 	a: nat
 	b: nat
-	left: (
-		result: a.$
-		nat$: aright.result
-		zero$: bright.result
-	)
-	aright: (
-		result: b.$
-		nat$: eq(
-			a: a.prev
-			b: b.prev
-		)
-		zero$: bool.false
-	)
-	bright: (
-		result: b.$
-		nat$: bool.false
-		zero$: bool.true
-	)
-	-> left.result
+	-> bool.true
 )
+
 or: (
-	a: bool
+	a: bool.false
 	b: bool
-	true$: bool.true
-	false$: b
-	-> a.$
+	-> b
+) | (
+	a: bool.true
+	b: bool
+	-> b
 )
+
 if: (
-	cond: bool
+	cond: bool.true
 	then: root
 	else: root
-	true$: then
-	false$: else
-	-> cond.$
+	-> then
+) | (
+	cond: bool.false
+	then: root
+	else: root
+	-> else
 )
+
 fib: (
+	n: nat.zero
+	-> nat(prev: nat.zero)
+) | (
+	n: nat(prev: nat.zero)
+	-> nat(prev: nat.zero)
+) | (
+	n: nat(prev: nat)
+	-> sum(
+		a: fib(n: n.prev)
+		b: fib(n: n.prev.prev)
+	)
+)
+
+fibb: (
 	n: nat  
 	prevs: sum(
 		a: fib(n: n.prev) 
@@ -272,10 +294,11 @@ fib: (
 		else: prevs 
 	)
 )
--> fib(n: nat.zero)
+
+-> fib(n: nat(prev: nat.zero))
 )'''))
-f = represent(static(f))
-pprint.pprint(f)
+f = represent(f)
+print(f)
 
 print('*****')
 
