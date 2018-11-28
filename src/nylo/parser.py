@@ -266,10 +266,7 @@ if: (
 )
 
 fib: (
-	n: nat.zero
-	-> nat(prev: nat.zero)
-) | (
-	n: nat(prev: nat.zero)
+	n: nat.zero | nat(prev: nat.zero)
 	-> nat(prev: nat.zero)
 ) | (
 	n: nat(prev: nat)
