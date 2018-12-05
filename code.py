@@ -154,6 +154,18 @@ class Code:
 		False
 		"""
 		return bool(self.code and self.code[0] in characters)
+	
+	def startswith(self, characters: str) -> bool:
+		"""
+		This method checks if the current code
+		starts with the given characters.
+		
+		>>> Code('abcd').startswith('abc')
+		True
+		>>> Code('abcd').startswith('abx')
+		False
+		"""
+		return ''.join(self.code).startswith(characters)
 		
 	# Private
 		
@@ -187,14 +199,17 @@ class Code:
 		Traceback (most recent call last):
 			...
 		SyntaxError: Unexpected 'a' while parsing for 'b'.
+		>>> Code('1').assume(string.ascii_letters)
+		Traceback (most recent call last):
+			...
+		SyntaxError: Unexpected '1' while parsing for 'string'.
 		
 		Please refer to is_in for more examples.
 		"""
 		if not self.is_in(characters):
-			if self.code:
-				unexpected: str = self.code[0]
-			else:
-				unexpected: str = 'EOF'
+			unexpected: str = self.code[0] if self.code else 'EOF'
+			if string.ascii_letters in characters:
+				characters = 'string'
 			raise SyntaxError(
 			f'Unexpected {unexpected!r} while parsing '
 			f'for {characters!r}.')

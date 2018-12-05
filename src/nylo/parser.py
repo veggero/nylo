@@ -91,7 +91,7 @@ def any(code, path: tuple, mesh, call=False):
 		structure(code, path, mesh, call)
 	elif code.is_in(Code.characters_start):
 		if not mesh[path]:
-			mesh[path] = [call if call else path]
+			mesh[path] = [call or path]
 		mesh[path].append(variable(code))
 		while code.is_in('.'):
 			code.skip('.')
