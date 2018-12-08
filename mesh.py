@@ -110,5 +110,66 @@ class Mesh(dict):
 		- If the path, after changing the oldroot with the newroot,
 		already exists and is not None, that value is not cloned,
 		and the old one is preserved.
+		
+		>>> m = Mesh({
+		...	  ('fib', 'n'): ('nat',),
+		...   ('fib', 'prev'): ('fib', 'n'),
+		...   ('fib',): ('fib', 'prev'),
+		...   ('fib', 'self'): ('fib',),
+		...   ('fib', 'call'): ('fib',),
+		...   ('fib', 'none'): None,
+		...
+		...   ('tgt',): ('fib',),
+		...   ('tgt', 'n'): ('k',)
+		... })
+		>>> m.clone(('fib',), ('tgt',))
+		>>> m[('tgt',)]
+		('tgt', 'prev')
+		>>> m[('tgt', 'n')]
+		('k',)
+		>>> m[('tgt', 'prev')]
+		('tgt', 'n')
+		>>> m[('tgt', 'self')]
+		('tgt',)
+		>>> m[('tgt', 'call')]
+		('fib',)
+		
+		>>> m.clone(('fib', 'none'), ('tgt',))
+		>>> m[('tgt',)]
+		('tgt', 'prev')
 		"""
+		delta = {}
+		selfpath = oldroot + ('self',)
+		for key, value in self.items():
+			newkey = chroot(key, oldroot, newroot)
+			if value is None or newkey == key:
+				continue
+			if not (newkey in self and self[newkey] is not None):
+				delta[newkey] = chroot(value, oldroot, newroot)
+		if self[oldroot]:
+			delta[newroot] = chroot(self[oldroot], oldroot, newroot)
+		if selfpath in self and self[selfpath] == oldroot:
+			delta[newroot+('self',)] = newroot
+		self.update(delta)
+		
+def chroot(path: Tuple[str], oldroot: Tuple[str], newroot: Tuple[str]) -> Tuple[str]:
+	"""
+	This is an helper function for Mesh.clone, that given a path,
+	if it starts with oldroot, it replaces it with newroot.
+	If the path is oldroot itself, it is not changed.
+	
+	>>> chroot(('a', 'b', 'c'), ('a', 'b'), ('x', 'y', 'z'))
+	('x', 'y', 'z', 'c')
+	>>> chroot(('k', 'y', 's'), (), ('u', 'r'))
+	('u', 'r', 'k', 'y', 's')
+	>>> chroot(('x', 'y', 'z'), ('x', 'y'), ())
+	('z',)
+	>>> chroot(('a', 'b'), ('a', 'b'), ('c', 'd'))
+	('a', 'b')
+	>>> chroot(('x', 'y', 'z'), ('a', 'b'), ('c', 'd'))
+	('x', 'y', 'z')
+	"""
+	if path[:len(oldroot)] == oldroot and path != oldroot:
+		return newroot + path[len(oldroot):]
+	return path
 	
