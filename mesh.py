@@ -4,6 +4,8 @@ just like a normal dictionary, but provides more methods
 to automatically bind variables and move group of variables.
 """
 
+from typing import Tuple
+
 class Mesh(dict):
 	"""
 	All of the nylo values are saved as a couples of key and values.
@@ -90,4 +92,23 @@ class Mesh(dict):
 					break
 			else:
 				raise SyntaxError(f'Name {var!r} is not defined.')
+			
+	def clone(self, oldroot: Tuple[str], newroot: Tuple[str]):
+		"""
+		This function clones all the values in the dictionary
+		where the keys starts with oldroot to the same
+		path but with oldroot replaced with newroot, also
+		changing the root in the value if it is a path.
+		There are a couple of exception: 
+		- If the path does not start with oldroot but it *is* 
+		oldroot itself, it is cloned to newpath only if the
+		value is not None.
+		- If the value of a path does not start with oldroot
+		but it *is* oldroot itself, it is not changed.
+		- If the path ends with ('self',), and the value is
+		oldroot itself, the values is changed to newpath.
+		- If the path, after changing the oldroot with the newroot,
+		already exists and is not None, that value is not cloned,
+		and the old one is preserved.
+		"""
 	
