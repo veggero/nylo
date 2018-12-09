@@ -133,6 +133,7 @@ class Mesh(dict):
 		('tgt',)
 		>>> m[('tgt', 'call')]
 		('fib',)
+		>>> m[('tgt', 'none')] #(None	)
 		
 		>>> m.clone(('fib', 'none'), ('tgt',))
 		>>> m[('tgt',)]
@@ -142,15 +143,79 @@ class Mesh(dict):
 		selfpath = oldroot + ('self',)
 		for key, value in self.items():
 			newkey = chroot(key, oldroot, newroot)
-			if value is None or newkey == key:
+			if newkey == key:
 				continue
 			if not (newkey in self and self[newkey] is not None):
-				delta[newkey] = chroot(value, oldroot, newroot)
+				newval = (chroot(value, oldroot, newroot) 
+				          if not value is None else None)
+				delta[newkey] = newval
 		if self[oldroot]:
 			delta[newroot] = chroot(self[oldroot], oldroot, newroot)
 		if selfpath in self and self[selfpath] == oldroot:
 			delta[newroot+('self',)] = newroot
 		self.update(delta)
+		
+	def valueof(self, path: Tuple[str]):
+		"""
+		This method returns the value of a path. The difference
+		between this and the get method is that if the value
+		is not in the dictionary, valueof will check if
+		it's a propriety of another value. E.g., if you have
+		`a.x`, maybe `a.x` is not in the dictionary, but
+		maybe `x` is defined the `a` class.
+		In order to do this, if the path (Tuple[str]) is
+		not in the dictionary, it will remove the last
+		elements until it finds a value that exists and
+		is different from None, e.g.:
+		`('a', 'b', 'c')`, then `('a', 'b')`, then `('a',)` then `()`.
+		If found, it will call the chroot method, in order
+		to transfer the proprieties from the object the found
+		path is referring to to the found path itself. E.g.,
+		if `('a', 'b')` is a path that refers to `('fib',)`
+		`Mesh.chroot(('fib',), ('a', 'b'))` will be called.
+		If even after the chroot the value still does not exist,
+		it will go on, raising an error after `()`.
+		Also, if the value to return is a path to another
+		object, it will return the Mesh.valueof(that_path) instead.
+		Finally, if the value is None, the path itself is returned.
+		
+		>>> m = Mesh({
+		...   ('a',): None,
+		...   ('a', 'k'): None,
+		...   ('b',): ('a',),
+		...   ('c',): ('b', 'k')
+		... })
+		>>> m.valueof(('a',))
+		('a',)
+		>>> m.valueof(('a', 'k'))
+		('a', 'k')
+		>>> m.valueof(('b',))
+		('a',)
+		>>> m.valueof(('c',))
+		('b', 'k')
+		>>> m.valueof(('d',))
+		Traceback (most recent call last):
+			...
+		SyntaxError: Name 'd' is not defined.
+		>>> m.valueof(('b', 'n'))
+		Traceback (most recent call last):
+			...
+		SyntaxError: Name 'b.n' is not defined.
+		"""
+		if path in self:
+			if isinstance(self[path], tuple):
+				return self.valueof(self[path])
+			assert self[path] is None
+			return path
+		for i in reversed(range(len(path))):
+			subpath = path[:i]
+			if not subpath in self:
+				continue
+			self.clone(self[subpath], subpath)
+			if path in self:
+				return self.valueof(path)
+		raise SyntaxError(f'Name {".".join(path)!r} is not defined.')
+		
 		
 def chroot(path: Tuple[str], oldroot: Tuple[str], newroot: Tuple[str]) -> Tuple[str]:
 	"""
@@ -172,4 +237,3 @@ def chroot(path: Tuple[str], oldroot: Tuple[str], newroot: Tuple[str]) -> Tuple[
 	if path[:len(oldroot)] == oldroot and path != oldroot:
 		return newroot + path[len(oldroot):]
 	return path
-	

@@ -1,6 +1,5 @@
 import collections
 import string
-import random
 import pprint
 
 class Code:
@@ -49,8 +48,7 @@ def parse(code):
 
 def structure(code, path: tuple, mesh, call=False):
 	if call:
-		random_outer = '.'+path[-2]+str(random.random())[2:5]
-		path += (random_outer,)
+		path += ('.outer',)
 		mesh[path] = mesh[path[:-1]]
 	code.skip('(')
 	while not (code.is_in(')') or code.startswith('->')):
@@ -64,16 +62,16 @@ def structure(code, path: tuple, mesh, call=False):
 		code.skip('>')
 		if call:
 			if code.is_in(')'):
-				mesh[path[:-1]] = [path, random_outer]
+				mesh[path[:-1]] = [path, '.outer']
 				#kwd = 'self'
 			else:
-				mesh[path[:-1]] = [path, random_outer, variable(code)]
+				mesh[path[:-1]] = [path, '.outer', variable(code)]
 				#kwd = variable(code)
 		else:
 			any(code, path+('self',), mesh, call)
 	else:
 		if call:
-			mesh[path[:-1]] = [path, random_outer, 'self']
+			mesh[path[:-1]] = [path, '.outer', 'self']
 		else:
 			mesh[path+('self',)] = [path, *path]
 	code.skip(')')
@@ -82,7 +80,6 @@ def structure(code, path: tuple, mesh, call=False):
 
 
 def variable(code):
-	# a.b.c should be moved here
 	return code.skip_while(Code.characters_while)
 
 
@@ -91,26 +88,18 @@ def any(code, path: tuple, mesh, call=False):
 		structure(code, path, mesh, call)
 	elif code.is_in(Code.characters_start):
 		if not mesh[path]:
-			mesh[path] = [call or path]
+			mesh[path] = [call if call else path]
 		mesh[path].append(variable(code))
 		while code.is_in('.'):
 			code.skip('.')
 			mesh[path].append(variable(code))
 		if code.is_in('('):
 			any(code, path, mesh, call or path)
-	if code.is_in('|'):
-		code.skip('|')
-		newmesh = collections.defaultdict(list)
-		if not mesh['alternatives']:
-			mesh['alternatives'] = {}
-		mesh['alternatives'][path] = any(code, path, newmesh, call)
 		
 
 def static(mesh):
 	for key, value in mesh.items():
 		if not value:
-			continue
-		if not isinstance(key, tuple):
 			continue
 		scope = value.pop(0)
 		for n in reversed(range(len(scope))):
@@ -147,32 +136,19 @@ def seek(mesh, path):
 		if not mesh[subpath]:
 			continue
 		newsubpath = mesh[subpath]
-		
 		if (subpath, newsubpath) in mesh['chrootsmade']:
 			continue
-		if mesh[newsubpath]:
-			mesh[subpath] = mesh[newsubpath]
-		if mesh[newsubpath+('self',)] and mesh[newsubpath+('self',)] == newsubpath:
-			mesh[subpath+('self',)] = subpath
+		mesh['chrootsmade'].append((subpath, newsubpath))
 		for oldpath in mesh.copy():
-			if not isinstance(oldpath, tuple):
-				continue
 			newpath = chroot(oldpath, subpath, newsubpath)
-			
-			if mesh[newpath] and mesh[oldpath] and oldpath != newpath:
-				newtype = evaluate(mesh, mesh[newpath])
-				oldtype = evaluate(mesh, mesh[oldpath])
-				instance = newtype[:len(oldtype)] == oldtype
-				if not instance:
-					print('fuck', oldtype, newtype)
-					print('miscarriage @', newpath)
-				
+			if mesh[newsubpath]:
+				mesh[subpath] = mesh[newsubpath]
+			if mesh[newsubpath+('self',)] and mesh[newsubpath+('self',)] == newsubpath:
+				mesh[subpath+('self',)] = subpath
 			if oldpath == newpath or mesh[newpath]:
 				continue
 			mesh[newpath] = chroot(mesh[oldpath], subpath, newsubpath)
-		mesh['chrootsmade'].append((subpath, newsubpath))
-									
-		return chroot(path, subpath, newsubpath)
+		return path
 	return []
 		
 		
@@ -200,83 +176,64 @@ def represent(mesh):
 	return type_to_repr
 	
 
-f = static(parse('''(
+f = represent(static(parse('''(
 nat: (
 	prev: nat
 	zero: ()
-	succ: nat(prev: self)
 )
-
 bool: (
 	true: ()
 	false: ()
 )
-
 sum: (
-	a: nat.zero
-	b: nat
-	-> b
-) | (
 	a: nat
 	b: nat
-	-> sum(
+	nat$: sum(
 		a: a.prev
-		b: b.succ
+		b: nat(prev: b)
 	)
+	zero$: b
+	-> a.$
 )
-
 eq: (
-	a: nat.zero
-	b: nat.zero
-	-> bool.true
-) | (
-	a: nat.zero
-	b: nat
-	-> bool.false
-) | (
-	a: nat
-	b: nat.zero
-	-> bool.false
-) | (
 	a: nat
 	b: nat
-	-> bool.true
-)
-
-or: (
-	a: bool.false
-	b: bool
-	-> b
-) | (
-	a: bool.true
-	b: bool
-	-> b
-)
-
-if: (
-	cond: bool.true
-	then: root
-	else: root
-	-> then
-) | (
-	cond: bool.false
-	then: root
-	else: root
-	-> else
-)
-
-fib: (
-	n: nat.zero | nat(prev: nat.zero)
-	-> nat(prev: nat.zero)
-) | (
-	n: nat(prev: nat)
-	-> sum(
-		a: fib(n: n.prev)
-		b: fib(n: n.prev.prev)
+	left: (
+		result: a.$
+		nat$: aright.result
+		zero$: bright.result
 	)
+	aright: (
+		result: b.$
+		nat$: eq(
+			a: a.prev
+			b: b.prev
+		)
+		zero$: bool.false
+	)
+	bright: (
+		result: b.$
+		nat$: bool.false
+		zero$: bool.true
+	)
+	-> left.result
 )
-
-fibb: (
+or: (
+	a: bool
+	b: bool
+	true$: bool.true
+	false$: b
+	-> a.$
+)
+if: (
+	cond: bool
+	then: root
+	else: root
+	true$: then
+	false$: else
+	-> cond.$
+)
+fib: (
 	n: nat  
 	prevs: sum(
 		a: fib(n: n.prev) 
@@ -291,21 +248,7 @@ fibb: (
 		else: prevs 
 	)
 )
-
--> fib(n: nat(prev: nat.zero))
-)'''))
-f = represent(f)
-print(f)
-
-print('*****')
-
-g = represent(static(parse('''(
-a: ()
-b: ()
-c: ()
-d: ()
-e: (k: b -> c) | (k: a -> d)
--> e(k: a)
+-> fib(n: nat(prev: nat(prev: nat.zero)))
 )''')))
 
-pprint.pprint(g)
+pprint.pprint(f)
