@@ -159,7 +159,10 @@ class Mesh(dict):
 			subpath = path[:i]
 			if not subpath in self or self[subpath] is None:
 				continue
-			self.clone(self[subpath], subpath)
+			oldsubpathvalue = None
+			while oldsubpathvalue != self[subpath]:
+				oldsubpathvalue = self[subpath]
+				self.clone(self[subpath], subpath)
 			if path in self:
 				return self.valueof(path)
 		raise SyntaxError(f'Name {".".join(path)!r} is not defined.')

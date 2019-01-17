@@ -1,7 +1,8 @@
 import sys
+from pprint import pprint
 from parser import Parser
 from code import Code
-from pprint import pprint
+from writer import Writer
 
 if not len(sys.argv) - 1:
 	exit('usage: nylo file.ny')
@@ -12,5 +13,6 @@ name = target.partition('/')[2].partition('.')[0]
 parser = Parser(Code('('+open(target, 'r').read()+')'))
 parser.parse((name,))
 parser.mesh.bind()
+writer = Writer(parser.mesh)
 
-print('.'.join(parser.mesh.valueof((name, 'self'))))
+print(writer.write((name, 'self')))

@@ -28,7 +28,7 @@ class Parser:
 	def __init__(self, code: Code):
 		"Creates a new instance of the parser."
 		self.code = code
-		self.mesh: Mesh = Mesh({})
+		self.mesh = Mesh({})
 		
 	def parse(self, path: Path, call: Call = None):
 		"""

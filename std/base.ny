@@ -1,3 +1,9 @@
+natural: (
+	zero: ()
+	previous: natural
+	example: natural(previous: natural(previous: natural.zero))
+)
+
 bool: (
 	true: ()
 	false: ()
