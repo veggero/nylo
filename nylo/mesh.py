@@ -171,7 +171,6 @@ class Mesh(dict):
 			if not subpath in self or self[subpath] is None:
 				continue
 			if (self[subpath], subpath) in done:
-				#print('denied', self[subpath], subpath)
 				continue
 			oldvalue = self[subpath]
 			self.clone(self[subpath], subpath)
@@ -211,7 +210,7 @@ class Mesh(dict):
 		... })
 		>>> m.clone(('fib',), ('tgt',))
 		>>> m[('tgt',)]
-		('tgt', 'prev')
+		('fib', 'prev')
 		>>> m[('tgt', 'n')]
 		('k',)
 		>>> m[('tgt', 'prev')]
@@ -224,7 +223,7 @@ class Mesh(dict):
 		
 		>>> m.clone(('fib', 'none'), ('tgt',))
 		>>> m[('tgt',)]
-		('tgt', 'prev')
+		('fib', 'prev')
 		
 		A special case is cloning from ('same'). That is the
 		only built-in function. When cloning from it, this function
@@ -263,7 +262,7 @@ class Mesh(dict):
 						  if not value is None else None)
 				delta[newkey] = newval
 		if oldroot in self and self[oldroot]:
-			delta[newroot] = chroot(self[oldroot], oldroot, newroot)
+			delta[newroot] = self[oldroot]
 		if oldroot == ('same',):
 			delta[newroot+('self',)] = newroot + (('then',) 
 				if self.valueof(newroot+('first',)) == self.valueof(newroot+('second',))

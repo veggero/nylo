@@ -40,7 +40,7 @@ class Writer:
 		if evvalue in (('base', 'nat'), ('base', 'nat', 'zero')):
 			return self.natural(value)
 		else:
-			return self.structure(value)
+			return self.structure(evvalue)
 		
 	def structure(self, value: Tuple[str]):
 		"""
