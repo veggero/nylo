@@ -15,5 +15,4 @@ parser.parse((name,))
 parser.mesh.bind()
 writer = Writer(parser.mesh)
 
-pprint(parser.mesh)
 print(writer.write((name, 'self')))

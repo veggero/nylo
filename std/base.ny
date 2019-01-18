@@ -23,5 +23,3 @@ nat: (
 	prev: nat
 	succ: nat(prev: self)
 )
-
--> nat(prev: nat.zero -> succ)

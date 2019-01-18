@@ -129,9 +129,12 @@ class Mesh(dict):
 		>>> m = Mesh({
 		...   ('a',): None,
 		...   ('a', 'k'): None,
+		...   ('a', 'k', 'x'): None,
 		...   ('b',): ('a',),
 		...   ('c',): ('b', 'k'),
-		...   ('e',): ('b',)
+		...   ('e',): ('b',),
+		...   ('f',): ('e',),
+		...   ('g',): ('f', 'k')
 		... })
 		>>> m.valueof(('a',))
 		('a',)
@@ -151,6 +154,12 @@ class Mesh(dict):
 		Traceback (most recent call last):
 			...
 		SyntaxError: Name 'b.n' is not defined.
+		>>> m.valueof(('g', 'x'))
+		('g', 'x')
+		>>> m.valueof(('g',))
+		('f', 'k')
+		>>> m.valueof(('f', 'k', 'x'))
+		('f', 'k', 'x')
 		"""
 		if path in self:
 			if isinstance(self[path], tuple):
@@ -161,11 +170,12 @@ class Mesh(dict):
 			subpath = path[:i]
 			if not subpath in self or self[subpath] is None:
 				continue
-			if (subpath, self[subpath]) in done:
+			if (self[subpath], subpath) in done:
+				#print('denied', self[subpath], subpath)
 				continue
-			oldsubpathvalue = self[subpath]
+			oldvalue = self[subpath]
 			self.clone(self[subpath], subpath)
-			return self.valueof(path, done+(subpath, self[subpath]))
+			return self.valueof(path, done+((oldvalue, subpath),))
 		raise SyntaxError(f'Name {".".join(path)!r} is not defined.')
 	
 	# Private:
@@ -242,6 +252,8 @@ class Mesh(dict):
 		"""
 		delta = {}
 		selfpath = oldroot + ('self',)
+		if not oldroot in self:
+			self.valueof(oldroot)
 		for key, value in self.items():
 			newkey = chroot(key, oldroot, newroot)
 			if newkey == key:
@@ -250,8 +262,6 @@ class Mesh(dict):
 				newval = (chroot(value, oldroot, newroot) 
 						  if not value is None else None)
 				delta[newkey] = newval
-		if not oldroot in self:
-			self.valueof(oldroot)
 		if oldroot in self and self[oldroot]:
 			delta[newroot] = chroot(self[oldroot], oldroot, newroot)
 		if oldroot == ('same',):

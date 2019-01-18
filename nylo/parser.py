@@ -3,15 +3,14 @@ This class brings together all the function used to parse nylo
 code using the Code class.
 """
 
-from string import ascii_letters, digits
 from code import Code
+from string import ascii_letters, digits
 from mesh import Mesh
 from typing import Tuple, Dict, Union
 
 Path = Tuple[str]
 Call = Union[None, Path]
 
-hide: Path = ('.',)
 me: Path = ('self',)
 
 class Parser:
@@ -41,9 +40,9 @@ class Parser:
 		
 		>>> c = '(a: b)'
 		>>> p = Parser(Code(c))
-		>>> p.parse((), None)
-		>>> p.mesh[('a',)]
-		(('a',), ('b',))
+		>>> p.parse(('root',), None)
+		>>> p.mesh[('root', 'a')]
+		(('root', 'a'), ('b',))
 		
 		>>> c = '(d: x.y.z)'
 		>>> p = Parser(Code(c))
@@ -53,34 +52,39 @@ class Parser:
 		
 		>>> c = '(a: b)'
 		>>> p = Parser(Code(c))
-		>>> p.parse((), ('a', 'r', 'y'))
-		>>> p.mesh[('a',)]
-		(('a', 'r', 'y'), ('b',))
+		>>> p.parse(('root',), ('root', 'a', 'r', 'y'))
+		>>> p.mesh[('root', 'a')]
+		(('root', 'a', 'r', 'y'), ('b',))
 		
 		>>> c = '_c.m'
 		>>> p = Parser(Code(c))
-		>>> p.parse((), None)
-		>>> p.mesh[()]
-		((), ('_c', 'm'))
+		>>> p.parse(('root',), None)
+		>>> p.mesh[('root',)]
+		(('root',), ('_c', 'm'))
 		
 		>>> c = 'fib(n: n)'
 		>>> p = Parser(Code(c))
 		>>> p.parse(('x',), None)
-		>>> p.mesh[('x', '.',)]
+		>>> p.mesh[('x', 'x.',)]
 		(('x',), ('fib',))
 		>>> p.mesh[('x',)]
-		(('x', '.'), ('.', 'self'))
-		>>> p.mesh[('x', '.', 'n')]
+		(('x', 'x.'), ('x.', 'self'))
+		>>> p.mesh[('x', 'x.', 'n')]
 		(('x',), ('n',))
 		
 		>>> c = "[I don't like square brackets]"
 		>>> p = Parser(Code(c))
-		>>> p.parse((), None)
+		>>> p.parse(('root',), None)
 		Traceback (most recent call last):
 			...
 		SyntaxError: Unexpected '[' while parsing for 'string or structure'.
-		
+		>>> p.parse((), None)
+		Traceback (most recent call last):
+			...
+		ValueError: parse first argument cannot be ().
 		"""
+		if not path:
+			raise ValueError('parse first argument cannot be ().')
 		# Structure
 		if self.code.is_in('('):
 			self.structure(path, call)
@@ -89,6 +93,7 @@ class Parser:
 			self.mesh[path] = (call or path, self.var())
 			# Call
 			if self.code.is_in('('):
+				hide = ('.'.join(path)+'.',)
 				self.mesh[path+hide] = self.mesh[path]
 				self.structure(path+hide, call or path)
 		else:
@@ -163,6 +168,9 @@ class Parser:
 		                               path + hide: ('fib',)
 		                               path + hide + ('n',): 10
 								   )
+		In order to avoid different value clashing, all hide values
+		should have a different value. I therefore set the
+		hide variable to the path i'm hiding plus .
 								   
 		If the structure ends on ')' and it is a call:
 			When we have something like `fib(n: 10)` we want
@@ -262,13 +270,13 @@ class Parser:
 		if self.code.startswith('->'):
 			[*map(self.code.skip, '->')]
 			if call:
-				self.mesh[path[:-1]] = (path, hide + 
+				self.mesh[path[:-1]] = (path, (path[-1],) + 
 					(() if self.code.is_in(')') else self.var()))
 			else:
 				self.parse(path + me, call)
 		else:
 			if call:
-				self.mesh[path[:-1]] = (path, hide + me)
+				self.mesh[path[:-1]] = (path, (path[-1],) + me)
 			else:
 				self.mesh[path + me] = (path, path)
 				

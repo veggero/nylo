@@ -64,34 +64,34 @@ class Writer:
 		n=0 will be 0, natural.zero with n=10 will be 10.
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'natural'): None,
-		... ('base', 'natural', 'zero'): None,
-		... ('n',): ('base', 'natural'),
-		... ('n', 'previous'): ('base', 'natural'),
-		... ('n', 'previous', 'previous'): ('base', 'natural', 'zero'),
+		... ('base', 'nat'): None,
+		... ('base', 'nat', 'zero'): None,
+		... ('n',): ('base', 'nat'),
+		... ('n', 'prev'): ('base', 'nat'),
+		... ('n', 'prev', 'prev'): ('base', 'nat', 'zero'),
 		... }))
 		>>> w.natural(('n',))
 		'2'
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'natural'): None,
-		... ('base', 'natural', 'zero'): None,
-		... ('n',): ('base', 'natural', 'zero'),
+		... ('base', 'nat'): None,
+		... ('base', 'nat', 'zero'): None,
+		... ('n',): ('base', 'nat', 'zero'),
 		... }))
 		>>> w.natural(('n',))
 		'0'
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'natural'): None,
-		... ('base', 'natural', 'zero'): None,
-		... ('not', 'a', 'natural'): None,
-		... ('n',): ('base', 'natural'),
-		... ('n', 'previous'): ('not', 'a', 'natural'),
+		... ('base', 'nat'): None,
+		... ('base', 'nat', 'zero'): None,
+		... ('not', 'a', 'nat'): None,
+		... ('n',): ('base', 'nat'),
+		... ('n', 'prev'): ('not', 'a', 'nat'),
 		... }))
 		>>> w.natural(('n',))
 		Traceback (most recent call last):
 			...
-		ValueError: 'not.a.natural' found in a number.
+		ValueError: 'not.a.nat' found in a number.
 		"""
 		while self.mesh.valueof(value) != ('base', 'nat', 'zero'):
 			if self.mesh.valueof(value) != ('base', 'nat'):
