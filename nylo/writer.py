@@ -37,7 +37,7 @@ class Writer:
 		'x.y.z'
 		"""
 		evvalue = self.mesh.valueof(value)
-		if evvalue in (('base', 'natural'), ('base', 'natural', 'zero')):
+		if evvalue in (('base', 'nat'), ('base', 'nat', 'zero')):
 			return self.natural(value)
 		else:
 			return self.structure(value)
@@ -93,11 +93,11 @@ class Writer:
 			...
 		ValueError: 'not.a.natural' found in a number.
 		"""
-		while self.mesh.valueof(value) != ('base', 'natural', 'zero'):
-			if self.mesh.valueof(value) != ('base', 'natural'):
+		while self.mesh.valueof(value) != ('base', 'nat', 'zero'):
+			if self.mesh.valueof(value) != ('base', 'nat'):
 				nan = self.write(self.mesh.valueof(value))
 				raise ValueError(f'{nan!r} found in a number.')
-			value += ('previous',)
+			value += ('prev',)
 			n += 1
 		return str(n)
 		

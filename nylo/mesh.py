@@ -100,7 +100,7 @@ class Mesh(dict):
 			else:
 				raise SyntaxError(f'Name {var!r} is not defined.')
 			
-	def valueof(self, path: Tuple[str]):
+	def valueof(self, path: Tuple[str], done=()):
 		"""
 		This method returns the value of a path. The difference
 		between this and the get method is that if the value
@@ -123,6 +123,8 @@ class Mesh(dict):
 		Also, if the value to return is a path to another
 		object, it will return the Mesh.valueof(that_path) instead.
 		Finally, if the value is None, the path itself is returned.
+		The done argument represent the already cloned values, in
+		order to avoid them cloning forever.
 		
 		>>> m = Mesh({
 		...   ('a',): None,
@@ -159,12 +161,11 @@ class Mesh(dict):
 			subpath = path[:i]
 			if not subpath in self or self[subpath] is None:
 				continue
-			oldsubpathvalue = None
-			while oldsubpathvalue != self[subpath]:
-				oldsubpathvalue = self[subpath]
-				self.clone(self[subpath], subpath)
-			if path in self:
-				return self.valueof(path)
+			if (subpath, self[subpath]) in done:
+				continue
+			oldsubpathvalue = self[subpath]
+			self.clone(self[subpath], subpath)
+			return self.valueof(path, done+(subpath, self[subpath]))
 		raise SyntaxError(f'Name {".".join(path)!r} is not defined.')
 	
 	# Private:
@@ -249,7 +250,9 @@ class Mesh(dict):
 				newval = (chroot(value, oldroot, newroot) 
 						  if not value is None else None)
 				delta[newkey] = newval
-		if self[oldroot]:
+		if not oldroot in self:
+			self.valueof(oldroot)
+		if oldroot in self and self[oldroot]:
 			delta[newroot] = chroot(self[oldroot], oldroot, newroot)
 		if oldroot == ('same',):
 			delta[newroot+('self',)] = newroot + (('then',) 

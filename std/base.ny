@@ -1,9 +1,3 @@
-natural: (
-	zero: ()
-	previous: natural
-	example: natural(previous: natural(previous: natural.zero))
-)
-
 bool: (
 	true: ()
 	false: ()
@@ -23,3 +17,11 @@ or: (
 		else: b
 	)
 )
+
+nat: (
+	zero: ()
+	prev: nat
+	succ: nat(prev: self)
+)
+
+-> nat(prev: nat.zero -> succ)
