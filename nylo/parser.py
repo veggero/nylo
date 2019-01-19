@@ -62,6 +62,12 @@ class Parser:
 		>>> p.mesh[('root',)]
 		(('root',), ('_c', 'm'))
 		
+		>>> c = '0'
+		>>> p = Parser(Code(c))
+		>>> p.parse(('root',), None)
+		>>> p.mesh[('root',)]
+		(('root',), ('base', 'nat', 'zero'))
+		
 		>>> c = 'fib(n: n)'
 		>>> p = Parser(Code(c))
 		>>> p.parse(('x',), None)
@@ -85,8 +91,11 @@ class Parser:
 		"""
 		if not path:
 			raise ValueError('parse first argument cannot be ().')
+		# Natural
+		if self.code.is_in(digits):
+			self.nat(path)
 		# Structure
-		if self.code.is_in('('):
+		elif self.code.is_in('('):
 			self.structure(path, call)
 		# Variable
 		elif self.code.is_in(ascii_letters + '$_'):
@@ -125,6 +134,34 @@ class Parser:
 		"""
 		return tuple(
 			self.code.skip_while(ascii_letters + digits + '$_.').split('.'))
+	
+	def nat(self, path: Path):
+		"""
+		This method parser a natural. It will build the nat data structure
+		0 -> nat.zero
+		1 -> nat(prev: nat.zero)
+		2 -> nat(prev: nat(prev: nat.zero))
+		
+		>>> p = Parser(Code('0'))
+		>>> p.nat(('x',))
+		>>> p.mesh[('x',)]
+		(('x',), ('base', 'nat', 'zero'))
+		>>> p = Parser(Code('1'))
+		>>> p.nat(('x',))
+		>>> p.mesh[('x',)]
+		(('x',), ('base', 'nat'))
+		>>> p.mesh[('x', 'prev')]
+		(('x', 'prev'), ('base', 'nat', 'zero'))
+		>>> Parser(Code('hi!')).nat(('x',))
+		Traceback (most recent call last):
+			...
+		SyntaxError: Unexpected 'h' while parsing for 'number'.
+		"""
+		n = int(self.code.skip_while(digits))
+		for i in range(n):
+			self.mesh[path] = (path, ('base', 'nat'))
+			path += ('prev',)
+		self.mesh[path] = (path, ('base', 'nat', 'zero'))
 	
 	def structure(self, path: Path, call: Call):
 		"""

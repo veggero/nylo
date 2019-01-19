@@ -210,6 +210,8 @@ class Code:
 			unexpected: str = self.code[0] if self.code else 'EOF'
 			if string.ascii_letters in characters:
 				characters = 'string'
+			if string.digits in characters:
+				characters = 'number'
 			raise SyntaxError(
 			f'Unexpected {unexpected!r} while parsing '
 			f'for {characters!r}.')

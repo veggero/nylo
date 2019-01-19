@@ -20,7 +20,7 @@ or: (
 
 nat: (
 	zero: (
-		succ: nat(prev: nat.zero)
+		succ: nat(prev: 0)
 	)
 	prev: nat
 	succ: nat(prev: self)
@@ -31,7 +31,7 @@ sum: (
 	b: nat
 	-> same(
 		first: a
-		second: nat.zero
+		second: 0
 		then: b
 		else: sum(
 			a: a.prev
@@ -45,16 +45,16 @@ eq: (
 	b: nat
 	-> same(
 		first: a
-		second: nat.zero
+		second: 0
 		then: same(
 			first: b
-			second: nat.zero
+			second: 0
 			then: bool.true
 			else: bool.false
 		)
 		else: same(
 			first: b
-			second: nat.zero
+			second: 0
 			then: bool.false
 			else: eq(
 				a: a.prev
@@ -84,10 +84,12 @@ fib: (
 	)
 	-> if(
 		cond: or(
-			a: eq(a: n, b: nat.zero)
-			b: eq(a: n, b: nat(prev: nat.zero)) 
+			a: eq(a: n, b: 0)
+			b: eq(a: n, b: 1) 
 		),
-		then: nat(prev: nat.zero)
+		then: nat(prev: 0)
 		else: prevs 
 	)
 )
+
+-> fib(n: 5)
