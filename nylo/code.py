@@ -9,6 +9,7 @@ EOF while parsing)
 
 import string
 from typing import List
+from fuck import unexpected
 
 class Code:
 	"""
@@ -28,9 +29,10 @@ class Code:
 	
 	# Public
 	
-	def __init__(self, code: str):
+	def __init__(self, code: str, consumed=''):
 		"Creates a new instance"
 		self.code: List[str] = [*code]
+		self.consumed = [*consumed]
 		# Already remove trailing whitespace
 		self.whitespace()
 		
@@ -57,9 +59,10 @@ class Code:
 		The next current character is 'c', which
 		is not in 'ab', so an exception will be raised.
 		>>> abc.skip('ab')
-		Traceback (most recent call last):
-			...
-		SyntaxError: Unexpected 'c' while parsing for 'ab'.
+		FUCK.
+		1| abc
+		     ^ right here
+		Error: Unexpected character 'c' while parsing for 'ab'.
 		
 		'c' has not be removed, so it's still in the code.
 		>>> abc.code
@@ -73,10 +76,10 @@ class Code:
 		SyntaxError: Unexpected 'EOF' while parsing for 'abc'.
 		"""
 		self.assume(characters)
-		popd: str = self.code.pop(0)
+		self.consumed.append(self.code.pop(0))
 		# Remove possible whitespace
 		self.whitespace()
-		return popd
+		return self.consumed[-1]
 		
 	def skip_while(self, characters: str, reverse=False) -> str:
 		"""
@@ -130,6 +133,7 @@ class Code:
 		# it's "while self.is_in".
 		while self.is_in(characters) != reverse:
 			popd += self.code.pop(0)
+			self.consumed.append(popd[-1])
 		self.whitespace()
 		return popd
 		
@@ -186,7 +190,7 @@ class Code:
 		['a', 'b', 'c']
 		"""
 		while self.is_in(string.whitespace):
-			self.code.pop(0)
+			self.consumed.append(self.code.pop(0))
 		
 	def assume(self, characters: str):
 		"""
@@ -196,22 +200,17 @@ class Code:
 		
 		>>> Code('abc').assume('a')
 		>>> Code('abc').assume('b')
-		Traceback (most recent call last):
-			...
-		SyntaxError: Unexpected 'a' while parsing for 'b'.
+		FUCK.
+		1| abc
+		   ^ right here
+		Error: Unexpected character 'a' while parsing for 'b'.
 		>>> Code('1').assume(string.ascii_letters)
-		Traceback (most recent call last):
-			...
-		SyntaxError: Unexpected '1' while parsing for 'string'.
+		FUCK.
+		1| 1
+		   ^ right here
+		Error: Unexpected character '1' while parsing for variable.
 		
 		Please refer to is_in for more examples.
 		"""
 		if not self.is_in(characters):
-			unexpected: str = self.code[0] if self.code else 'EOF'
-			if string.ascii_letters in characters:
-				characters = 'string'
-			if string.digits in characters:
-				characters = 'number'
-			raise SyntaxError(
-			f'Unexpected {unexpected!r} while parsing '
-			f'for {characters!r}.')
+			unexpected(characters, self)
