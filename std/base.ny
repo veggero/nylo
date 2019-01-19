@@ -92,4 +92,10 @@ fib: (
 	)
 )
 
--> fib(n: 5)
+list: (
+	end: ()
+	value: base
+	next: list
+)
+
+-> list(value: 1, next: list(value: 2, next: list.end))

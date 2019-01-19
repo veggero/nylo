@@ -39,6 +39,8 @@ class Writer:
 		evvalue = self.mesh.valueof(value)
 		if evvalue in (('base', 'nat'), ('base', 'nat', 'zero')):
 			return self.natural(value)
+		elif evvalue in (('base', 'list'), ('base', 'list', 'end')):
+			return self.wlist(value)
 		else:
 			return self.structure(evvalue)
 		
@@ -101,3 +103,48 @@ class Writer:
 			n += 1
 		return str(n)
 		
+	def wlist(self, value: Tuple[str], start='(', end=')', sep=', '):
+		"""
+		This writer will represent the linked list. It will
+		print the 'value' and then proceed to the 'next' node.
+		
+		>>> w = Writer(Mesh({
+		... ('base', 'list'): None,
+		... ('base', 'list', 'end'): None,
+		... ('hi',): None,
+		... ('l',): ('base', 'list'),
+		... ('l', 'value'): ('hi',),
+		... ('l', 'next'): ('base', 'list', 'end')
+		... }))
+		>>> w.wlist(('l',))
+		'(hi, )'
+		
+		>>> w = Writer(Mesh({
+		... ('base', 'list'): None,
+		... ('base', 'list', 'end'): None,
+		... ('l',): ('base', 'list', 'end'),
+		... }))
+		>>> w.wlist(('l',))
+		'()'
+		
+		>>> w = Writer(Mesh({
+		... ('base', 'list'): None,
+		... ('base', 'list', 'end'): None,
+		... ('hi',): None,
+		... ('not', 'a', 'list'): None,
+		... ('l',): ('base', 'list'),
+		... ('l', 'value'): ('hi',),
+		... ('l', 'next'): ('not', 'a', 'list')
+		... }))
+		>>> w.wlist(('l',))
+		Traceback (most recent call last):
+			...
+		ValueError: 'not.a.list' found in a list.
+		"""
+		while self.mesh.valueof(value) != ('base', 'list', 'end'):
+			if self.mesh.valueof(value) != ('base', 'list'):
+				nal = self.write(self.mesh.valueof(value))
+				raise ValueError(f'{nal!r} found in a list.')
+			start += self.write(value+('value',)) + sep
+			value += ('next',)
+		return start+end
