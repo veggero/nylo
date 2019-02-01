@@ -59,4 +59,3 @@ def unexpected(characters: str, code):
 			      'digits' if string.digits in characters else
 			      repr(characters))
 	fuck(f'Unexpected {unexpected} while parsing for {characters}.', code)
-	

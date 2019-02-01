@@ -41,6 +41,8 @@ class Writer:
 			return self.natural(value)
 		elif evvalue in (('base', 'list'), ('base', 'list', 'end')):
 			return self.wlist(value)
+		elif evvalue == ('base', 'string'):
+			return self.string(value)
 		else:
 			return self.structure(evvalue)
 		
@@ -162,3 +164,13 @@ class Writer:
 			elements.append(self.write(value+('value',)))
 			value += ('next',)
 		return f'[{" ".join(elements)}]'
+	
+	def string(self, value: Tuple[str]):
+		"""
+		This writer will represent a string. It will do so
+		by getting the represented list of character, and
+		then mapping chr over them. This is quite ugly, but
+		right now it should work well enough.
+		"""
+		elements = self.wlist(value+('characters',))
+		return ''.join(map(chr, map(int, elements[1:-1].split(' '))))
