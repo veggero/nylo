@@ -59,10 +59,9 @@ class Code:
 		The next current character is 'c', which
 		is not in 'ab', so an exception will be raised.
 		>>> abc.skip('ab')
-		FUCK.
-		1| abc
-		     ^ right here
-		Error: Unexpected character 'c' while parsing for 'ab'.
+		Traceback (most recent call last):
+			...
+		SystemExit
 		
 		'c' has not be removed, so it's still in the code.
 		>>> abc.code
@@ -73,7 +72,7 @@ class Code:
 		>>> Code.skip(Code(''), 'abc')
 		Traceback (most recent call last):
 			...
-		SyntaxError: Unexpected 'EOF' while parsing for 'abc'.
+		SystemExit
 		"""
 		self.assume(characters)
 		self.consumed.append(self.code.pop(0))
@@ -108,7 +107,7 @@ class Code:
 		>>> abc.skip_while('xyz')
 		Traceback (most recent call last):
 			...
-		SyntaxError: Unexpected 'g' while parsing for 'xyz'.
+		SystemExit
 		
 		We are left with 'ghilmn'.
 		This returns all character until anything in 'ghi',
@@ -120,7 +119,7 @@ class Code:
 		>>> Code.skip_while(Code(''), 'abc')
 		Traceback (most recent call last):
 			...
-		SyntaxError: Unexpected 'EOF' while parsing for 'abc'.
+		SystemExit
 		"""
 		# Check if there's at least one character.
 		# This is unnecessary if we're skipping until
@@ -200,15 +199,13 @@ class Code:
 		
 		>>> Code('abc').assume('a')
 		>>> Code('abc').assume('b')
-		FUCK.
-		1| abc
-		   ^ right here
-		Error: Unexpected character 'a' while parsing for 'b'.
+		Traceback (most recent call last):
+			...
+		SystemExit
 		>>> Code('1').assume(string.ascii_letters)
-		FUCK.
-		1| 1
-		   ^ right here
-		Error: Unexpected character '1' while parsing for variable.
+		Traceback (most recent call last):
+			...
+		SystemExit
 		
 		Please refer to is_in for more examples.
 		"""

@@ -83,7 +83,7 @@ class Parser:
 		>>> p.parse(('root',), None)
 		Traceback (most recent call last):
 			...
-		SyntaxError: Unexpected '[' while parsing for 'string or structure'.
+		SystemExit
 		>>> p.parse((), None)
 		Traceback (most recent call last):
 			...
@@ -126,11 +126,11 @@ class Parser:
 		>>> Parser(Code('')).var()
 		Traceback (most recent call last):
 			...
-		SyntaxError: Unexpected 'EOF' while parsing for 'string'.
+		SystemExit
 		>>> Parser(Code('()')).var()
 		Traceback (most recent call last):
 			...
-		SyntaxError: Unexpected '(' while parsing for 'string'.
+		SystemExit
 		"""
 		return tuple(
 			self.code.skip_while(ascii_letters + digits + '$_.').split('.'))
@@ -155,7 +155,7 @@ class Parser:
 		>>> Parser(Code('hi!')).nat(('x',))
 		Traceback (most recent call last):
 			...
-		SyntaxError: Unexpected 'h' while parsing for 'number'.
+		SystemExit
 		"""
 		n = int(self.code.skip_while(digits))
 		for i in range(n):
@@ -293,8 +293,9 @@ class Parser:
 		>>> p.structure((), None)
 		Traceback (most recent call last):
 			...
-		SyntaxError: Unexpected 'w' while parsing for '('.
+		SystemExit
 		"""
+		listpath = path
 		self.code.skip('(')
 			
 		while not (self.code.is_in(')') or self.code.startswith('->')):

@@ -12,10 +12,9 @@ def fuck(message: str, code):
 	
 	>>> from code import Code
 	>>> fuck('me!', Code('ya!', '\\nny'))
-	FUCK.
-	2| nyya!
-	     ^ right here
-	Error: me!
+	Traceback (most recent call last):
+		...
+	SystemExit
 	"""
 	print('FUCK.') #most important part
 	line_number = code.consumed.count('\n') + 1
@@ -36,28 +35,24 @@ def unexpected(characters: str, code):
 	
 	>>> from code import Code
 	>>> unexpected('(', Code('15'))
-	FUCK.
-	1| 15
-	   ^ right here
-	Error: Unexpected character '1' while parsing for '('.
+	Traceback (most recent call last):
+		...
+	SystemExit
 	
 	>>> unexpected('(', Code(''))
-	FUCK.
-	1| 
-	   ^ right here
-	Error: Unexpected EOF while parsing for '('.
+	Traceback (most recent call last):
+		...
+	SystemExit
 	
 	>>> unexpected(string.digits, Code('hello'))
-	FUCK.
-	1| hello
-	   ^ right here
-	Error: Unexpected character 'h' while parsing for digits.
+	Traceback (most recent call last):
+		...
+	SystemExit
 	
 	>>> unexpected(string.ascii_letters, Code('15'))
-	FUCK.
-	1| 15
-	   ^ right here
-	Error: Unexpected character '1' while parsing for variable.
+	Traceback (most recent call last):
+		...
+	SystemExit
 	"""
 	unexpected = 'EOF' if not code.code else f'character {code.code[0]!r}'
 	characters = ('variable' if string.ascii_letters in characters else
