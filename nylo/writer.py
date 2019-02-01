@@ -103,10 +103,18 @@ class Writer:
 			n += 1
 		return str(n)
 		
-	def wlist(self, value: Tuple[str], start='(', end=')', sep=', '):
+	def wlist(self, value: Tuple[str]):
 		"""
 		This writer will represent the linked list. It will
 		print the 'value' and then proceed to the 'next' node.
+		
+		>>> w = Writer(Mesh({
+		... ('base', 'list'): None,
+		... ('base', 'list', 'end'): None,
+		... ('l',): ('base', 'list', 'end'),
+		... }))
+		>>> w.wlist(('l',))
+		'[]'
 		
 		>>> w = Writer(Mesh({
 		... ('base', 'list'): None,
@@ -117,15 +125,20 @@ class Writer:
 		... ('l', 'next'): ('base', 'list', 'end')
 		... }))
 		>>> w.wlist(('l',))
-		'(hi, )'
+		'[hi]'
 		
 		>>> w = Writer(Mesh({
 		... ('base', 'list'): None,
 		... ('base', 'list', 'end'): None,
-		... ('l',): ('base', 'list', 'end'),
+		... ('hi',): None,
+		... ('l',): ('base', 'list'),
+		... ('l', 'value'): ('hi',),
+		... ('l', 'next'): ('base', 'list'),
+		... ('l', 'next', 'value'): ('hi',),
+		... ('l', 'next', 'next'): ('base', 'list', 'end')
 		... }))
 		>>> w.wlist(('l',))
-		'()'
+		'[hi hi]'
 		
 		>>> w = Writer(Mesh({
 		... ('base', 'list'): None,
@@ -141,10 +154,11 @@ class Writer:
 			...
 		ValueError: 'not.a.list' found in a list.
 		"""
+		elements = []
 		while self.mesh.valueof(value) != ('base', 'list', 'end'):
 			if self.mesh.valueof(value) != ('base', 'list'):
 				nal = self.write(self.mesh.valueof(value))
 				raise ValueError(f'{nal!r} found in a list.')
-			start += self.write(value+('value',)) + sep
+			elements.append(self.write(value+('value',)))
 			value += ('next',)
-		return start+end
+		return f'[{" ".join(elements)}]'

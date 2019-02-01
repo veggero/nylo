@@ -78,6 +78,10 @@ class Parser:
 		>>> p.mesh[('x', 'x.', 'n')]
 		(('x',), ('n',))
 		
+		>>> c = '[1 2]'
+		>>> p = Parser(Code(c))
+		>>> p.parse(('x',), None)
+		
 		>>> c = "[I don't like square brackets]"
 		>>> p = Parser(Code(c))
 		>>> p.parse(('root',), None)
@@ -91,8 +95,11 @@ class Parser:
 		"""
 		if not path:
 			raise ValueError('parse first argument cannot be ().')
+		# Lists
+		if self.code.is_in('['):
+			self.plist(path)
 		# Natural
-		if self.code.is_in(digits):
+		elif self.code.is_in(digits):
 			self.nat(path)
 		# Structure
 		elif self.code.is_in('('):
@@ -137,7 +144,7 @@ class Parser:
 	
 	def nat(self, path: Path):
 		"""
-		This method parser a natural. It will build the nat data structure
+		This method parses a natural. It will build the nat data structure
 		0 -> nat.zero
 		1 -> nat(prev: nat.zero)
 		2 -> nat(prev: nat(prev: nat.zero))
@@ -162,6 +169,42 @@ class Parser:
 			self.mesh[path] = (path, ('base', 'nat'))
 			path += ('prev',)
 		self.mesh[path] = (path, ('base', 'nat', 'zero'))
+		
+	def plist(self, path: Path):
+		"""
+		This method parses a list. It will build the list data structure
+		[] -> list.end
+		[1] -> list(value: 1, next: list.end)
+		[2] -> list(value: 1, next: list(value: 2, next: list.end))
+		
+		>>> p = Parser(Code('[]'))
+		>>> p.plist(('x',))
+		>>> p.mesh[('x',)]
+		(('x',), ('base', 'list', 'end'))
+		>>> p = Parser(Code('[0]'))
+		>>> p.plist(('x',))
+		>>> p.mesh[('x',)]
+		(('x',), ('base', 'list'))
+		>>> p.mesh[('x', 'value')]
+		(('x', 'value'), ('base', 'nat', 'zero'))
+		>>> p.mesh[('x', 'next')]
+		(('x', 'next'), ('base', 'list', 'end'))
+		>>> Parser(Code('hi!')).plist(('x',))
+		Traceback (most recent call last):
+			...
+		SystemExit
+		>>> Parser(Code('[1, 2]')).plist(('x',))
+		>>> Parser(Code('[1 2]')).plist(('x',))
+		"""
+		self.code.skip('[')
+		while not self.code.is_in(']'):
+			self.parse(path+('value',))
+			if self.code.is_in(','):
+				self.code.skip(',')
+			self.mesh[path] = (path, ('base', 'list'))
+			path += ('next',)
+		self.mesh[path] = (path, ('base', 'list', 'end'))
+		self.code.skip(']')
 	
 	def structure(self, path: Path, call: Call):
 		"""
