@@ -95,8 +95,11 @@ class Parser:
 		"""
 		if not path:
 			raise ValueError('parse first argument cannot be ().')
+		# Strings
+		if self.code.is_in('\'"'):
+			self.pstring(path)
 		# Lists
-		if self.code.is_in('['):
+		elif self.code.is_in('['):
 			self.plist(path)
 		# Natural
 		elif self.code.is_in(digits):
@@ -205,7 +208,31 @@ class Parser:
 			path += ('next',)
 		self.mesh[path] = (path, ('base', 'list', 'end'))
 		self.code.skip(']')
-	
+
+	def pstring(self, path: Path):
+		"""
+		This method will parse a string, an instance of 
+		the string object with a list of characters's numbers
+		as character propriety.
+		
+		>>> p = Parser(Code('"ary"'))
+		>>> p.pstring(('x',))
+		>>> p.mesh[('x',)]
+		(('x',), ('base', 'string'))
+		>>> p.mesh[('x', 'characters')]
+		(('x', 'characters'), ('base', 'list'))
+		>>> p.mesh[('x', 'characters', 'value')]
+		(('x', 'characters', 'value'), ('base', 'nat'))
+		"""
+		start = (self.code.skip("'") if self.code.is_in("'") 
+		   else self.code.skip('"'))
+		s = self.code.skip_while(start, reverse=True)
+		self.code.skip(start)
+		self.mesh[path] = (path, ('base', 'string'))
+		self.code.code = [*f'[{",".join(map(str, map(ord, s)))}]'
+					] + self.code.code
+		self.parse(path+('characters',))
+
 	def structure(self, path: Path, call: Call):
 		"""
 		This method parses a structure. 
