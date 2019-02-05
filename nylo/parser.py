@@ -78,7 +78,7 @@ class Parser:
 		>>> p.mesh[('x', 'x.', 'n')]
 		(('x',), ('n',))
 		
-		>>> c = '[1 2]'
+		>>> c = '[1, 2]'
 		>>> p = Parser(Code(c))
 		>>> p.parse(('x',), None)
 		
@@ -116,7 +116,7 @@ class Parser:
 				self.mesh[path+hide] = self.mesh[path]
 				self.structure(path+hide, call or path)
 		else:
-			self.code.skip('string or structure')
+			self.code.skip('any object')
 				
 	def var(self) -> Path:
 		"""
@@ -198,11 +198,14 @@ class Parser:
 		SystemExit
 		>>> Parser(Code('[1, 2]')).plist(('x',))
 		>>> Parser(Code('[1 2]')).plist(('x',))
+		Traceback (most recent call last):
+			...
+		SystemExit
 		"""
 		self.code.skip('[')
 		while not self.code.is_in(']'):
 			self.parse(path+('value',))
-			if self.code.is_in(','):
+			if not self.code.is_in(']'):
 				self.code.skip(',')
 			self.mesh[path] = (path, ('base', 'list'))
 			path += ('next',)
@@ -229,9 +232,10 @@ class Parser:
 		s = self.code.skip_while(start, reverse=True)
 		self.code.skip(start)
 		self.mesh[path] = (path, ('base', 'string'))
-		self.code.code = [*f'[{",".join(map(str, map(ord, s)))}]'
-					] + self.code.code
+		s = [*f'[{",".join(map(str, map(ord, s)))}]']
+		self.code.code = s + self.code.code
 		self.parse(path+('characters',))
+		[self.code.consumed.pop() for i in range(len(s))]
 
 	def structure(self, path: Path, call: Call):
 		"""
