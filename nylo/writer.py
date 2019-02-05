@@ -140,7 +140,7 @@ class Writer:
 		... ('l', 'next', 'next'): ('base', 'list', 'end')
 		... }))
 		>>> w.wlist(('l',))
-		'[hi, hi]'
+		'[hi hi]'
 		
 		>>> w = Writer(Mesh({
 		... ('base', 'list'): None,
@@ -163,7 +163,7 @@ class Writer:
 				raise ValueError(f'{nal!r} found in a list.')
 			elements.append(self.write(value+('value',)))
 			value += ('next',)
-		return f'[{", ".join(elements)}]'
+		return f'[{" ".join(elements)}]'
 	
 	def string(self, value: Tuple[str]):
 		"""

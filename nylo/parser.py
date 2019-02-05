@@ -82,7 +82,7 @@ class Parser:
 		>>> p = Parser(Code(c))
 		>>> p.parse(('x',), None)
 		
-		>>> c = "[I don't like square brackets]"
+		>>> c = "{I don't like curly brackets}"
 		>>> p = Parser(Code(c))
 		>>> p.parse(('root',), None)
 		Traceback (most recent call last):
@@ -198,14 +198,11 @@ class Parser:
 		SystemExit
 		>>> Parser(Code('[1, 2]')).plist(('x',))
 		>>> Parser(Code('[1 2]')).plist(('x',))
-		Traceback (most recent call last):
-			...
-		SystemExit
 		"""
 		self.code.skip('[')
 		while not self.code.is_in(']'):
 			self.parse(path+('value',))
-			if not self.code.is_in(']'):
+			if self.code.is_in(','):
 				self.code.skip(',')
 			self.mesh[path] = (path, ('base', 'list'))
 			path += ('next',)
