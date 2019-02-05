@@ -102,6 +102,59 @@ string: (
 	characters: list(value: nat)
 )
 
-hello: [104 101 108 108 111 32 119 111 114 108 100]
+get: (
+	item: nat
+	of: list
+	-> same(
+		first: of
+		second: list.end
+		then: "error"
+		else: same(
+			first: item
+			second: 0
+			then: of.value
+			else: get(
+				item: item.prev
+				of: of.next
+			)
+		)
+	)
+)
 
--> eq(a: 500, b: 501)
+len: (
+	of: list
+	-> len_(of: of, items: 1)
+)
+
+len_: (
+	items: nat
+	of: list
+	-> same(
+		first: of.next
+		second: list.end
+		then: items
+		else: len_(
+			items: items.succ
+			of: of.next
+		)
+	)
+)
+
+list_sum: (
+	of: list
+	-> list_sum_(of: of, total: 0)
+)
+
+list_sum_: (
+	of: list
+	total: nat
+	-> same(
+		first: of.next
+		second: list.end
+		then: sum(a: total, b: of.value)
+		else: list_sum_(
+			of: of.next
+			total: sum(a: total, b: of.value)
+		)
+	)
+)

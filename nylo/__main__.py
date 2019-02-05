@@ -10,9 +10,14 @@ if not len(sys.argv) - 1:
 this, target = sys.argv
 name = target.partition('/')[2].partition('.')[0]
 
+std_parser = Parser(Code('('+open('std/base.ny', 'r').read()+')'))
+std_parser.parse(('base',))
+
 parser = Parser(Code('('+open(target, 'r').read()+')'))
-parser.parse((name,))
+parser.parse(('base', name,))
+parser.mesh.update(std_parser.mesh)
 parser.mesh.bind()
 writer = Writer(parser.mesh)
 
-print(writer.write((name, 'self')))
+
+print(writer.write(('base', name, 'self')))
