@@ -24,6 +24,9 @@ class Mesh(dict):
 	
 	# Public:
 	
+	def __init__(self, *args):
+		super().__init__(*args)
+	
 	def bind(self):
 		"""
 		This binds all the variable in the mesh.
@@ -173,13 +176,14 @@ class Mesh(dict):
 			if (self[subpath], subpath) in done:
 				continue
 			oldvalue = self[subpath]
-			self.clone(self[subpath], subpath)
-			return self.valueof(path, done+((oldvalue, subpath),))
+			done += ((oldvalue, subpath),)
+			self.clone(self[subpath], subpath, done)
+			return self.valueof(path, done)
 		raise SyntaxError(f'Name {".".join(path)!r} is not defined.')
 	
 	# Private:
 		
-	def clone(self, oldroot: Tuple[str], newroot: Tuple[str]):
+	def clone(self, oldroot: Tuple[str], newroot: Tuple[str], done=()):
 		"""
 		This function clones all the values in the dictionary
 		where the keys starts with oldroot to the same
@@ -252,7 +256,7 @@ class Mesh(dict):
 		delta = {}
 		selfpath = oldroot + ('self',)
 		if not oldroot in self:
-			self.valueof(oldroot)
+			self.valueof(oldroot, done)
 		for key, value in self.items():
 			newkey = chroot(key, oldroot, newroot)
 			if newkey == key:
@@ -265,12 +269,11 @@ class Mesh(dict):
 			delta[newroot] = self[oldroot]
 		if oldroot == ('same',):
 			delta[newroot+('self',)] = newroot + (('then',) 
-				if self.valueof(newroot+('first',)) == self.valueof(newroot+('second',))
+				if self.valueof(newroot+('first',), done) == self.valueof(newroot+('second',), done)
 				else ('else',))
 		if selfpath in self and self[selfpath] == oldroot:
 			delta[newroot+('self',)] = newroot
 		self.update(delta)
-		
 		
 def chroot(path: Tuple[str], oldroot: Tuple[str], newroot: Tuple[str]) -> Tuple[str]:
 	"""

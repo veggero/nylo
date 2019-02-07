@@ -19,11 +19,11 @@ or: (
 )
 
 nat: (
-	zero: (
-		succ: nat(prev: 0)
+	pos: (
+		prev: nat
+		succ: nat.pos(prev: self)
 	)
-	prev: nat
-	succ: nat(prev: self)
+	zero: ()
 )
 
 sum: (
@@ -87,19 +87,21 @@ fib: (
 			a: eq(a: n, b: 0)
 			b: eq(a: n, b: 1) 
 		),
-		then: nat(prev: 0)
+		then: 1
 		else: prevs 
 	)
 )
 
 list: (
+	element: (
+		value: base
+		next: list
+	)
 	end: ()
-	value: base
-	next: list
 )
 
 string: (
-	characters: list(value: nat)
+	characters: list
 )
 
 get: (

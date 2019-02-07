@@ -37,9 +37,9 @@ class Writer:
 		'x.y.z'
 		"""
 		evvalue = self.mesh.valueof(value)
-		if evvalue in (('base', 'nat'), ('base', 'nat', 'zero')):
+		if evvalue in (('base', 'nat', 'pos'), ('base', 'nat', 'zero')):
 			return self.natural(value)
-		elif evvalue in (('base', 'list'), ('base', 'list', 'end')):
+		elif evvalue in (('base', 'list', 'element'), ('base', 'list', 'end')):
 			return self.wlist(value)
 		elif evvalue == ('base', 'string'):
 			return self.string(value)
@@ -55,8 +55,10 @@ class Writer:
 		'x.y.z'
 		>>> Writer.structure(None, ('a',))
 		'a'
+		>>> Writer.structure(None, ('a', 'a.'))
+		'a'
 		"""
-		return '.'.join(value)
+		return '.'.join(v for v in value if not v.endswith('.'))
 	
 	def natural(self, value: Tuple[str], n=0):
 		"""
@@ -68,17 +70,17 @@ class Writer:
 		n=0 will be 0, natural.zero with n=10 will be 10.
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'nat'): None,
+		... ('base', 'nat', 'pos'): None,
 		... ('base', 'nat', 'zero'): None,
-		... ('n',): ('base', 'nat'),
-		... ('n', 'prev'): ('base', 'nat'),
+		... ('n',): ('base', 'nat', 'pos'),
+		... ('n', 'prev'): ('base', 'nat', 'pos'),
 		... ('n', 'prev', 'prev'): ('base', 'nat', 'zero'),
 		... }))
 		>>> w.natural(('n',))
 		'2'
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'nat'): None,
+		... ('base', 'nat', 'pos'): None,
 		... ('base', 'nat', 'zero'): None,
 		... ('n',): ('base', 'nat', 'zero'),
 		... }))
@@ -86,10 +88,10 @@ class Writer:
 		'0'
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'nat'): None,
+		... ('base', 'nat', 'pos'): None,
 		... ('base', 'nat', 'zero'): None,
 		... ('not', 'a', 'nat'): None,
-		... ('n',): ('base', 'nat'),
+		... ('n',): ('base', 'nat', 'pos'),
 		... ('n', 'prev'): ('not', 'a', 'nat'),
 		... }))
 		>>> w.natural(('n',))
@@ -98,7 +100,9 @@ class Writer:
 		ValueError: 'not.a.nat' found in a number.
 		"""
 		while self.mesh.valueof(value) != ('base', 'nat', 'zero'):
-			if self.mesh.valueof(value) != ('base', 'nat'):
+			if self.mesh.valueof(value) == ('base', 'nat'):
+				return 'base.nat.pos'
+			if self.mesh.valueof(value) != ('base', 'nat', 'pos'):
 				nan = self.write(self.mesh.valueof(value))
 				raise ValueError(f'{nan!r} found in a number.')
 			value += ('prev',)
@@ -111,7 +115,7 @@ class Writer:
 		print the 'value' and then proceed to the 'next' node.
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'list'): None,
+		... ('base', 'list', 'element'): None,
 		... ('base', 'list', 'end'): None,
 		... ('l',): ('base', 'list', 'end'),
 		... }))
@@ -119,10 +123,10 @@ class Writer:
 		'[]'
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'list'): None,
+		... ('base', 'list', 'element'): None,
 		... ('base', 'list', 'end'): None,
 		... ('hi',): None,
-		... ('l',): ('base', 'list'),
+		... ('l',): ('base', 'list', 'element'),
 		... ('l', 'value'): ('hi',),
 		... ('l', 'next'): ('base', 'list', 'end')
 		... }))
@@ -130,12 +134,12 @@ class Writer:
 		'[hi]'
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'list'): None,
+		... ('base', 'list', 'element'): None,
 		... ('base', 'list', 'end'): None,
 		... ('hi',): None,
-		... ('l',): ('base', 'list'),
+		... ('l',): ('base', 'list', 'element'),
 		... ('l', 'value'): ('hi',),
-		... ('l', 'next'): ('base', 'list'),
+		... ('l', 'next'): ('base', 'list', 'element'),
 		... ('l', 'next', 'value'): ('hi',),
 		... ('l', 'next', 'next'): ('base', 'list', 'end')
 		... }))
@@ -143,11 +147,11 @@ class Writer:
 		'[hi hi]'
 		
 		>>> w = Writer(Mesh({
-		... ('base', 'list'): None,
+		... ('base', 'list', 'element'): None,
 		... ('base', 'list', 'end'): None,
 		... ('hi',): None,
 		... ('not', 'a', 'list'): None,
-		... ('l',): ('base', 'list'),
+		... ('l',): ('base', 'list', 'element'),
 		... ('l', 'value'): ('hi',),
 		... ('l', 'next'): ('not', 'a', 'list')
 		... }))
@@ -158,7 +162,9 @@ class Writer:
 		"""
 		elements = []
 		while self.mesh.valueof(value) != ('base', 'list', 'end'):
-			if self.mesh.valueof(value) != ('base', 'list'):
+			if self.mesh.valueof(value) == ('base', 'list'):
+				return 'base.list.element'
+			if self.mesh.valueof(value) != ('base', 'list', 'element'):
 				nal = self.write(self.mesh.valueof(value))
 				raise ValueError(f'{nal!r} found in a list.')
 			elements.append(self.write(value+('value',)))
@@ -172,5 +178,7 @@ class Writer:
 		then mapping chr over them. This is quite ugly, but
 		right now it should work well enough.
 		"""
+		if self.mesh.valueof(value+('characters',)) != ('base', 'list', 'element'):
+			return 'base.string'
 		elements = self.wlist(value+('characters',))
 		return ''.join(map(chr, map(int, elements[1:-1].split(' '))))

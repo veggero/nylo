@@ -4,7 +4,7 @@ code using the Code class.
 """
 
 from code import Code
-from string import ascii_letters, digits
+from string import ascii_letters, digits, punctuation
 from mesh import Mesh
 from typing import Tuple, Dict, Union
 
@@ -12,6 +12,8 @@ Path = Tuple[str]
 Call = Union[None, Path]
 
 me: Path = ('self',)
+
+operators = set(punctuation) - set('[](),\'\".\\')
 
 class Parser:
 	"""
@@ -70,7 +72,7 @@ class Parser:
 		
 		>>> c = 'fib(n: n)'
 		>>> p = Parser(Code(c))
-		>>> p.parse(('x',), None)
+		>>> p.parse(('x',))
 		>>> p.mesh[('x', 'x.',)]
 		(('x',), ('fib',))
 		>>> p.mesh[('x',)]
@@ -80,19 +82,42 @@ class Parser:
 		
 		>>> c = '[1, 2]'
 		>>> p = Parser(Code(c))
-		>>> p.parse(('x',), None)
+		>>> p.parse(('x',))
 		
-		>>> c = "{I don't like curly brackets}"
-		>>> p = Parser(Code(c))
-		>>> p.parse(('root',), None)
-		Traceback (most recent call last):
-			...
-		SystemExit
-		>>> p.parse((), None)
+		>>> p.parse((),)
 		Traceback (most recent call last):
 			...
 		ValueError: parse first argument cannot be ().
+		
+		Symbols are function calls to a variable with name
+		said symbol, with the two operands in args: (a, b).
+		
+		>>> p = Parser(Code('+ 0 0'))
+		>>> p.parse(('hello',))
+		>>> p.mesh[('hello', 'hello.')]
+		(('hello',), ('+',))
+		>>> p.mesh[('hello', 'hello.', 'args')]
+		(('hello',), ('base', 'list'))
+		>>> p.mesh[('hello', 'hello.', 'args', 'value')]
+		(('hello', 'hello.', 'args', 'value'), ('base', 'nat', 'zero'))
+		
+		>>> p = Parser(Code('=} 0 0'))
+		>>> p.parse(('hello',))
+		>>> p.mesh[('hello', 'hello.')]
+		(('hello',), ('=}',))
+		
+		>>> p = Parser(Code('-> 0 0'))
+		>>> p.parse(('hello',))
+		Traceback (most recent call last):
+			...
+		SystemExit
+		
+		>>> p = Parser(Code('({)'))
+		>>> p.parse(('hello',))
+		>>> p.mesh[('hello',)]
+		(('hello',), ('{',))
 		"""
+		hide = ('.'.join(path)+'.',)
 		if not path:
 			raise ValueError('parse first argument cannot be ().')
 		# Strings
@@ -104,19 +129,26 @@ class Parser:
 		# Natural
 		elif self.code.is_in(digits):
 			self.nat(path)
-		# Structure
-		elif self.code.is_in('('):
-			self.structure(path, call)
 		# Variable
-		elif self.code.is_in(ascii_letters + '$_'):
+		elif (self.code.is_in(ascii_letters + '$_')
+			or (self.code.code[1] in operators and 
+			self.code.code[0] == '(' and not
+			''.join(self.code.code).startswith('(->'))):
 			self.mesh[path] = (call or path, self.var())
 			# Call
 			if self.code.is_in('('):
-				hide = ('.'.join(path)+'.',)
 				self.mesh[path+hide] = self.mesh[path]
 				self.structure(path+hide, call or path)
+		# Symbol
+		elif (self.code.is_in(operators) and 
+			not ''.join(self.code.code).startswith('->')):
+			self.op(path, hide)
+		# Structure
+		elif self.code.is_in('('):
+			self.structure(path, call)
 		else:
 			self.code.skip('any object')
+			
 				
 	def var(self) -> Path:
 		"""
@@ -128,29 +160,43 @@ class Parser:
 		('ab1', 'cd2', 'ef3')
 		>>> Parser(Code('abcd5')).var()
 		('abcd5',)
-		>>> Parser(Code('a_.$$._b')).var()
-		('a_', '$$', '_b')
+		>>> Parser(Code('a_.pr._b')).var()
+		('a_', 'pr', '_b')
 		
 		These cases will raise an exception:
 		
-		>>> Parser(Code('')).var()
-		Traceback (most recent call last):
-			...
-		SystemExit
 		>>> Parser(Code('()')).var()
 		Traceback (most recent call last):
 			...
 		SystemExit
+		
+		>>> p = Parser(Code('(=>)'))
+		>>> p.var()
+		('=>',)
+		>>> Parser(Code('(>).(<).(=)')).var()
+		('>', '<', '=')
+		>>> Parser(Code('hi.(<).(=)')).var()
+		('hi', '<', '=')
 		"""
-		return tuple(
-			self.code.skip_while(ascii_letters + digits + '$_.').split('.'))
+		if self.code.is_in('('):
+			self.code.skip('(')
+			v = self.code.skip_while(operators),
+			self.code.skip(')')
+		elif self.code.is_in(ascii_letters + '_'):
+			v = self.code.skip_while(ascii_letters + digits + '_'),
+		else:
+			return ()
+		if self.code.is_in('.'):
+			self.code.skip('.')
+			v += self.var()
+		return v
 	
 	def nat(self, path: Path):
 		"""
 		This method parses a natural. It will build the nat data structure
 		0 -> nat.zero
-		1 -> nat(prev: nat.zero)
-		2 -> nat(prev: nat(prev: nat.zero))
+		1 -> nat.pos(prev: nat.zero)
+		2 -> nat.pos(prev: nat.pos(prev: nat.zero))
 		
 		>>> p = Parser(Code('0'))
 		>>> p.nat(('x',))
@@ -159,7 +205,7 @@ class Parser:
 		>>> p = Parser(Code('1'))
 		>>> p.nat(('x',))
 		>>> p.mesh[('x',)]
-		(('x',), ('base', 'nat'))
+		(('x',), ('base', 'nat', 'pos'))
 		>>> p.mesh[('x', 'prev')]
 		(('x', 'prev'), ('base', 'nat', 'zero'))
 		>>> Parser(Code('hi!')).nat(('x',))
@@ -169,7 +215,7 @@ class Parser:
 		"""
 		n = int(self.code.skip_while(digits))
 		for i in range(n):
-			self.mesh[path] = (path, ('base', 'nat'))
+			self.mesh[path] = (path, ('base', 'nat', 'pos'))
 			path += ('prev',)
 		self.mesh[path] = (path, ('base', 'nat', 'zero'))
 		
@@ -187,7 +233,7 @@ class Parser:
 		>>> p = Parser(Code('[0]'))
 		>>> p.plist(('x',))
 		>>> p.mesh[('x',)]
-		(('x',), ('base', 'list'))
+		(('x',), ('base', 'list', 'element'))
 		>>> p.mesh[('x', 'value')]
 		(('x', 'value'), ('base', 'nat', 'zero'))
 		>>> p.mesh[('x', 'next')]
@@ -204,7 +250,7 @@ class Parser:
 			self.parse(path+('value',))
 			if self.code.is_in(','):
 				self.code.skip(',')
-			self.mesh[path] = (path, ('base', 'list'))
+			self.mesh[path] = (path, ('base', 'list', 'element'))
 			path += ('next',)
 		self.mesh[path] = (path, ('base', 'list', 'end'))
 		self.code.skip(']')
@@ -222,7 +268,7 @@ class Parser:
 		>>> p.mesh[('x', 'characters')]
 		(('x', 'characters'), ('base', 'list'))
 		>>> p.mesh[('x', 'characters', 'value')]
-		(('x', 'characters', 'value'), ('base', 'nat'))
+		(('x', 'characters', 'value'), ('base', 'nat', 'pos'))
 		"""
 		start = (self.code.skip("'") if self.code.is_in("'") 
 		   else self.code.skip('"'))
@@ -233,7 +279,24 @@ class Parser:
 		self.code.code = s + self.code.code
 		self.parse(path+('characters',))
 		[self.code.consumed.pop() for i in range(len(s))]
-
+		
+	def op(self, path: Path, hide: Path):
+		"""
+		This method will parse an operator. Since the operator
+		is after the value, it will move the already parsed value
+		to op.args.value, then will parse the operator, and
+		then the value after the operator.
+		"""
+		op = self.code.skip_while(operators),
+		self.mesh[path] = (path, path+hide+('self',))
+		self.mesh[path+hide+('args',)] = (path, ('base', 'list'))
+		self.mesh[path+hide+('args', 'next')] = (path, ('base', 'list'))
+		self.mesh[path+hide+
+			('args', 'next', 'next')] = (path, ('base', 'list', 'end'))
+		self.mesh[path+hide] = (path, op)
+		self.parse(path+hide+('args', 'next', 'value'))
+		self.parse(path+hide+('args', 'value'))
+		
 	def structure(self, path: Path, call: Call):
 		"""
 		This method parses a structure. 

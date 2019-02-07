@@ -19,5 +19,6 @@ parser.mesh.update(std_parser.mesh)
 parser.mesh.bind()
 writer = Writer(parser.mesh)
 
-
-print(writer.write(('base', name, 'self')))
+print("size in >", len(parser.mesh), sys.getsizeof(parser.mesh)/1000)
+print("output:", writer.write(('base', name, 'self')))
+print("size out <", len(parser.mesh), sys.getsizeof(parser.mesh)/1000)
