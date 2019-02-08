@@ -257,14 +257,19 @@ class Mesh(dict):
 		selfpath = oldroot + ('self',)
 		if not oldroot in self:
 			self.valueof(oldroot, done)
-		for key, value in self.items():
+		blockeds = set()
+		for key, value in sorted(self.items(), key=lambda x: x[0]):
 			newkey = chroot(key, oldroot, newroot)
+			if any(key[:len(b)] == b for b in blockeds):
+				continue
 			if newkey == key:
 				continue
 			if not (newkey in self and self[newkey] is not None):
 				newval = (chroot(value, oldroot, newroot) 
 						  if not value is None else None)
 				delta[newkey] = newval
+			else:
+				blockeds.add(key)
 		if oldroot in self and self[oldroot]:
 			delta[newroot] = self[oldroot]
 		if oldroot == ('same',):
@@ -274,6 +279,7 @@ class Mesh(dict):
 		if selfpath in self and self[selfpath] == oldroot:
 			delta[newroot+('self',)] = newroot
 		self.update(delta)
+		
 		
 def chroot(path: Tuple[str], oldroot: Tuple[str], newroot: Tuple[str]) -> Tuple[str]:
 	"""

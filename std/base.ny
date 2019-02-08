@@ -107,10 +107,11 @@ string: (
 get: (
 	item: nat
 	of: list
+	error: ()
 	-> same(
 		first: of
 		second: list.end
-		then: "error"
+		then: error
 		else: same(
 			first: item
 			second: 0
@@ -160,3 +161,16 @@ list_sum_: (
 		)
 	)
 )
+
+prova: (
+	args: [base base]
+	-> provab(
+		args: args
+	)
+)
+
+provab: (
+	args: [nat nat]
+	-> args
+)
+
