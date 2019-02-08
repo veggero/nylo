@@ -101,7 +101,7 @@ class Mesh(dict):
 					self[key] = possible + tuple(propr)
 					break
 			else:
-				raise SyntaxError(f'Name {var!r} is not defined.')
+				raise SyntaxError(f'Name {var!r} is not defined in {key!r}.')
 			
 	def valueof(self, path: Tuple[str], done=()):
 		"""
@@ -179,7 +179,7 @@ class Mesh(dict):
 			done += ((oldvalue, subpath),)
 			self.clone(self[subpath], subpath, done)
 			return self.valueof(path, done)
-		raise SyntaxError(f'Name {".".join(path)!r} is not defined.')
+		raise SyntaxError(f'Name {path!r} is not defined.')
 	
 	# Private:
 		

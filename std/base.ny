@@ -22,21 +22,22 @@ nat: (
 	pos: (
 		prev: nat
 		succ: nat.pos(prev: self)
-	)
-	zero: ()
-)
-
-sum: (
-	a: nat
-	b: nat
-	-> same(
-		first: a
-		second: 0
-		then: b
-		else: sum(
-			a: a.prev
-			b: b.succ
+		
+		(+): (
+			args: [nat nat]
+			a: args.value
+			b: args.next.value
+			-> same(
+				first: args.value
+				second: 0
+				then: args.next.value
+				else: + args.value.prev args.next.value.succ
+			)
 		)
+		
+	)
+	zero: (
+		(+): (args: [nat nat] -> args.next.value)
 	)
 )
 
@@ -78,10 +79,7 @@ if: (
 
 fib: (
 	n: nat
-	prevs: sum(
-		a: fib(n: n.prev) 
-		b: fib(n: n.prev.prev)
-	)
+	prevs: + fib(n: n.prev) fib(n: n.prev.prev)
 	-> if(
 		cond: or(
 			a: eq(a: n, b: 0)
@@ -154,23 +152,17 @@ list_sum_: (
 	-> same(
 		first: of.next
 		second: list.end
-		then: sum(a: total, b: of.value)
+		then: + total of.value
 		else: list_sum_(
 			of: of.next
-			total: sum(a: total, b: of.value)
+			total: + total of.value
 		)
 	)
 )
 
-prova: (
+(+): (
 	args: [base base]
-	-> provab(
+	-> args.value.(+)(
 		args: args
 	)
 )
-
-provab: (
-	args: [nat nat]
-	-> args
-)
-

@@ -125,7 +125,7 @@ class Parser:
 			self.pstring(path)
 		# Lists
 		elif self.code.is_in('['):
-			self.plist(path)
+			self.plist(path, call)
 		# Natural
 		elif self.code.is_in(digits):
 			self.nat(path)
@@ -142,7 +142,7 @@ class Parser:
 		# Symbol
 		elif (self.code.is_in(operators) and 
 			not ''.join(self.code.code).startswith('->')):
-			self.op(path, hide)
+			self.op(path, hide, call)
 		# Structure
 		elif self.code.is_in('('):
 			self.structure(path, call)
@@ -219,7 +219,7 @@ class Parser:
 			path += ('prev',)
 		self.mesh[path] = (path, ('base', 'nat', 'zero'))
 		
-	def plist(self, path: Path):
+	def plist(self, path: Path, call=None):
 		"""
 		This method parses a list. It will build the list data structure
 		[] -> list.end
@@ -247,7 +247,7 @@ class Parser:
 		"""
 		self.code.skip('[')
 		while not self.code.is_in(']'):
-			self.parse(path+('value',))
+			self.parse(path+('value',), call)
 			if self.code.is_in(','):
 				self.code.skip(',')
 			self.mesh[path] = (path, ('base', 'list', 'element'))
@@ -280,7 +280,7 @@ class Parser:
 		self.parse(path+('characters',))
 		[self.code.consumed.pop() for i in range(len(s))]
 		
-	def op(self, path: Path, hide: Path):
+	def op(self, path: Path, hide: Path, call=None):
 		"""
 		This method will parse an operator. Since the operator
 		is after the value, it will move the already parsed value
@@ -289,13 +289,13 @@ class Parser:
 		"""
 		op = self.code.skip_while(operators),
 		self.mesh[path] = (path, path+hide+('self',))
-		self.mesh[path+hide+('args',)] = (path, ('base', 'list'))
-		self.mesh[path+hide+('args', 'next')] = (path, ('base', 'list'))
+		self.mesh[path+hide+('args',)] = (path, ('base', 'list', 'element'))
+		self.mesh[path+hide+('args', 'next')] = (path, ('base', 'list', 'element'))
 		self.mesh[path+hide+
 			('args', 'next', 'next')] = (path, ('base', 'list', 'end'))
 		self.mesh[path+hide] = (path, op)
-		self.parse(path+hide+('args', 'next', 'value'))
-		self.parse(path+hide+('args', 'value'))
+		self.parse(path+hide+('args', 'value'), call)
+		self.parse(path+hide+('args', 'next', 'value'), call)
 		
 	def structure(self, path: Path, call: Call):
 		"""
