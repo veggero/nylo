@@ -136,7 +136,10 @@ class Parser:
 			''.join(self.code.code).startswith('(->'))):
 			self.mesh[path] = (call or path, self.var())
 			# Call
-			if self.code.is_in('('):
+			if self.code.is_in('(') and not \
+				(self.code.code[1] in operators and 
+				self.code.code[0] == '(' and not
+				''.join(self.code.code).startswith('(->')):
 				self.mesh[path+hide] = self.mesh[path]
 				self.structure(path+hide, call or path)
 		# Symbol
@@ -293,9 +296,9 @@ class Parser:
 		self.mesh[path+hide+('args', 'next')] = (path, ('base', 'list', 'element'))
 		self.mesh[path+hide+
 			('args', 'next', 'next')] = (path, ('base', 'list', 'end'))
-		self.mesh[path+hide] = (path, op)
-		self.parse(path+hide+('args', 'value'), call)
-		self.parse(path+hide+('args', 'next', 'value'), call)
+		self.mesh[path+hide] = (path, hide+('args', 'value')+op)
+		self.parse(path+hide+('args', 'value'), call or path)
+		self.parse(path+hide+('args', 'next', 'value'), call or path)
 		
 	def structure(self, path: Path, call: Call):
 		"""

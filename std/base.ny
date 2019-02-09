@@ -1,20 +1,28 @@
 bool: (
-	true: ()
-	false: ()
-)
-
-or: (
-	a: bool
-	b: bool
-	example: or(
-		a: bool.false
-		b: bool.false
+	true: (
+		(|): (
+			args: [bool.true bool]
+			-> bool.true
+		)
+		(=): (
+			args: [bool.true bool]
+			-> args.next.value
+		)
 	)
-	-> same(
-		first: a
-		second: bool.true
-		then: a
-		else: b
+	false: (
+		(|): (
+			args: [bool.true bool]
+			-> args.next.value
+		)
+		(=): (
+			args: [bool.false bool]
+			-> same(
+				first: args.next.value
+				second: bool.false
+				then: bool.true
+				else: bool.false
+			)
+		)
 	)
 )
 
@@ -24,45 +32,66 @@ nat: (
 		succ: nat.pos(prev: self)
 		
 		(+): (
-			args: [nat nat]
-			a: args.value
-			b: args.next.value
+			args: [nat.pos nat]
+			tests: [= + 1 0 1, = + 1 1 2]
+			-> + args.value.prev args.next.value.succ
+		)
+		(=): (
+			args: [nat.pos nat]
+			tests: [= = 1 1 bool.true, = = 1 0 bool.false]
 			-> same(
-				first: args.value
+				first: args.next.value
 				second: 0
-				then: args.next.value
-				else: + args.value.prev args.next.value.succ
+				then: bool.false
+				else: = args.value.prev args.next.value.prev
 			)
 		)
-		
+		tests: & (+).tests (=).tests 
 	)
 	zero: (
-		(+): (args: [nat nat] -> args.next.value)
+		succ: nat.pos(prev: 0)
+		
+		(+): (
+			args: [nat.zero nat] 
+			tests: [= + 0 1 1, = + 0 0 0]
+			-> args.next.value
+		)
+		(=): (
+			args: [nat.zero nat]
+			tests: [= = 0 0 bool.true, = = 0 1 bool.false]
+			-> same(
+				first: args.next.value
+				second: 0
+				then: bool.true
+				else: bool.false
+			)
+		)
+		tests: & (+).tests (=).tests 
+	)
+	tests: & pos.tests zero.tests
+)
+
+list: (
+	element: (
+		value: base
+		next: list
+		(&): (
+			args: [list.element list]
+			-> & 
+				args.value.next 
+				list.element(value: args.value.value, next: args.next.value)
+		)
+	)
+	end: (
+		(&): (
+			args: [list.end list]
+			-> args.next.value
+		)
 	)
 )
 
-eq: (
-	a: nat
-	b: nat
-	-> same(
-		first: a
-		second: 0
-		then: same(
-			first: b
-			second: 0
-			then: bool.true
-			else: bool.false
-		)
-		else: same(
-			first: b
-			second: 0
-			then: bool.false
-			else: eq(
-				a: a.prev
-				b: b.prev
-			)
-		)
-	)
+string: (
+	characters: list
 )
 
 if: (
@@ -81,25 +110,10 @@ fib: (
 	n: nat
 	prevs: + fib(n: n.prev) fib(n: n.prev.prev)
 	-> if(
-		cond: or(
-			a: eq(a: n, b: 0)
-			b: eq(a: n, b: 1) 
-		),
+		cond: | = n 0 = n 1 
 		then: 1
 		else: prevs 
 	)
-)
-
-list: (
-	element: (
-		value: base
-		next: list
-	)
-	end: ()
-)
-
-string: (
-	characters: list
 )
 
 get: (
@@ -157,12 +171,5 @@ list_sum_: (
 			of: of.next
 			total: + total of.value
 		)
-	)
-)
-
-(+): (
-	args: [base base]
-	-> args.value.(+)(
-		args: args
 	)
 )
