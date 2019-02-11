@@ -95,16 +95,16 @@ class Parser:
 		>>> p = Parser(Code('+ 0 0'))
 		>>> p.parse(('hello',))
 		>>> p.mesh[('hello', 'hello.')]
-		(('hello',), ('+',))
+		(('hello',), ('hello.', 'args', 'value', '+'))
 		>>> p.mesh[('hello', 'hello.', 'args')]
-		(('hello',), ('base', 'list'))
+		(('hello',), ('base', 'list', 'element'))
 		>>> p.mesh[('hello', 'hello.', 'args', 'value')]
 		(('hello', 'hello.', 'args', 'value'), ('base', 'nat', 'zero'))
 		
 		>>> p = Parser(Code('=} 0 0'))
 		>>> p.parse(('hello',))
-		>>> p.mesh[('hello', 'hello.')]
-		(('hello',), ('=}',))
+		>>> p.mesh[('hello','hello.')]
+		(('hello',), ('hello.', 'args', 'value', '=}'))
 		
 		>>> p = Parser(Code('-> 0 0'))
 		>>> p.parse(('hello',))
@@ -112,7 +112,7 @@ class Parser:
 			...
 		SystemExit
 		
-		>>> p = Parser(Code('({)'))
+		>>> p = Parser(Code('`{`'))
 		>>> p.parse(('hello',))
 		>>> p.mesh[('hello',)]
 		(('hello',), ('{',))
@@ -130,16 +130,10 @@ class Parser:
 		elif self.code.is_in(digits):
 			self.nat(path)
 		# Variable
-		elif (self.code.is_in(ascii_letters + '$_')
-			or (self.code.code[1] in operators and 
-			self.code.code[0] == '(' and not
-			''.join(self.code.code).startswith('(->'))):
+		elif self.code.is_in(ascii_letters + '_`'):
 			self.mesh[path] = (call or path, self.var())
 			# Call
-			if self.code.is_in('(') and not \
-				(self.code.code[1] in operators and 
-				self.code.code[0] == '(' and not
-				''.join(self.code.code).startswith('(->')):
+			if self.code.is_in('('):
 				self.mesh[path+hide] = self.mesh[path]
 				self.structure(path+hide, call or path)
 		# Symbol
@@ -168,23 +162,21 @@ class Parser:
 		
 		These cases will raise an exception:
 		
-		>>> Parser(Code('()')).var()
-		Traceback (most recent call last):
-			...
-		SystemExit
+		>>> Parser(Code('``')).var()
+		('',)
 		
-		>>> p = Parser(Code('(=>)'))
+		>>> p = Parser(Code('`=>`'))
 		>>> p.var()
 		('=>',)
-		>>> Parser(Code('(>).(<).(=)')).var()
+		>>> Parser(Code('`>`.`<`.`=`')).var()
 		('>', '<', '=')
-		>>> Parser(Code('hi.(<).(=)')).var()
+		>>> Parser(Code('hi.`<`.`=`')).var()
 		('hi', '<', '=')
 		"""
-		if self.code.is_in('('):
-			self.code.skip('(')
-			v = self.code.skip_while(operators),
-			self.code.skip(')')
+		if self.code.is_in('`'):
+			self.code.skip('`')
+			v = self.code.skip_while('`', reverse=True),
+			self.code.skip('`')
 		elif self.code.is_in(ascii_letters + '_'):
 			v = self.code.skip_while(ascii_letters + digits + '_'),
 		else:
@@ -269,7 +261,7 @@ class Parser:
 		>>> p.mesh[('x',)]
 		(('x',), ('base', 'string'))
 		>>> p.mesh[('x', 'characters')]
-		(('x', 'characters'), ('base', 'list'))
+		(('x', 'characters'), ('base', 'list', 'element'))
 		>>> p.mesh[('x', 'characters', 'value')]
 		(('x', 'characters', 'value'), ('base', 'nat', 'pos'))
 		"""

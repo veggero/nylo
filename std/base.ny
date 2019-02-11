@@ -1,20 +1,20 @@
 bool: (
 	true: (
-		(|): (
+		`|`: (
 			args: [bool.true bool]
 			-> bool.true
 		)
-		(=): (
+		`=`: (
 			args: [bool.true bool]
 			-> args.next.value
 		)
 	)
 	false: (
-		(|): (
+		`|`: (
 			args: [bool.true bool]
 			-> args.next.value
 		)
-		(=): (
+		`=`: (
 			args: [bool.false bool]
 			-> same(
 				first: args.next.value
@@ -31,12 +31,12 @@ nat: (
 		prev: nat
 		succ: nat.pos(prev: self)
 		
-		(+): (
+		`+`: (
 			args: [nat.pos nat]
 			tests: [= + 1 0 1, = + 1 1 2]
 			-> + args.value.prev args.next.value.succ
 		)
-		(=): (
+		`=`: (
 			args: [nat.pos nat]
 			tests: [= = 1 1 bool.true, = = 1 0 bool.false]
 			-> same(
@@ -46,17 +46,17 @@ nat: (
 				else: = args.value.prev args.next.value.prev
 			)
 		)
-		tests: & (+).tests (=).tests 
+		tests: & `+`.tests `=`.tests 
 	)
 	zero: (
 		succ: nat.pos(prev: 0)
 		
-		(+): (
+		`+`: (
 			args: [nat.zero nat] 
 			tests: [= + 0 1 1, = + 0 0 0]
 			-> args.next.value
 		)
-		(=): (
+		`=`: (
 			args: [nat.zero nat]
 			tests: [= = 0 0 bool.true, = = 0 1 bool.false]
 			-> same(
@@ -66,7 +66,7 @@ nat: (
 				else: bool.false
 			)
 		)
-		tests: & (+).tests (=).tests 
+		tests: & `+`.tests `=`.tests 
 	)
 	tests: & pos.tests zero.tests
 )
@@ -75,7 +75,7 @@ list: (
 	element: (
 		value: base
 		next: list
-		(&): (
+		`&`: (
 			args: [list.element list]
 			-> & 
 				args.value.next 
@@ -83,7 +83,7 @@ list: (
 		)
 	)
 	end: (
-		(&): (
+		`&`: (
 			args: [list.end list]
 			-> args.next.value
 		)
