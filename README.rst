@@ -1,15 +1,7 @@
 Welcome to nylo
 ========================
 
-WARNING: README IS INCREDIBLY OUTDATED. I'm working on this, but I still need to figure out a lot of things, even the grammar itself. As soon as I have a clear and sure idea of how Nylo is going to be, I will rewrite everything.
-
-[If you're thinking "is he still working on this?": yes, I am.]
-
 |image0|
-
-::
-
-   -> "Tau World! :D"
 
 **Nylo** is a declarative programming language. It takes some constructs
 from functional and logic paradigms, but it’s really a new paradigm
@@ -22,27 +14,28 @@ fail.
 
    fib: (
        n: int
-       sum_prev_fibs: fib(n-1) + fib(n-2)
-       result: if(n<2 n sum_prev_fibs)
+       prevs: fib(n: n-1) + fib(n: n-2)
+       result: if(cond: n<2, then: n, else: sum_prev_fibs)
        -> result
    )
 
 Contents
 ========
 
--  `How to contribute`_
 -  `Present and future of project`_
--  `Features`_
+-  `Markup / Configuration file`_
+
+   1. `Structures`_
+   2. `Lists`_
+   3. `Multiple words`_
+   4. `Other kind of variables`_
+
+-  `Programming Language`_
 
    1. `It’s simple and orthogonal`_
    2. `It’s explicit and clear`_
    3. `Curried function and classes`_
    4. `Inverse function and classes`_
-
-How to contribute
------------------
-
-Just ask @veggero :)
 
 Present and future of project
 -----------------------------
@@ -55,8 +48,80 @@ slip further.
 As soon as the proof-of-concept is finished and refined, the work on the
 actual interpreter will start. It will be written in Go/Rust/Ida.
 
-Features
---------
+Markup / Configuration file
+---------------------------
+
+Nylo aims to be clear enough to be used to markup or configuration
+files. An example can be found on [niccolo.venerandi.com](niccolo.venerandi.com).
+
+Structures
+~~~~~~~~~~
+
+::
+
+   grades: (
+       first_semester: (
+           math: 7
+           science: 9
+           language: 6
+       )
+       second_semester: (
+           math: 8
+           science: 8
+           language: 7
+       )
+   )
+
+Lists
+~~~~~
+
+::
+
+   numbers: (
+       high: (
+           4201337,
+           3290941,
+           4129301
+       )
+       low: (1, 2, 3)
+   )
+   
+Multiple words
+~~~~~~~~~~~~~~
+
+::
+
+   first level: (
+       enemy life: 100
+       enemy power: 50
+   )
+   second level: (
+       enemy life: 150
+       enemy power: 80
+   )
+   
+Other kind of variables
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Any variable can be used by putting ` before and after the name.
+
+::
+
+   symbols: (
+       `+`: "plus"
+       `-`: "minus"
+   )
+   years: (
+       `2017`: "kinda cool"
+       `2018`: "please let's go back"
+   )
+   other weird names: (
+       `(!WOW!)`: "WOW!"
+       `--> :0 <--`: "WOW!"
+   )
+
+Programming Language
+--------------------
 
 It’s simple and orthogonal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,6 +164,13 @@ in the form of (a: b, c: d -> e)
         red: ()
    )
 
+   // List
+   languages: (
+       "Python"
+       "Go"
+       "C"
+   )
+
 It’s explicit and clear
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -106,12 +178,10 @@ Nylo makes everything explicit, even function calls!
 
 ::
 
-   draw: (
-       on: screen
-       color: color(r: 0 g: 255 b: 255)
-       rectangle: rectangle(
-           center: point(x: 5 y: 15)
-           size: point(x: 10 y: 10)
+   screen.drawings: (
+       rectangle(
+           position: point(x: 5, y: 15)
+           size: point(x: 10, y: 10)
        )
    )
 
@@ -199,12 +269,4 @@ And you can also have multiple ways to define classes:
 
 No one own this, you can do whatever you want with this code, and you should not care about who made it. Have fun!
 
-.. _How to contribute: #how-to-contribute
-.. _Present and future of project: present-and-future-of-project
-.. _Features: #features
-.. _It’s simple and orthogonal: #its-simple-and-orthogonal
-.. _It’s explicit and clear: #its-explicit-and-clear
-.. _Curried function and classes: #curried-function-and-classes
-.. _Inverse function and classes: #inverse-function-and-classes
-
-.. |image0| image:: https://raw.githubusercontent.com/pyTeens/nylo/gh-pages/docs/images/new_big_nylo_banner.png
+.. |image0| image:: https://raw.githubusercontent.com/veggero/nylo/meta/nylo_logo_banner.png
