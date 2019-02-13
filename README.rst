@@ -269,4 +269,4 @@ And you can also have multiple ways to define classes:
 
 No one own this, you can do whatever you want with this code, and you should not care about who made it. Have fun!
 
-.. |image0| image:: https://raw.githubusercontent.com/veggero/nylo/meta/nylo_logo_banner.png
+.. |image0| image:: https://raw.githubusercontent.com/veggero/nylo/master/meta/nylo_logo_banner.png
