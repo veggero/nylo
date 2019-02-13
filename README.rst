@@ -49,7 +49,7 @@ Markup / Configuration file
 ---------------------------
 
 Nylo aims to be clear enough to be used to markup or configuration
-files. An example can be found on https://niccolo.venerandi.com .
+files. An example can be found on http://niccolo.venerandi.com .
 
 Structures
 ~~~~~~~~~~
@@ -179,6 +179,7 @@ Nylo makes everything explicit, even function calls!
        rectangle(
            position: point(x: 5, y: 15)
            size: point(x: 10, y: 10)
+           color: (red: 255, green: 0, blue: 0)
        )
    )
 
@@ -192,7 +193,7 @@ The same thing with pygame is:
        (5, 15, 10, 10)
    )
 
-As you can see, Nylo easier to understand. 
+As you can see, Nylo is easier to understand. 
 
 Curried function and classes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
