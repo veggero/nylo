@@ -52,7 +52,7 @@ Markup / Configuration file
 ---------------------------
 
 Nylo aims to be clear enough to be used to markup or configuration
-files. An example can be found on [niccolo.venerandi.com](https://niccolo.venerandi.com).
+files. An example can be found on https://niccolo.venerandi.com .
 
 Structures
 ~~~~~~~~~~
