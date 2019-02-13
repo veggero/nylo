@@ -1,6 +1,3 @@
-Welcome to nylo
-========================
-
 |image0|
 
 **Nylo** is a declarative programming language. It takes some constructs
