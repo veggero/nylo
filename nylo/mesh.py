@@ -97,11 +97,12 @@ class Mesh(dict):
 			context, (var, *propr) = value
 			for i in reversed(range(len(context)+1)):
 				possible = context[:i] + (var,)
+				print(possible)
 				if possible in self:
 					self[key] = possible + tuple(propr)
 					break
 			else:
-				raise SyntaxError(f'Name {var!r} is not defined in {key!r}.')
+				raise SyntaxError(f'Name {var!r} is not defined in {key!r} and scope {context!r}.')
 			
 	def valueof(self, path: Tuple[str], done=()):
 		"""

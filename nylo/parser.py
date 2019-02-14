@@ -130,7 +130,7 @@ class Parser:
 		elif self.code.is_in(digits):
 			self.nat(path)
 		# Variable
-		elif (self.code.is_in(ascii_letters + '$_')
+		elif (self.code.is_in(ascii_letters + '`_')
 			or (self.code.code[1] in operators and 
 			self.code.code[0] == '(' and not
 			''.join(self.code.code).startswith('(->'))):
@@ -181,10 +181,10 @@ class Parser:
 		>>> Parser(Code('hi.(<).(=)')).var()
 		('hi', '<', '=')
 		"""
-		if self.code.is_in('('):
-			self.code.skip('(')
-			v = self.code.skip_while(operators),
-			self.code.skip(')')
+		if self.code.is_in('`'):
+			self.code.skip('`')
+			v = self.code.skip_while('`', reverse=True),
+			self.code.skip('`')
 		elif self.code.is_in(ascii_letters + '_'):
 			v = self.code.skip_while(ascii_letters + digits + '_'),
 		else:
@@ -432,7 +432,6 @@ class Parser:
 			...
 		SystemExit
 		"""
-		listpath = path
 		self.code.skip('(')
 			
 		while not (self.code.is_in(')') or self.code.startswith('->')):
@@ -459,4 +458,131 @@ class Parser:
 			self.mesh[path] = None
 			
 		self.code.skip(')')
+
+class newParser:
+	
+	def __init__(self, code: Code):
+		self.code = code
+		self.mesh = Mesh({})
+		
+	def parse(self, scope: Path):
+		if not scope:
+			raise ValueError('parse first argument cannot be ().')
+		if self.code.is_in('\'"'):
+			out = self.pstring(scope)
+		elif self.code.is_in('['):
+			out = self.plist(scope)
+		elif self.code.is_in(digits):
+			out = self.nat(scope)
+		elif self.code.is_in(ascii_letters + '_`'):
+			var = (scope, self.var())
+			if self.code.is_in('('):
+				out = self.structure(scope, call=var)
+			else:
+				out = (var, {})
+		elif (self.code.is_in(operators) and
+			not ''.join(self.code.code).startswith('->')):
+			out = self.op(scope)
+		elif self.code.is_in('('):
+			out = self.structure(scope)
+		else:
+			self.code.skip('any object')
+		return out
 			
+	var = Parser.var
+	
+	def nat(self, scope: Path):
+		n = int(self.code.skip_while(digits))
+		obj = ((scope + ('prev',)*n, ('base', 'nat', 'zero')), {})
+		for i in range(n):
+			obj = ((scope + ('prev',)*(n-i-1), ('base', 'nat', 'pos')), {'prev': obj})
+		return obj
+	
+	def plist(self, scope: Path):
+		self.code.skip('[')
+		elements = []
+		while not self.code.is_in(']'):
+			value = self.parse(scope+('value',))
+			elements.append(value)
+			if self.code.is_in(','):
+				self.code.skip(',')
+		self.code.skip(']')
+		obj = ((scope, ('base', 'list', 'end')), {})
+		for i, element in enumerate(elements[::-1]):
+			obj = ((scope+('next',)*(len(elements)-i-1), 
+				('base', 'list', 'element')), 
+				{'value': value, 'next': obj})
+		return obj
+	
+	def pstring(self, scope: Path):
+		start = (self.code.skip("'") if self.code.is_in("'") 
+		   else self.code.skip('"'))
+		s = self.code.skip_while(start, reverse=True)
+		self.code.skip(start)
+		s = [*f'[{",".join(map(str, map(ord, s)))}]']
+		self.code.code = s + self.code.code
+		obj = ((scope, ('base', 'string')), 
+			{'characters': self.parse(scope+('characters'))})
+		[self.code.consumed.pop() for i in range(len(s))]
+		return obj
+	
+	def op(self, scope: Path):
+		hide = ('.'.join(scope)+'.',)
+		op = self.code.skip_while(operators),
+		obja = self.parse(scope+hide+('args', 'value'))
+		objb = self.parse(scope+hide+('args', 'next', 'value'))
+		return ((scope, scope+hide+('self',)), {
+				hide[0]: ((scope+hide, hide+('args', 'value')+op), {
+					'args': ((scope+hide+('args',), 
+							('base', 'list', 'element')), {
+						'value': obja,
+						'next': ((scope+hide+('args', 'next'), 
+								('base', 'list', 'element')), {
+							'value': objb,
+							'next': ((scope+hide+('args', 'next', 'next'), 
+								('base', 'list', 'end')), {})
+						})
+					})
+				})
+			})
+						
+	def structure(self, scope, call=None):
+		hide = ('.'.join(scope)+'.',)
+		self.code.skip('(')
+		d = {}
+		if call:
+			scope += hide
+			
+		while not (self.code.is_in(')') or self.code.startswith('->')):
+			self.code.assume(ascii_letters + '`_')
+			key: Path = self.var()[0]
+			self.code.skip(':')
+			value = self.parse(scope+(key,))
+			d[key] = value
+			while self.code.is_in(','):
+				self.code.skip(',')
+				
+		if self.code.startswith('->'):
+			[*map(self.code.skip, '->')]
+			if call:
+				v = ((scope, hide + 
+					(() if self.code.is_in(')') else self.value()) 
+				), {hide[0]: (call, d)})
+			else:
+				d['self'] = self.parse(scope+('self',))
+				v = (None, d)
+		else:
+			if call:
+				v = ((scope, hide+('self',)), {hide[0]: (call, d)})
+			else:
+				d['self'] = ((scope, scope), {})
+				v = (None, d)
+		
+		self.code.skip(')')
+		return v
+	
+	def convert(self, obj, path):
+		ownvalue, structure = obj
+		self.mesh[path] = ownvalue
+		for key, substruct in structure.items():
+			self.convert(substruct, path+(key,))

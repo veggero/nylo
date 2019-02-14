@@ -1,6 +1,6 @@
 import sys
 from pprint import pprint
-from parser import Parser
+from parser import Parser, newParser
 from code import Code
 from writer import Writer
 
@@ -10,11 +10,13 @@ if not len(sys.argv) - 1:
 this, target = sys.argv
 name = target.partition('/')[2].partition('.')[0]
 
-std_parser = Parser(Code('('+open('std/base.ny', 'r').read()+')'))
-std_parser.parse(('base',))
+std_parser = newParser(Code('('+open('std/base.ny', 'r').read()+')'))
+o = std_parser.parse(('base',))
+std_parser.convert(o, ('base',))
 
-parser = Parser(Code('('+open(target, 'r').read()+')'))
-parser.parse(('base', name,))
+parser = newParser(Code('('+open(target, 'r').read()+')'))
+o = parser.parse(('base', name,))
+parser.convert(o, ('base', name))
 parser.mesh.update(std_parser.mesh)
 parser.mesh.bind()
 writer = Writer(parser.mesh)
