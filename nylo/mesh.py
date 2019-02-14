@@ -97,7 +97,6 @@ class Mesh(dict):
 			context, (var, *propr) = value
 			for i in reversed(range(len(context)+1)):
 				possible = context[:i] + (var,)
-				print(possible)
 				if possible in self:
 					self[key] = possible + tuple(propr)
 					break
