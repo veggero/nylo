@@ -306,14 +306,14 @@ class newMesh:
 	
 	def __init__(self, obj):
 		self.obj = obj
-		self.obj[1]['base'][1]['same'] = (None, {})
+		self.obj[1]['same'] = (None, {})
 	
 	def bind(self, obj=None):
 		if not obj: obj = self.obj
 		value, subdict = obj
 		if obj[0]:
 			(scope, (name, *subdir)) = value
-			bind_dir = *reversed(self.find_bind(self.obj, scope, name)),
+			bind_dir = self.find_bind(self.obj, scope, name)
 			if not bind_dir:
 				raise SyntaxError(f'Nome {name!r} is not defined in scope {scope!r}')
 		for key, value in subdict.items():
@@ -321,7 +321,6 @@ class newMesh:
 		return (obj[0] and bind_dir+(*subdir,), subdict)
 	
 	def find_bind(self, obj, scope, name):
-		out1 = (name,) * (name in obj[1])
 		out2 = self.find_bind(obj[1][scope[0]], scope[1:], name) if scope else ()
-		return out2 + (scope[0],) if out2 else out1
+		return (scope[0],) + out2 if out2 else (name,) * (name in obj[1])
 		

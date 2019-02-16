@@ -1,5 +1,5 @@
 import sys
-from pprint import pprint
+from pprint import pprint, pformat
 from parser import Parser, newParser
 from code import Code
 from mesh import newMesh
@@ -18,9 +18,9 @@ obj = parser.parse(('base', name))
 std_obj[1]['base'][1][name] = obj
 std_obj = newMesh(std_obj).bind()
 std_parser.convert(std_obj, ())
-writer = Writer(std_parser.mesh)
-pprint(writer.write(('base', name, 'self')))
 
+writer = Writer(std_parser.mesh)
+print(writer.write(('base', name, 'self')))
 
 #std_parser = newParser(Code('('+open('std/base.ny', 'r').read()+')'))
 #o = std_parser.parse(('base',))
