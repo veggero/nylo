@@ -2,6 +2,7 @@ import sys
 from pprint import pprint
 from parser import Parser, newParser
 from code import Code
+from mesh import newMesh
 from writer import Writer
 
 if not len(sys.argv) - 1:
@@ -11,16 +12,27 @@ this, target = sys.argv
 name = target.partition('/')[2].partition('.')[0]
 
 std_parser = newParser(Code('('+open('std/base.ny', 'r').read()+')'))
-o = std_parser.parse(('base',))
-std_parser.convert(o, ('base',))
-
 parser = newParser(Code('('+open(target, 'r').read()+')'))
-o = parser.parse(('base', name,))
-parser.convert(o, ('base', name))
-parser.mesh.update(std_parser.mesh)
-parser.mesh.bind()
-writer = Writer(parser.mesh)
+std_obj = (None, {'base': std_parser.parse(('base',))})
+obj = parser.parse(('base', name))
+std_obj[1]['base'][1][name] = obj
+std_obj = newMesh(std_obj).bind()
+std_parser.convert(std_obj, ())
+writer = Writer(std_parser.mesh)
+pprint(writer.write(('base', name, 'self')))
+
+
+#std_parser = newParser(Code('('+open('std/base.ny', 'r').read()+')'))
+#o = std_parser.parse(('base',))
+#std_parser.convert(o, ('base',))
+
+#parser = newParser(Code('('+open(target, 'r').read()+')'))
+#o = parser.parse(('base', name,))
+#parser.convert(o, ('base', name))
+#parser.mesh.update(std_parser.mesh)
+#parser.mesh.bind()
+#writer = Writer(parser.mesh)
 
 #print("size in >", len(parser.mesh), sys.getsizeof(parser.mesh)/1000)
-print(writer.write(('base', name, 'self')))
+#print(writer.write(('base', name, 'self')))
 #print("size out <", len(parser.mesh), sys.getsizeof(parser.mesh)/1000)
