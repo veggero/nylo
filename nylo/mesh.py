@@ -309,6 +309,7 @@ class newMesh:
 		self.obj[1]['same'] = (None, {})
 	
 	def bind(self, obj=None):
+		#TODO unrec
 		if not obj: obj = self.obj
 		value, subdict = obj
 		if obj[0]:
@@ -321,6 +322,30 @@ class newMesh:
 		return (obj[0] and bind_dir+(*subdir,), subdict)
 	
 	def find_bind(self, obj, scope, name):
+		#TODO unrec
 		out2 = self.find_bind(obj[1][scope[0]], scope[1:], name) if scope else ()
 		return (scope[0],) + out2 if out2 else (name,) * (name in obj[1])
+	
+	def valueof(self, path, done=(), obj=None):
+		if obj is None: obj = self.obj
+		values = []
+		for i, value in enumerate(path):
+			values.append(obj[0])
+			if value not in obj:
+				newroot = path[:i]
+				oldroot = next(filter(lambda x: x and (x, newroot) not in done, 
+						  reversed(values)), None)
+				if oldroot is None:
+					raise SyntaxError(f'Name {path!r} is not defined.')
+				done += ((oldroot, newroot),)
+				self.clone(oldroot, newroot, done)
+				return self.valueof(path, done)
+			obj = obj[1][value]
+		if obj[0] is None:
+			return path
+		if isinstance(obj[0], tuple):
+			return self.valueof(obj[0])
+		assert False
+		
+	def clone(self, oldroot, newroot, done=()):
 		

@@ -460,6 +460,7 @@ class Parser:
 		self.code.skip(')')
 
 class newParser:
+	#TODO unrec
 	
 	def __init__(self, code: Code):
 		self.code = code
