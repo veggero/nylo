@@ -255,27 +255,34 @@ class Mesh(dict):
 		"""
 		delta = {}
 		selfpath = oldroot + ('self',)
+		# IF TARGET IS NOT THERE, GO GET IT!
 		if not oldroot in self:
 			self.valueof(oldroot, done)
 		blockeds = set()
 		for key, value in sorted(self.items(), key=lambda x: x[0]):
 			newkey = chroot(key, oldroot, newroot)
+			# BURN THEM IF THEY START WITH A BLOCKED ONE
 			if any(key[:len(b)] == b for b in blockeds):
 				continue
+			# BURN THEM IF IT DID NOT CHANGE
 			if newkey == key:
 				continue
+			# BURN THEM IF THERE IS ALREADY VALUE
 			if not (newkey in self and self[newkey] is not None):
 				newval = (chroot(value, oldroot, newroot) 
 						  if not value is None else None)
 				delta[newkey] = newval
 			else:
 				blockeds.add(key)
+		# EVENTUALLY REPLACE WITH NEW VALUE TO SEARCH FOR
 		if oldroot in self and self[oldroot]:
 			delta[newroot] = self[oldroot]
+		# WEIRD $H!T IF IT'S SAME
 		if oldroot == ('same',):
 			delta[newroot+('self',)] = newroot + (('then',) 
 				if self.valueof(newroot+('first',), done) == self.valueof(newroot+('second',), done)
 				else ('else',))
+		# SPECIAL CASE ALSO FOR SELF
 		if selfpath in self and self[selfpath] == oldroot:
 			delta[newroot+('self',)] = newroot
 		self.update(delta)
@@ -306,7 +313,7 @@ class newMesh:
 	
 	def __init__(self, obj):
 		self.obj = obj
-		self.obj[1]['same'] = (None, {})
+		self.obj[1]['same'] = [None, {}]
 	
 	def bind(self, obj=None):
 		#TODO unrec
@@ -319,7 +326,7 @@ class newMesh:
 				raise SyntaxError(f'Nome {name!r} is not defined in scope {scope!r}')
 		for key, value in subdict.items():
 			subdict[key] = self.bind(value)
-		return (obj[0] and bind_dir+(*subdir,), subdict)
+		return [obj[0] and bind_dir+(*subdir,), subdict]
 	
 	def find_bind(self, obj, scope, name):
 		#TODO unrec
@@ -327,18 +334,24 @@ class newMesh:
 		return (scope[0],) + out2 if out2 else (name,) * (name in obj[1])
 	
 	def valueof(self, path, done=(), obj=None):
+		
+		#TODO better unrec
 		if obj is None: obj = self.obj
 		values = []
 		for i, value in enumerate(path):
 			values.append(obj[0])
-			if value not in obj:
+			if value not in obj[1]:
 				newroot = path[:i]
 				oldroot = next(filter(lambda x: x and (x, newroot) not in done, 
 						  reversed(values)), None)
-				if oldroot is None:
-					raise SyntaxError(f'Name {path!r} is not defined.')
 				done += ((oldroot, newroot),)
-				self.clone(oldroot, newroot, done)
+				if oldroot is None:
+					raise SyntaxError(f'Name {value!r} in {path!r} is not defined.')
+				self.valueof(oldroot, done)
+				oldrootobj = self.obj
+				for element in oldroot:
+					oldrootobj = oldrootobj[1][element]
+				self.clone(oldroot, newroot, oldrootobj, obj, done)
 				return self.valueof(path, done)
 			obj = obj[1][value]
 		if obj[0] is None:
@@ -347,5 +360,25 @@ class newMesh:
 			return self.valueof(obj[0])
 		assert False
 		
-	def clone(self, oldroot, newroot, done=()):
+	def clone(self, oldroot, newroot, oldrootobj, obj, done=()):
+		
+		todo = [(oldrootobj, obj)]
+		while todo:
+			a, b = todo.pop()
+			for key, value in a[1].items():
+				if key in b[1] and b[1][key][0] is not None:
+					continue
+				if key not in b[1]:
+					b[1][key] = [None, {}]
+				b[1][key][0] = (chroot(value[0], oldroot, newroot)
+					if not value[0] is None else None)
+				todo.append((value, b[1][key]))
+		if oldrootobj[0] is not None:
+			obj[0] = oldrootobj[0]
+		if oldroot == ('same',):
+			obj[1]['self'] = [newroot + (('then',) if 
+				self.valueof(newroot+('first',), done) == self.valueof(newroot+('second',), done)
+				else ('else',)), {}]
+		if 'self' in oldrootobj[1] and oldrootobj[1]['self'][0] == oldroot:
+			obj[1]['self'] = [newroot, {}]
 		

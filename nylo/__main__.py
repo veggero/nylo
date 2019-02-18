@@ -16,10 +16,14 @@ parser = newParser(Code('('+open(target, 'r').read()+')'))
 std_obj = (None, {'base': std_parser.parse(('base',))})
 obj = parser.parse(('base', name))
 std_obj[1]['base'][1][name] = obj
-std_obj = newMesh(std_obj).bind()
-std_parser.convert(std_obj, ())
+nM = newMesh(std_obj)
+nM.obj = nM.bind()
 
-writer = Writer(std_parser.mesh)
+#print(nM.valueof(('base', name, 'self')))
+
+#pprint(nM.obj[1]['base'][1]['if'])
+
+writer = Writer(nM)
 print(writer.write(('base', name, 'self')))
 
 #std_parser = newParser(Code('('+open('std/base.ny', 'r').read()+')'))
