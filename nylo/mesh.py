@@ -362,6 +362,7 @@ class newMesh:
 		
 	def clone(self, oldroot, newroot, oldrootobj, obj, done=()):
 		
+		recursive = newroot[:len(oldroot)] == oldroot
 		todo = [(oldrootobj, obj)]
 		ends = set()
 		while todo:
@@ -369,11 +370,12 @@ class newMesh:
 			for key, value in a[1].items():
 				if key in b[1] and b[1][key][0] is not None:
 					continue
-				if id(a[1]) in ends:
+				if recursive and id(a[1]) in ends:
 					continue
 				if key not in b[1]:
 					b[1][key] = [None, {}]
-					ends.add(id(b[1][key][1]))
+					if recursive:
+						ends.add(id(b[1][key][1]))
 				b[1][key][0] = (chroot(value[0], oldroot, newroot)
 					if not value[0] is None else None)
 				todo.append((value, b[1][key]))
