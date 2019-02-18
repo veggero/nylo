@@ -14,27 +14,30 @@ name = target.partition('/')[2].partition('.')[0]
 
 first_before = time.time()
 
-std_parser = Parser(Code('('+open('std/base.ny', 'r').read()+')'))
-std_parser.parse(('base',))
-parser = Parser(Code('('+open(target, 'r').read()+')'))
-parser.parse(('base', name,))
-parser.mesh.update(std_parser.mesh)
-parser.mesh.bind()
-writer = Writer(parser.mesh)
-print(writer.write(('base', name, 'self')))
+for i in range(5):
+	std_parser = Parser(Code('('+open('std/base.ny', 'r').read()+')'))
+	std_parser.parse(('base',))
+	parser = Parser(Code('('+open(target, 'r').read()+')'))
+	parser.parse(('base', name,))
+	parser.mesh.update(std_parser.mesh)
+	parser.mesh.bind()
+	writer = Writer(parser.mesh)
+	(writer.write(('base', name, 'self')))
 
 second_before = time.time()
 
 
-std_parser = newParser(Code('('+open('std/base.ny', 'r').read()+')'))
-parser = newParser(Code('('+open(target, 'r').read()+')'))
-std_obj = (None, {'base': std_parser.parse(('base',))})
-obj = parser.parse(('base', name))
-std_obj[1]['base'][1][name] = obj
-nM = newMesh(std_obj)
-nM.obj = nM.bind()
-writer = Writer(nM)
-print(writer.write(('base', name, 'self')))
+for i in range(5):
+	std_parser = newParser(Code('('+open('std/base.ny', 'r').read()+')'))
+	parser = newParser(Code('('+open(target, 'r').read()+')'))
+	std_obj = (None, {'base': std_parser.parse(('base',))})
+	obj = parser.parse(('base', name))
+	std_obj[1]['base'][1][name] = obj
+	nM = newMesh(std_obj)
+	nM.obj = nM.bind()
+	writer = Writer(nM)
+	(writer.write(('base', name, 'self')))
+
 after = time.time()
 
 old = round(second_before-first_before, 2)
