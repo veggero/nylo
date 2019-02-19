@@ -25,6 +25,7 @@ class Mesh(dict):
 	# Public:
 	
 	def __init__(self, *args):
+		self.depends = {}
 		super().__init__(*args)
 	
 	def bind(self):
@@ -103,7 +104,8 @@ class Mesh(dict):
 			else:
 				raise SyntaxError(f'Name {var!r} is not defined in {key!r} and scope {context!r}.')
 			
-	def valueof(self, path: Tuple[str], done=()):
+	def valueof(self, path: Tuple[str], done=(), dont=False):
+		#print(">>>>>>>>>>>>",path,'XXXXXXXXXX'*dont)
 		"""
 		This method returns the value of a path. The difference
 		between this and the get method is that if the value
@@ -166,24 +168,27 @@ class Mesh(dict):
 		"""
 		if path in self:
 			if isinstance(self[path], tuple):
-				return self.valueof(self[path])
+				return self.valueof(self[path], dont=dont)
 			assert self[path] is None
 			return path
 		for i in reversed(range(len(path))):
 			subpath = path[:i]
 			if not subpath in self or self[subpath] is None:
+				#print('subpath not in self or is none')
 				continue
 			if (self[subpath], subpath) in done:
+				#print('done that, been there')
 				continue
 			oldvalue = self[subpath]
 			done += ((oldvalue, subpath),)
-			self.clone(self[subpath], subpath, done)
-			return self.valueof(path, done)
+			self.clone(self[subpath], subpath, done, dont)
+			return self.valueof(path, done, dont)
 		raise SyntaxError(f'Name {path!r} is not defined.')
 	
 	# Private:
 		
-	def clone(self, oldroot: Tuple[str], newroot: Tuple[str], done=()):
+	def clone(self, oldroot: Tuple[str], newroot: Tuple[str], done=(), dont=False):
+		#print(oldroot, '-------->', newroot, 'XXXXXXXXXXXX'*dont)
 		"""
 		This function clones all the values in the dictionary
 		where the keys starts with oldroot to the same
@@ -257,7 +262,7 @@ class Mesh(dict):
 		selfpath = oldroot + ('self',)
 		# IF TARGET IS NOT THERE, GO GET IT!
 		if not oldroot in self:
-			self.valueof(oldroot, done)
+			self.valueof(oldroot, done, True)
 		blockeds = set()
 		for key, value in sorted(self.items(), key=lambda x: x[0]):
 			newkey = chroot(key, oldroot, newroot)
@@ -280,13 +285,32 @@ class Mesh(dict):
 		# WEIRD $H!T IF IT'S SAME
 		if oldroot == ('same',):
 			delta[newroot+('self',)] = newroot + (('then',) 
-				if self.valueof(newroot+('first',), done) == self.valueof(newroot+('second',), done)
+				if self.valueof(newroot+('first',), done, True) == self.valueof(newroot+('second',), done, True)
 				else ('else',))
 		# SPECIAL CASE ALSO FOR SELF
 		if selfpath in self and self[selfpath] == oldroot:
 			delta[newroot+('self',)] = newroot
 		self.update(delta)
 		
+		if not dont and oldroot in self.depends and self.depends[oldroot] in self and not (
+			self[oldroot] == self.depends[oldroot]):
+			#for i in range(10): print()
+			#print('triggered by', oldroot)
+			#print('to', newroot)
+			#print(self.depends[oldroot])
+			for key, value in [*self.items()]:
+				newkey = chroot(key, self.depends[oldroot], ())
+				if key == newkey:
+					continue
+				#print(key)
+		#		del self[key]
+		for key, value in [*self.depends.items()]:
+			newkey = chroot(key, oldroot, newroot)
+			if key == newkey:
+				continue
+			if newkey == ('same',):
+				continue
+			self.depends[newkey] = chroot(value, oldroot, newroot)
 		
 def chroot(path: Tuple[str], oldroot: Tuple[str], newroot: Tuple[str]) -> Tuple[str]:
 	"""
@@ -315,7 +339,7 @@ class newMesh:
 		self.obj = obj
 		self.obj[1]['same'] = [None, {}]
 	
-	def bind(self, obj=None):
+	def bind(self, obj=None, path=()):
 		#TODO unrec
 		if not obj: obj = self.obj
 		value, subdict = obj
@@ -324,9 +348,16 @@ class newMesh:
 			bind_dir = self.find_bind(self.obj, scope, name)
 			if not bind_dir:
 				raise SyntaxError(f'Nome {name!r} is not defined in scope {scope!r}')
+			loc_path = path
+			bind_path = bind_dir + (*subdir,)
+			common_elements = 0
+			while bind_path and loc_path and bind_path[0] == loc_path[0]:
+				bind_path, loc_path = bind_path[1:], loc_path[1:]
+				common_elements += 1
+			relpath = (('.'*common_elements,) if common_elements else ()) + bind_path
 		for key, value in subdict.items():
-			subdict[key] = self.bind(value)
-		return [obj[0] and bind_dir+(*subdir,), subdict]
+			subdict[key] = self.bind(value, path+(key,))
+		return [[None] if not obj[0] else [bind_dir + (*subdir,), relpath], subdict]
 	
 	def find_bind(self, obj, scope, name):
 		#TODO unrec
@@ -334,12 +365,12 @@ class newMesh:
 		return (scope[0],) + out2 if out2 else (name,) * (name in obj[1])
 	
 	def valueof(self, path, done=(), obj=None):
-		
 		#TODO better unrec
-		if obj is None: obj = self.obj
+		if obj is None:
+			obj = self.obj
 		values = []
 		for i, value in enumerate(path):
-			values.append(obj[0])
+			values.append(obj[0][0])
 			if value not in obj[1]:
 				newroot = path[:i]
 				oldroot = next(filter(lambda x: x and (x, newroot) not in done, 
@@ -354,10 +385,10 @@ class newMesh:
 				self.clone(oldroot, newroot, oldrootobj, obj, done)
 				return self.valueof(path, done)
 			obj = obj[1][value]
-		if obj[0] is None:
+		if obj[0][0] is None:
 			return path
-		if isinstance(obj[0], tuple):
-			return self.valueof(obj[0])
+		if isinstance(obj[0][0], tuple):
+			return self.valueof(obj[0][0])
 		assert False
 		
 	def clone(self, oldroot, newroot, oldrootobj, obj, done=()):
@@ -368,23 +399,23 @@ class newMesh:
 		while todo:
 			a, b = todo.pop()
 			for key, value in a[1].items():
-				if key in b[1] and b[1][key][0] is not None:
+				if key in b[1] and b[1][key][0][0] is not None:
 					continue
 				if recursive and id(a[1]) in ends:
 					continue
 				if key not in b[1]:
-					b[1][key] = [None, {}]
+					b[1][key] = [[None], {}]
 					if recursive:
 						ends.add(id(b[1][key][1]))
-				b[1][key][0] = (chroot(value[0], oldroot, newroot)
-					if not value[0] is None else None)
+				b[1][key][0][0] = (chroot(value[0][0], oldroot, newroot)
+					if not value[0][0] is None else None)
 				todo.append((value, b[1][key]))
 		if oldrootobj[0] is not None:
-			obj[0] = oldrootobj[0]
+			obj[0][0] = oldrootobj[0][0]
 		if oldroot == ('same',):
-			obj[1]['self'] = [newroot + (('then',) if 
+			obj[1]['self'] = [[newroot + (('then',) if 
 				self.valueof(newroot+('first',), done) == self.valueof(newroot+('second',), done)
-				else ('else',)), {}]
-		if 'self' in oldrootobj[1] and oldrootobj[1]['self'][0] == oldroot:
-			obj[1]['self'] = [newroot, {}]
+				else ('else',)), None], {}]
+		if 'self' in oldrootobj[1] and oldrootobj[1]['self'][0][0] == oldroot:
+			obj[1]['self'] = [[newroot, None], {}]
 		

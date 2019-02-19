@@ -444,13 +444,15 @@ class Parser:
 		if self.code.startswith('->'):
 			[*map(self.code.skip, '->')]
 			if call:
-				self.mesh[path[:-1]] = (path, (path[-1],) + 
-					(() if self.code.is_in(')') else self.var()))
+				target = (path[-1],) + () if self.code.is_in(')') else self.var()
+				self.mesh[path[:-1]] = (path, target)
+				self.mesh.depends[path + target[1:]] = path
 			else:
 				self.parse(path + me, call)
 		else:
 			if call:
 				self.mesh[path[:-1]] = (path, (path[-1],) + me)
+				self.mesh.depends[path + me] = path
 			else:
 				self.mesh[path + me] = (path, path)
 				
@@ -568,8 +570,8 @@ class newParser:
 		if self.code.startswith('->'):
 			[*map(self.code.skip, '->')]
 			if varcall:
-				v = ((scope, hide + 
-					(() if self.code.is_in(')') else self.value()) 
+				target = hide + (() if self.code.is_in(')') else self.value())
+				v = ((scope, target  
 				), {hide[0]: (varcall, d)})
 			else:
 				d['self'] = self.parse(scope+('self',), call)

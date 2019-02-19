@@ -14,20 +14,23 @@ name = target.partition('/')[2].partition('.')[0]
 
 first_before = time.time()
 
-for i in range(5):
+for i in range(0):
 	std_parser = Parser(Code('('+open('std/base.ny', 'r').read()+')'))
 	std_parser.parse(('base',))
 	parser = Parser(Code('('+open(target, 'r').read()+')'))
 	parser.parse(('base', name,))
 	parser.mesh.update(std_parser.mesh)
+	parser.mesh.depends.update(std_parser.mesh.depends)
 	parser.mesh.bind()
 	writer = Writer(parser.mesh)
-	(writer.write(('base', name, 'self')))
+	writer.write(('base', name, 'self'))
+
+#pprint(parser.mesh.depends)
 
 second_before = time.time()
 
 
-for i in range(5):
+for i in range(1):
 	std_parser = newParser(Code('('+open('std/base.ny', 'r').read()+')'))
 	parser = newParser(Code('('+open(target, 'r').read()+')'))
 	std_obj = (None, {'base': std_parser.parse(('base',))})
@@ -36,7 +39,7 @@ for i in range(5):
 	nM = newMesh(std_obj)
 	nM.obj = nM.bind()
 	writer = Writer(nM)
-	(writer.write(('base', name, 'self')))
+	writer.write(('base', name, 'self'))
 
 after = time.time()
 
