@@ -1,0 +1,37 @@
+root = Node(
+	self_ = Node(),
+	
+	one = Node(
+		a = Node(
+			b = Node()
+		),
+		self_ = Node()
+	),
+	
+	two = Node(
+		self_ = FakeNode(),
+		a = Node()
+	),
+	
+	three = Node(
+		self_ = FakeNode()
+	),
+	
+	four = Node(
+		self_ = Node()
+	),
+	
+	five = Node(
+		b = Node()
+	)
+	
+).named(('root',))
+
+root['one']['self_'].reference = root['one']['a']['b']
+root['two'].reference = root['one']
+root['two']['a'].reference = root['three']['self_']
+root['three'].reference = root['four']
+root['four']['self_'].reference = root['five']
+root['self_'].reference = root['two']['self_']
+
+assert root['self_'].seek(Stack()) is root['five']['b']

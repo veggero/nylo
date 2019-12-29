@@ -1,0 +1,78 @@
+root = Node(
+	add = Node(
+		a = Node(
+			if_ = FakeNode(),
+			prev = FakeNode()
+		),
+		b = Node(),
+		self_ = Node()
+	),
+	nat = Node(
+		pos = Node(
+			prev = Node(),
+			if_ = Node(
+				else_ = Node(),
+				then = Node(),
+				self_ = Node()
+			)
+		),
+		zero = Node(
+			prev = Node(),
+			if_ = Node(
+				else_ = Node(),
+				then = Node(),
+				self_ = Node()
+			)
+		)
+	),
+	self_ = Node()
+).named(('root',))
+root['nat']['pos']['if_']['self_'].reference = root['nat']['pos']['if_']['then']
+root['nat']['zero']['if_']['self_'].reference = root['nat']['zero']['if_']['else_']
+
+add_call_nat = Node(
+	prev = Node()
+).named(root['add'].name+('add_call_nat',), root['add'])
+add_call_nat.reference = root['nat']['pos']
+add_call_nat['prev'].reference = root['add']['b']
+
+add_call_add = Node(
+	a = Node(),
+	b = Node(),
+	self_ = FakeNode()
+).named(root['add'].name+('add_call_add',), root['add'])
+add_call_add.reference = root['add']
+add_call_add['a'].reference = root['add']['a']['prev']
+add_call_add['b'].reference = add_call_nat
+
+add_call_if = Node(
+	else_ = Node(),
+	then = Node(),
+	self_ = FakeNode()
+).named(root['add'].name+('add_call_if',), root['add'])
+add_call_if.reference = root['add']['a']['if_']
+add_call_if['else_'].reference = root['add']['b']
+add_call_if['then'].reference = add_call_add['self_']
+
+root['add']['self_'].reference = add_call_if['self_']
+
+root_call_add = Node(
+	a = Node(prev=Node(prev=Node())),
+	b = Node(prev=Node(prev=Node())),
+	self_ = FakeNode()
+	).named(root.name+('root_call_add',), root)
+root_call_add.reference = root['add']
+root_call_add['a'].reference = root['nat']['pos']
+root_call_add['b'].reference = root['nat']['pos']
+root_call_add['b']['prev'].reference = root['nat']['pos']
+root_call_add['a']['prev'].reference = root['nat']['pos']
+root_call_add['b']['prev']['prev'].reference = root['nat']['zero']
+root_call_add['a']['prev']['prev'].reference = root['nat']['zero']
+
+root['self_'].reference = root_call_add['self_']
+
+assert root['self_'].seek(Stack())[0] is root['nat']['pos']
+assert root['self_'].seek(Stack(), ('prev',))[0] is root['nat']['pos']
+assert root['self_'].seek(Stack(), ('prev','prev'))[0] is root['nat']['pos']
+assert root['self_'].seek(Stack(), ('prev','prev', 'prev'))[0] is root['nat']['pos']
+assert root['self_'].seek(Stack(), ('prev','prev', 'prev', 'prev'))[0] is root['nat']['zero']
