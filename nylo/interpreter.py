@@ -1,16 +1,16 @@
 from __future__ import annotations
-from typing import Tuple, Dict, List, Optional
+from typing import Tuple, Dict, List
 
 class Node(Dict[str, "Node"]):
 	
 	name: Tuple[str] = ()
-	parent: Optional[Node] = None
-	myclass: Optional[Node] = False
+	parent: Node = None
+	myclass: Node = False
 	fake: bool = False
 	
 	def walk(self, target: Node, 
-	         stack: Stack, fakeSource: Optional[Node] = None, 
-	         avoid: Tuple[Node] = (), slyce: Optional[Slice] = None) -> Stack:
+	         stack, fakeSource = None, 
+	         avoid: Tuple[Node] = (), slyce: Slice = None) -> Stack:
 		
 		if slyce is None:
 			slyce = Slice(target)
@@ -73,7 +73,7 @@ class Node(Dict[str, "Node"]):
 		assert not path, 'Node at {path} not defined at {self}'
 		return self, stack
 	
-	def named(self, name: Tuple[str], parent: Optional[Node] = None) -> Node:
+	def named(self, name: Tuple[str], parent: Node = None) -> Node:
 		self.name, self.parent = name, parent
 		[son.named(name + (key,), self) for key, son in self.items()]
 		return self
@@ -83,7 +83,6 @@ class Node(Dict[str, "Node"]):
 		return self
 	
 	def isSon(self, possibleDad: Node) -> bool:
-		# I know this can improved
 		return self.name[:len(possibleDad.name)] == possibleDad.name
 	
 	def __eq__(self, other):

@@ -8,7 +8,7 @@ EOF while parsing)
 """
 
 import string
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 class Code:
 	"""
