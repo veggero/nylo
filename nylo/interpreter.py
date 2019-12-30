@@ -1,16 +1,16 @@
 from __future__ import annotations
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Optional
 
 class Node(Dict[str, "Node"]):
 	
 	name: Tuple[str] = ()
-	parent: Node = None
+	parent: Optional[Node] = None
 	myclass: Node = False
 	fake: bool = False
 	
 	def walk(self, target: Node, 
-	         stack, fakeSource = None, 
-	         avoid: Tuple[Node] = (), slyce: Slice = None) -> Stack:
+	         stack: Stack, fakeSource: Optional[Node] = None, 
+	         avoid: Tuple[Node] = (), slyce: Optional[Slice] = None) -> Stack:
 		
 		if slyce is None:
 			slyce = Slice(target)
@@ -52,7 +52,6 @@ class Node(Dict[str, "Node"]):
 		return self.parent.getParentClass(stack, path + self.name[-1:])
 	
 	def seek(self, stack: Stack, path: Tuple[str] = ()) -> Tuple[Node, Stack]:
-		
 		stack = stack.at(self)
 		
 		if path and path[0] in self:
@@ -72,11 +71,6 @@ class Node(Dict[str, "Node"]):
 		
 		assert not path, 'Node at {path} not defined at {self}'
 		return self, stack
-	
-	def named(self, name: Tuple[str], parent: Node = None) -> Node:
-		self.name, self.parent = name, parent
-		[son.named(name + (key,), self) for key, son in self.items()]
-		return self
 	
 	def makefake(self):
 		self.fake = True
@@ -108,12 +102,6 @@ class Slice:
 	
 	def __getitem__(self, item: str) -> Tuple[Node, Stack]:
 		return self.links[item], self.deps[item]
-	
-	def __repr__(self) -> str:
-		return (repr(self.root) + '\n' +
-		  '\n'.join(f'[{key!r}\t-> {self[key][0]!r}\t]'
-			  + ''.join(f'\n\t\t{i}: ' + repr(k).replace('\n', '\n\t\t') for i, k in enumerate(self[key][1]))
-			  for key in self.links))
 
 class Stack(list):
 	
