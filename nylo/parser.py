@@ -4,6 +4,8 @@ from interpreter import Node
 from string import ascii_letters, digits, punctuation
 from typing import Tuple, Dict, List, Optional, Union
 
+from pprint import pprint
+
 def parse(code: Code) -> Union[ParsedNode, Variable, Call]:
 	if code.is_in(ascii_letters + '_`'):
 		var = Variable(code)
@@ -156,7 +158,7 @@ class Call:
 			self._node.parent = self.parent.node
 		caller = self.caller.node
 		called = self.called.node
-		called.myclass = caller
+		called.myclass = caller.myclass
 		called[self.called.target] = Node().makefake()
 		called[self.called.target].name = called.name + (self.called.target,)
 		called[self.called.target].parent = called
@@ -194,14 +196,31 @@ a = parse(Code("""(
 		)
 		-> c
 	)
-	k: add(
-		a: nat.pos(prev: nat.zero)
-		b: nat.pos(prev: nat.zero)
+	fib: (
+		n: ()
+		s: n.if(
+			then: n.prev.if(
+				then: add(
+					a: fib(
+						n: n.prev
+					)
+					b: fib(
+						n: n.prev.prev
+					)
+				)
+				else: nat.pos(prev: nat.zero)
+			)
+			else: nat.pos(prev: nat.zero)
+		)
+		-> s
 	)
+	k : fib(n: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.zero))))))))))
 	-> k
 )"""))
 
 from interpreter import Stack
 
+# 1 1 2 3 5 8 13 21 34 55
+
 a.bind()
-a.node['self'].seek(Stack())
+print(a.node['self'].seek(Stack(), ('prev',)*55)[0])

@@ -26,7 +26,7 @@ class Node(Dict[str, "Node"]):
 			if self is not fakeSource:
 				slyce[target] = self, stack
 				
-			if self.fake and self not in avoid and len(target):
+			if self.fake and self not in avoid and len(target)-1: #self is always there, remove it. could cause bugs?
 				newSelf, newStack = self.resolve(stack, avoid)
 				newSelf.walk(target, newStack, fakeSource, avoid, slyce)
 			
@@ -69,7 +69,7 @@ class Node(Dict[str, "Node"]):
 			newStack = self.walk(self.myclass, stack)
 			return self.myclass.seek(newStack, path)
 		
-		assert not path, 'Node at {path} not defined at {self}'
+		assert not path, f'Node at {path} not defined at {self}'
 		return self, stack
 	
 	def makefake(self):
