@@ -17,8 +17,6 @@ class Node(Dict[str, "Node"]):
 			
 		else:
 			
-			stack = stack.at(self)
-			
 			if self in stack:
 				newSelf, newStack = stack[self]
 				return newSelf.walk(target, newStack, fakeSource, avoid, slyce)
@@ -37,7 +35,7 @@ class Node(Dict[str, "Node"]):
 		for key in set(self) & set(target):
 			self[key].walk(target[key], stack, fakeSource, avoid, slyce)
 			
-		return stack + Stack([slyce])
+		return stack + slyce if slyce.links else stack
 
 	def resolve(self, stack: Stack, avoid: Tuple[Node] = ()) -> Tuple[Node, Stack]:
 		parentClass, target, newStack, path = self.getParentClass(stack)
@@ -52,7 +50,6 @@ class Node(Dict[str, "Node"]):
 		return self.parent.getParentClass(stack, path + self.name[-1:])
 	
 	def seek(self, stack: Stack, path: Tuple[str] = ()) -> Tuple[Node, Stack]:
-		stack = stack.at(self)
 		
 		if path and path[0] in self:
 			return self[path[0]].seek(stack, path[1:])
@@ -83,7 +80,7 @@ class Node(Dict[str, "Node"]):
 		return self is other
 	
 	def __hash__(self):
-		return hash(id(self))
+		return id(self)
 	
 	def __repr__(self):
 		return '.'.join(self.name)
@@ -104,24 +101,16 @@ class Slice:
 		return self.links[item], self.deps[item]
 
 class Stack(list):
-	
-	def __init__(self, iterable=()):
-		super().__init__(filter(lambda x: len(x.links), iterable))
-	
-	def at(self, loc: Node) -> Stack:
-		newstack = Stack(self)
-		while newstack and not loc.isSon(list.__getitem__(newstack, -1).root):
-			del newstack[-1]
-		return newstack
 
 	def __getitem__(self, item):
 		return next(sl[item] for sl in reversed(self) if item in sl.links)
+
+	def item(self, n):
+		return list.__getitem__(self, n)
 	
 	def __contains__(self, item):
-		return any(item in sl.links for sl in self)
+		return self and (item in list.__getitem__(self, -1).links)
 	
-	def __add__(self, other):
-		return Stack(list.__add__(self, other))
-	
-	def __radd__(self, other):
-		return Stack(list.__add__(other, self))
+	def __add__(self: Stack, other: Slice):
+		return Stack(list.__add__(self, [other]))
+		
