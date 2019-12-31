@@ -104,9 +104,6 @@ class Stack(list):
 
 	def __getitem__(self, item):
 		return next(sl[item] for sl in reversed(self) if item in sl.links)
-
-	def item(self, n):
-		return list.__getitem__(self, n)
 	
 	def __contains__(self, item):
 		return self and (item in list.__getitem__(self, -1).links)
