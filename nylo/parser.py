@@ -130,7 +130,8 @@ class Variable:
 				target_node = target_node.myclass.parent  #HACK
 			if not path[0] in target_node:
 				# IMPORTANT sometimes the node is not ready yet as it's a parent
-				target_node[path[0]] = Node().makefake()
+				target_node[path[0]] = Node()
+				target_node[path[0]].fake = True
 				target_node[path[0]].name = target_node.name + (path[0],)
 				target_node[path[0]].parent = target_node
 			target_node = target_node[path[0]]
@@ -172,7 +173,8 @@ class Call:
 		caller = self.caller.node
 		called = self.called.node
 		called.myclass = caller.myclass
-		called[self.called.target] = Node().makefake()
+		called[self.called.target] = Node()
+		called[self.called.target].fake = True
 		called[self.called.target].name = called.name + (self.called.target,)
 		called[self.called.target].parent = called
 		self._node.myclass = called[self.called.target]

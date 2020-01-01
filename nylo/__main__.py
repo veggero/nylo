@@ -1,7 +1,7 @@
 import sys
 from lexer import Code
 from parser import parse
-from interpreter import Stack
+from interpreter import Slice
 from writer import write
 
 if not len(sys.argv) - 1:
@@ -18,4 +18,4 @@ with open(target, 'r') as file:
 
 parsed.bind(name = ('base', name))
 
-print(write(*parsed.node['self'].seek(Stack())))
+print(write(*parsed.node['self'].seek(Slice())))

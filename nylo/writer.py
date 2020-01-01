@@ -1,7 +1,7 @@
-from interpreter import Node, Stack
+from interpreter import Node, Slice
 from typing import Union
 
-def write(node: Node, stack: Stack) -> str:
+def write(node: Node, stack: Slice) -> str:
 	if node.name[-2:] == ('nat', 'zero'):
 		return '0'
 	elif node.name[-2:] == ('nat', 'pos'):

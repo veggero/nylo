@@ -1,4 +1,4 @@
-from __future__ import annotations
+from __future__ import annotations #nb I have no clues how this works
 from typing import Tuple, Dict, List, Optional
 
 class Node(Dict[str, "Node"]):
@@ -9,64 +9,56 @@ class Node(Dict[str, "Node"]):
 	fake: bool = False
 	
 	def walk(self, target: Node, 
-	         stack: Stack, fakeSource: Optional[Node] = None, 
-	         avoid: Tuple[Node] = (), slyce: Optional[Slice] = None) -> Stack:
+	         slyce: Slice, fakeSource: Optional[Node] = None, 
+	         avoid: Tuple[Node] = (), buildSlyce: Optional[Slice] = None) -> Slice:
 		
-		if slyce is None:
-			slyce = Slice()
+		if buildSlyce is None:
+			buildSlyce = Slice()
 			
 		else:
 			
-			if self in stack:
-				newSelf, newStack = stack[self]
-				return newSelf.walk(target, newStack, fakeSource, avoid, slyce)
-			
+			if slyce and self in slyce:
+				newSelf, newSlice = slyce[self]
+				return newSelf.walk(target, newSlice, fakeSource, avoid, buildSlyce)
 			if self is not fakeSource:
-				slyce[target] = self, stack
-				
-			if self.fake and self not in avoid and len(target)-1: #self is always there, remove it. could cause bugs?
-				newSelf, newStack, path = self.resolve(stack, avoid)
-				newSelf, newStack = newSelf.seek(newStack, path)
-				newSelf.walk(target, newStack, fakeSource, avoid, slyce)
-			
+				buildSlyce[target] = self, slyce
+			if self.fake and self not in avoid and len(target)-1: 
+				newSelf, newSlice, path = self.resolve(slyce, avoid)
+				newSelf, newSlice = newSelf.seek(newSlice, path)
+				newSelf.walk(target, newSlice, fakeSource, avoid, buildSlyce)
 			if self.myclass:
-				newStack: Stack = self.walk(self.myclass, stack)
-				self.myclass.walk(target, newStack, fakeSource, avoid, slyce)
+				newSlice: Slice = self.walk(self.myclass, slyce)
+				self.myclass.walk(target, newSlice, fakeSource, avoid, buildSlyce)
 		
 		for key in set(self) & set(target):
-			self[key].walk(target[key], stack, fakeSource, avoid, slyce)
-			
-		return stack + slyce if slyce.links else stack
+			self[key].walk(target[key], slyce, fakeSource, avoid, buildSlyce)
+		
+		return buildSlyce if buildSlyce.links else slyce
 
-	def resolve(self, stack: Stack, avoid: Tuple[Node] = (), path: Tuple[str] = ()) -> Tuple[Node, Stack, Tuple[str]]:
-		parentClass, target, newStack, newPath = self.getParentClass(stack)
-		newStack = parentClass.walk(target, stack, self, avoid+(self,))
-		return target, newStack, path + newPath
+	def resolve(self, slyce: Slice, avoid: Tuple[Node] = (), path: Tuple[str] = ()) -> Tuple[Node, Slice, Tuple[str]]:
+		parentClass, target, newSlice, newPath = self.getParentClass(slyce)
+		newSlice = parentClass.walk(target, slyce, self, avoid+(self,))
+		return target, newSlice, path + newPath
 	
-	def getParentClass(self, stack: Stack, path: Tuple[str] = ()) -> Tuple[Node, Node, Stack, Tuple[str]]:
+	def getParentClass(self, slyce: Slice, path: Tuple[str] = ()) -> Tuple[Node, Node, Slice, Tuple[str]]:
 		if self.myclass:
-			target, newStack = self.myclass.seek(stack)
-			return self, target, newStack, path
+			target, newSlice = self.myclass.seek(slyce)
+			return self, target, newSlice, path
 		assert self.parent, f'Node {self} {path[::-1]} is not implemented.'
-		return self.parent.getParentClass(stack, path + self.name[-1:])
+		return self.parent.getParentClass(slyce, path + self.name[-1:])
 	
-	def seek(self, stack: Stack, path: Tuple[str] = ()) -> Tuple[Node, Stack]:
+	def seek(self, slyce: Slice, path: Tuple[str] = ()) -> Tuple[Node, Slice]:
 		while 1:
 			if path and path[0] in self:
-				self, stack, path = self[path[0]], stack, path[1:]
-			elif self in stack:
-				self, stack = stack[self]
+				self, slyce, path = self[path[0]], slyce, path[1:]
+			elif self in slyce:
+				self, slyce = slyce[self]
 			elif self.fake:
-				self, stack, path = self.resolve(stack, path=path)
+				self, slyce, path = self.resolve(slyce, path=path)
 			elif self.myclass:
-				self, stack = self.myclass, self.walk(self.myclass, stack)
+				self, slyce = self.myclass, self.walk(self.myclass, slyce)
 			else:
-				assert not path, f'Node at {path} not defined at {self}'
-				return self, stack
-	
-	def makefake(self):
-		self.fake = True
-		return self
+				return self, slyce
 	
 	def __eq__(self, other):
 		return self is other
@@ -82,23 +74,14 @@ class Node(Dict[str, "Node"]):
 	
 class Slice:
 	
-	def __init__(self): #the fact that root is not used makes me think that something's wrong, I can feel it
+	def __init__(self):
 		self.links, self.deps = {}, {}
 		
-	def __setitem__(self, key: str, item: Tuple[Node, Stack]):
+	def __setitem__(self, key: str, item: Tuple[Node, Slice]):
 		self.links[key], self.deps[key] = item
 		 
-	def __getitem__(self, item: str) -> Tuple[Node, Stack]:
+	def __getitem__(self, item: str) -> Tuple[Node, Slice]:
 		return self.links[item], self.deps[item]
-
-class Stack(list):
-
-	def __getitem__(self, item):
-		return next(sl[item] for sl in reversed(self) if item in sl.links)
 	
-	def __contains__(self, item):
-		return self and (item in list.__getitem__(self, -1).links) # I think the other elements might be interesting as well
-	
-	def __add__(self: Stack, other: Slice):
-		return Stack(list.__add__(self, [other]))
-		
+	def __contains__(self, item) -> bool:
+		return item in self.links
