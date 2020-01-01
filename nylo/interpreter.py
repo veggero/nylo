@@ -14,21 +14,19 @@ class Node(Dict[str, "Node"]):
 		
 		if buildSlyce is None:
 			buildSlyce = {}
-			
 		else:
-			
-			if slyce and self in slyce:
-				newSelf, newdict = slyce[self]
-				return newSelf.walk(target, newdict, fakeSource, avoid, buildSlyce)
+			if self in slyce:
+				newSelf, newSlice = slyce[self]
+				return newSelf.walk(target, newSlice, fakeSource, avoid, buildSlyce)
 			if self is not fakeSource:
 				buildSlyce[target] = self, slyce
 			if self.fake and self not in avoid and len(target)-1: 
-				newSelf, newdict, path = self.resolve(slyce, avoid)
-				newSelf, newdict = newSelf.seek(newdict, path)
-				newSelf.walk(target, newdict, fakeSource, avoid, buildSlyce)
+				newSelf, newSlice, path = self.resolve(slyce, avoid)
+				newSelf, newSlice = newSelf.seek(newSlice, path)
+				newSelf.walk(target, newSlice, fakeSource, avoid, buildSlyce)
 			if self.myclass:
-				newdict: dict = self.walk(self.myclass, slyce)
-				self.myclass.walk(target, newdict, fakeSource, avoid, buildSlyce)
+				newSlice: dict = self.walk(self.myclass, slyce)
+				self.myclass.walk(target, newSlice, fakeSource, avoid, buildSlyce)
 		
 		for key in set(self) & set(target):
 			self[key].walk(target[key], slyce, fakeSource, avoid, buildSlyce)
@@ -36,14 +34,14 @@ class Node(Dict[str, "Node"]):
 		return buildSlyce if buildSlyce else slyce
 
 	def resolve(self, slyce: dict, avoid: Tuple[Node] = (), path: Tuple[str] = ()) -> Tuple[Node, dict, Tuple[str]]:
-		parentClass, target, newdict, newPath = self.getParentClass(slyce)
-		newdict = parentClass.walk(target, slyce, self, avoid+(self,))
-		return target, newdict, path + newPath
+		parentClass, target, newSlice, newPath = self.getParentClass(slyce)
+		newSlice = parentClass.walk(target, slyce, self, avoid+(self,))
+		return target, newSlice, path + newPath
 	
 	def getParentClass(self, slyce: dict, path: Tuple[str] = ()) -> Tuple[Node, Node, dict, Tuple[str]]:
 		if self.myclass:
-			target, newdict = self.myclass.seek(slyce)
-			return self, target, newdict, path
+			target, newSlice = self.myclass.seek(slyce)
+			return self, target, newSlice, path
 		assert self.parent, f'Node {self} {path[::-1]} is not implemented.'
 		return self.parent.getParentClass(slyce, path + self.name[-1:])
 	
