@@ -4,8 +4,6 @@ from interpreter import Node
 from string import ascii_letters, digits, punctuation
 from typing import Tuple, Dict, List, Optional, Union
 
-from pprint import pprint
-
 def parse(code: Code) -> Union[ParsedNode, Variable, Call]:
 	if code.is_in(ascii_letters + '_`'):
 		var = Variable(code)
@@ -16,6 +14,10 @@ def parse(code: Code) -> Union[ParsedNode, Variable, Call]:
 			return var
 	elif code.is_in('('):
 		return ParsedNode(code)
+	elif code.is_in(digits):
+		return Nat(code)
+	else:
+		assert False, f'What the fuck is {code.code[0]}'
 
 class ParsedNode:
 	
@@ -60,7 +62,11 @@ class ParsedNode:
 		if self.parent:
 			self._node.parent = self.parent.node
 		for key, value in zip(self.keys, self.values):
-			self._node[key] = value.node
+			subnode = value.node
+			if key in self._node:
+				self._node[key].fake = False
+				self._node[key].myclass = subnode #HACK
+			self._node[key] = subnode
 		self._node['self'] = Node()
 		self._node['self'].name = self.name + ('self',)
 		self._node['self'].parent = self._node
@@ -90,6 +96,8 @@ class Variable:
 			code.skip('`')
 		elif code.is_in(ascii_letters + '_'):
 			self.value = code.skip_while(ascii_letters + digits + '_'),
+		else:
+			assert False, f'What the fuck is {code.code[0]}'
 		self.value += Variable(code).value if code.skip_if('.') else ()
 		
 	def __repr__(self):
@@ -103,6 +111,8 @@ class Variable:
 			if self.value[0] in parent.keys:
 				self.binded = parent.values[parent.keys.index(self.value[0])]
 				break
+		if isinstance(self.binded, Call):
+			self.binded = self.binded.called
 		assert self.binded,  f"{self!r} could not be binded. sorry 'bout that!"
 			
 	@property
@@ -116,7 +126,10 @@ class Variable:
 		target_node = self.binded.node
 		path: List[str] = list(self.value[1:])
 		while path:
+			if target_node.name[-1] == 'caller!':
+				target_node = target_node.myclass.parent  #HACK
 			if not path[0] in target_node:
+				# IMPORTANT sometimes the node is not ready yet as it's a parent
 				target_node[path[0]] = Node().makefake()
 				target_node[path[0]].name = target_node.name + (path[0],)
 				target_node[path[0]].parent = target_node
@@ -153,7 +166,7 @@ class Call:
 		if self._node:
 			return self._node
 		self._node = Node()
-		self._node.name = self.name
+		self._node.name = self.name+('caller!',)
 		if self.parent:
 			self._node.parent = self.parent.node
 		caller = self.caller.node
@@ -164,3 +177,27 @@ class Call:
 		called[self.called.target].parent = called
 		self._node.myclass = called[self.called.target]
 		return self._node
+
+class Nat:
+	#horrible implementation, todo again
+	
+	node: Node
+	value: int
+	nat: Call
+	name: Optional[Tuple[str]] = None
+	parent: Optional[ParsedNode] = None
+	_node: Optional[Node] = None
+	
+	def __init__(self, code: Code):
+		self.value = int(code.skip_while(digits))
+		self.nat = parse(Code(
+			'nat.pos(prev: '*self.value + 'nat.zero' + ')'*self.value))
+		
+	def bind(self, parents: Tuple[ParsedNode] = (), 
+		  name: Tuple[str] = ('root',), parent: Optional[ParsedNode] = None, 
+		  call: bool = False):
+		self.nat.bind(parents, name, parent, call)
+		
+	@property
+	def node(self) -> Node:
+		return self.nat.node

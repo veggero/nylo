@@ -13,7 +13,7 @@ class Node(Dict[str, "Node"]):
 	         avoid: Tuple[Node] = (), slyce: Optional[Slice] = None) -> Stack:
 		
 		if slyce is None:
-			slyce = Slice(target)
+			slyce = Slice()
 			
 		else:
 			

@@ -1,5 +1,10 @@
 nat: (
 	pos: (
+		
+		succ: nat.pos(
+			prev: nat.pos
+		)
+		
 		prev: nat
 		if: (
 			then: ()
@@ -13,6 +18,7 @@ nat: (
 			else: ()
 			-> else
 		)
+		succ: 1
 	)
 )
 add: (
@@ -21,7 +27,7 @@ add: (
 	c: a.if(
 		then: add(
 			a: a.prev
-			b: nat.pos(prev: b)
+			b: b.succ
 		)
 		else: b
 	)
@@ -39,11 +45,24 @@ fib: (
 					n: n.prev.prev
 				)
 			)
-			else: nat.pos(prev: nat.zero)
+			else: 1
 		)
-		else: nat.pos(prev: nat.zero)
+		else: 1
 	)
 	-> s
 )
-k : fib(n: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.pos(prev: nat.zero))))))))))
+k: fib(n: 9)
+
+
+test: (
+	a: (
+		b: 1
+		-> b
+	)
+	c: a(b: d)
+	d: a.b
+	e: c.b
+)
+pk: test.c
+
 -> k
