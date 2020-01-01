@@ -9,45 +9,45 @@ class Node(Dict[str, "Node"]):
 	fake: bool = False
 	
 	def walk(self, target: Node, 
-	         slyce: Slice, fakeSource: Optional[Node] = None, 
-	         avoid: Tuple[Node] = (), buildSlyce: Optional[Slice] = None) -> Slice:
+	         slyce: dict, fakeSource: Optional[Node] = None, 
+	         avoid: Tuple[Node] = (), buildSlyce: Optional[dict] = None) -> dict:
 		
 		if buildSlyce is None:
-			buildSlyce = Slice()
+			buildSlyce = {}
 			
 		else:
 			
 			if slyce and self in slyce:
-				newSelf, newSlice = slyce[self]
-				return newSelf.walk(target, newSlice, fakeSource, avoid, buildSlyce)
+				newSelf, newdict = slyce[self]
+				return newSelf.walk(target, newdict, fakeSource, avoid, buildSlyce)
 			if self is not fakeSource:
 				buildSlyce[target] = self, slyce
 			if self.fake and self not in avoid and len(target)-1: 
-				newSelf, newSlice, path = self.resolve(slyce, avoid)
-				newSelf, newSlice = newSelf.seek(newSlice, path)
-				newSelf.walk(target, newSlice, fakeSource, avoid, buildSlyce)
+				newSelf, newdict, path = self.resolve(slyce, avoid)
+				newSelf, newdict = newSelf.seek(newdict, path)
+				newSelf.walk(target, newdict, fakeSource, avoid, buildSlyce)
 			if self.myclass:
-				newSlice: Slice = self.walk(self.myclass, slyce)
-				self.myclass.walk(target, newSlice, fakeSource, avoid, buildSlyce)
+				newdict: dict = self.walk(self.myclass, slyce)
+				self.myclass.walk(target, newdict, fakeSource, avoid, buildSlyce)
 		
 		for key in set(self) & set(target):
 			self[key].walk(target[key], slyce, fakeSource, avoid, buildSlyce)
 		
-		return buildSlyce if buildSlyce.links else slyce
+		return buildSlyce if buildSlyce else slyce
 
-	def resolve(self, slyce: Slice, avoid: Tuple[Node] = (), path: Tuple[str] = ()) -> Tuple[Node, Slice, Tuple[str]]:
-		parentClass, target, newSlice, newPath = self.getParentClass(slyce)
-		newSlice = parentClass.walk(target, slyce, self, avoid+(self,))
-		return target, newSlice, path + newPath
+	def resolve(self, slyce: dict, avoid: Tuple[Node] = (), path: Tuple[str] = ()) -> Tuple[Node, dict, Tuple[str]]:
+		parentClass, target, newdict, newPath = self.getParentClass(slyce)
+		newdict = parentClass.walk(target, slyce, self, avoid+(self,))
+		return target, newdict, path + newPath
 	
-	def getParentClass(self, slyce: Slice, path: Tuple[str] = ()) -> Tuple[Node, Node, Slice, Tuple[str]]:
+	def getParentClass(self, slyce: dict, path: Tuple[str] = ()) -> Tuple[Node, Node, dict, Tuple[str]]:
 		if self.myclass:
-			target, newSlice = self.myclass.seek(slyce)
-			return self, target, newSlice, path
+			target, newdict = self.myclass.seek(slyce)
+			return self, target, newdict, path
 		assert self.parent, f'Node {self} {path[::-1]} is not implemented.'
 		return self.parent.getParentClass(slyce, path + self.name[-1:])
 	
-	def seek(self, slyce: Slice, path: Tuple[str] = ()) -> Tuple[Node, Slice]:
+	def seek(self, slyce: dict, path: Tuple[str] = ()) -> Tuple[Node, dict]:
 		while 1:
 			if path and path[0] in self:
 				self, slyce, path = self[path[0]], slyce, path[1:]
@@ -71,17 +71,3 @@ class Node(Dict[str, "Node"]):
 	
 	def __bool__(self):
 		return True
-	
-class Slice:
-	
-	def __init__(self):
-		self.links, self.deps = {}, {}
-		
-	def __setitem__(self, key: str, item: Tuple[Node, Slice]):
-		self.links[key], self.deps[key] = item
-		 
-	def __getitem__(self, item: str) -> Tuple[Node, Slice]:
-		return self.links[item], self.deps[item]
-	
-	def __contains__(self, item) -> bool:
-		return item in self.links
