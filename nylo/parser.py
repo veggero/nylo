@@ -24,7 +24,7 @@ class ParsedNode:
 	node: Node
 	keys: List[str]
 	values: List[Union[ParsedNode, Variable, Call]]
-	target: str = 'self'
+	target: Optional[Union[ParsedNode, Variable, Call]] = None
 	name: Optional[Tuple[str]] = None
 	parent: Optional[ParsedNode] = None
 	_node: Optional[Node] = None
@@ -34,21 +34,22 @@ class ParsedNode:
 		self.keys, self.values = [], []
 		while not (code.is_in(')') or code.startswith('->')):
 			self.keys.append(Variable(code).value[0])  
-				#[0] as (a.b: c) is not supported yet, sorry
+				#[0] as (a.b: c) is not supported yet, sorry TODO
 			code.skip(':')
 			self.values.append(parse(code))
 			code.skip_if(',')
 		if code.startswith('->'):
 			code.skip('-', '>')
-			self.target = Variable(code).value[0] 
-				#[0] as (-> a.b) is not supported yet, sorry
-				#also, this only support returning variables yet, sorry
+			self.target = parse(code)
 		code.skip(')')
 		
 	def bind(self, parents: Tuple[ParsedNode] = (), 
 		  name: Tuple[str] = ('root',), parent: Optional[ParsedNode] = None, 
 		  call: bool = False):
 		self.name, self.parent = name, parent
+		if self.target:
+			self.target.bind(((self,) if not call else ()) + parents, 
+			  name + ('target!',), self, call)
 		for key, value in zip(self.keys, self.values):
 			value.bind(((self,) if not call else ()) + parents, 
 			  name + (key,), self, call)
@@ -70,11 +71,13 @@ class ParsedNode:
 		self._node['self'] = Node()
 		self._node['self'].name = self.name + ('self',)
 		self._node['self'].parent = self._node
-		if self.target == 'self':
-			self._node['self'].myclass = self._node
+		if self.target:
+			if isinstance(self.target, Variable):
+				self._node['self'].myclass = self.target.node.myclass
+			else:
+				self._node['self'].myclass = self.target.node
 		else:
-			assert self.target in self.keys, f'Not returning a var in the node'
-			self._node['self'].myclass = self._node[self.target]
+			self._node['self'].myclass = self._node
 		return self._node
 		
 	def __repr__(self):
@@ -111,8 +114,6 @@ class Variable:
 			if self.value[0] in parent.keys:
 				self.binded = parent.values[parent.keys.index(self.value[0])]
 				break
-		if isinstance(self.binded, Call):
-			self.binded = self.binded.called
 		assert self.binded,  f"{self!r} could not be binded. sorry 'bout that!"
 			
 	@property
@@ -173,11 +174,17 @@ class Call:
 		caller = self.caller.node
 		called = self.called.node
 		called.myclass = caller.myclass
-		called[self.called.target] = Node()
-		called[self.called.target].fake = True
-		called[self.called.target].name = called.name + (self.called.target,)
-		called[self.called.target].parent = called
-		self._node.myclass = called[self.called.target]
+		if self.called.target:
+			assert isinstance(self.called.target, Variable), "Target value should be a variable"
+			word = self.called.target.value[0] 
+				#TODO support more values
+		else:
+			word = 'self'
+		called[word] = Node()
+		called[word].fake = True
+		called[word].name = called.name + (word,)
+		called[word].parent = called
+		self._node.myclass = called[word]
 		return self._node
 
 class Nat:

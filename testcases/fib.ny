@@ -24,18 +24,17 @@ nat: (
 add: (
 	a: ()
 	b: ()
-	c: a.if(
+	-> a.if(
 		then: add(
 			a: a.prev
 			b: b.succ
 		)
 		else: b
 	)
-	-> c
 )
 fib: (
 	n: ()
-	s: n.if(
+	-> n.if(
 		then: n.prev.if(
 			then: add(
 				a: fib(
@@ -49,20 +48,6 @@ fib: (
 		)
 		else: 1
 	)
-	-> s
 )
-k: fib(n: 9)
 
-
-test: (
-	a: (
-		b: 1
-		-> b
-	)
-	c: a(b: d)
-	d: a.b
-	e: c.b
-)
-pk: test.c
-
--> k
+-> fib(n: 11)
