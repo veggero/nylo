@@ -2,6 +2,8 @@ from __future__ import annotations #nb I have no clues how this works
 from typing import Tuple, Dict, List, Optional as Opt
 scope: Dict[str, Tuple[Node, scope]]
 
+# TODO function passed as arguments
+
 class Node(Dict[str, "Node"]):
 	
 	name: Tuple[str] = ()
