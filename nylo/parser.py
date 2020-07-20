@@ -16,6 +16,8 @@ def parse(code: Code) -> Union[ParsedNode, Variable, Call]:
 		return ParsedNode(code)
 	elif code.is_in(digits):
 		return Nat(code)
+	elif code.is_in(Symbol.supported):
+		return Symbol(code)
 	else:
 		assert False, f'What the fuck is {code.code[0]}'
 
@@ -40,7 +42,11 @@ class ParsedNode:
 			code.skip_if(',')
 		if code.startswith('->'):
 			code.skip('-', '>')
-			self.target = parse(code)
+			if code.is_in(')'):
+				self.target = Variable(Code('fuck')) #HACK
+				self.target.value = ('!self',)
+			else:
+				self.target = parse(code)
 		code.skip(')')
 		
 	def bind(self, parents: Tuple[ParsedNode] = (), 
@@ -48,8 +54,10 @@ class ParsedNode:
 		  call: bool = False):
 		self.name, self.parent = name, parent
 		if self.target:
-			self.target.bind(((self,) if not call else ()) + parents, 
-			  name + ('target!',), self, call)
+			if not (isinstance(self.target, Variable) and self.target.value == ('!self',)): #HACK
+				self.target.bind(((self,) if not call else ()) + parents, 
+				name + ('target!',), self, call)
+				
 		for key, value in zip(self.keys, self.values):
 			value.bind(((self,) if not call else ()) + parents, 
 			  name + (key,), self, call)
@@ -180,11 +188,18 @@ class Call:
 				#TODO support more values
 		else:
 			word = 'self'
-		called[word] = Node()
-		called[word].fake = True
-		called[word].name = called.name + (word,)
-		called[word].parent = called
-		self._node.myclass = called[word]
+		if word == '!self':
+			called[word] = Node()
+			called[word].name = called.name + (word,)
+			called[word].parent = called
+			called[word].myclass = called
+			self._node.myclass = called
+		else:
+			called[word] = Node()
+			called[word].fake = True
+			called[word].name = called.name + (word,)
+			called[word].parent = called
+			self._node.myclass = called[word]
 		return self._node
 
 class Nat:
@@ -210,3 +225,29 @@ class Nat:
 	@property
 	def node(self) -> Node:
 		return self.nat.node
+
+class Symbol:
+	
+	node: Node
+	call: Call
+	supported: Set[str] = {*punctuation} - {*':,\'"`_'}
+	name: Optional[Tuple[str]] = None
+	parent: Optional[ParsedNode] = None
+	_node: Optional[Node] = None
+	
+	def __init__(self, code: Code):
+		self.call = Call(Variable(Code('fuck')), 
+				   ParsedNode(Code('()')))
+		self.call.caller.value = code.skip_while(Symbol.supported),
+		self.call.called.keys = 'first', 'second'
+		self.call.called.values = parse(code), parse(code)
+
+	def bind(self, parents: Tuple[ParsedNode] = (), 
+		  name: Tuple[str] = ('root',), parent: Optional[ParsedNode] = None, 
+		  call: bool = False):
+		self.call.bind(parents, name, parent, call)
+	
+	@property
+	def node(self) -> Node:
+		return self.call.node
+		
