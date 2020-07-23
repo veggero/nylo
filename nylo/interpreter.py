@@ -34,7 +34,7 @@ class Node(Dict[str, "Node"]):
 		for key in self.keys() & target.keys():
 			self[key].walk(target[key], slyce, fakeSource, avoid, wipSlice)
 		
-		return wipSlice if wipSlice else slyce
+		return wipSlice or slyce
 
 	def resolve(self, slyce: scope, avoid: Tuple[Node] = (), 
 			 path: Tuple[str] = ()) -> Tuple[Node, scope, Tuple[str]]:
