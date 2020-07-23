@@ -31,7 +31,7 @@ class Node(Dict[str, "Node"]):
 				newSlice: scope = self.walk(self.myclass, slyce)
 				self.myclass.walk(target, newSlice, fakeSource, avoid, wipSlice)
 		
-		for key in set(self) & set(target):
+		for key in self.keys() & target.keys():
 			self[key].walk(target[key], slyce, fakeSource, avoid, wipSlice)
 		
 		return wipSlice if wipSlice else slyce
